@@ -1,4 +1,4 @@
-package Input;
+package server.Input;
 import Engine.Operator;
 import Engine.Replication;
 import Engine.Task;
