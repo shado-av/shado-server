@@ -20,10 +20,10 @@ public class Parser {
          System.out.println(g.toJson(person)); // {"name":"John"}
          */
     }
-    public ShadoVar parseJSON(ShadoVar in){
+    public loadparam parseJSON(loadparam in){
         Gson g = new Gson();
         System.out.println("PARSING JSON...");
-        in = g.fromJson(this.input, ShadoVar.class);
+        in = g.fromJson(this.input, loadparam.class);
         System.out.println("Traffic: "+ Arrays.toString(in.traffic));
         System.out.println("OpStrats: "+in.opStrats);
         System.out.println("OpNames: "+ in.opNames[1]);

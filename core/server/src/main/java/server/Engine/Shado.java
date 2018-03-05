@@ -32,7 +32,7 @@ public class Shado{
 		String head = FileWizard.getabspath();
 
         System.out.println("INPUT: "+inputJson);
-        ShadoVar data = new ShadoVar();
+        loadparam data = new loadparam();
         Parser parser = new Parser(inputJson);
         parser.parseJSON(data);
         return;
