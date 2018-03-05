@@ -1,6 +1,7 @@
 package server.Engine;
 
 import server.Input.FileWizard;
+import server.Input.ShadoVar;
 import server.Input.loadparam;
 import server.Output.DataWrapper;
 //import Output.OutputTest;
@@ -9,6 +10,7 @@ import server.Output.ProcRep;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Scanner;
 
 
 /***************************************************************************
@@ -30,14 +32,11 @@ public class Shado{
 		String head = FileWizard.getabspath();
 
         System.out.println("INPUT: "+inputJson);
-        loadparam data;
-		try {
-			data = new loadparam(head + "/in/params.txt");
+        ShadoVar data = new ShadoVar();
+        Parser parser = new Parser(inputJson);
+        parser.parseJSON(data);
+        return;
 
-		}catch (FileNotFoundException e){
-			System.err.println("input File Not Found! Use JSON...");
-			return;
-		}
 //		SCHEN 11/10/17 Test for Reading Fleet Hetero
 
 //		printBasicInfo(data);
@@ -45,13 +44,13 @@ public class Shado{
 
 		// Runs simulation
 
-		Simulation sim = new Simulation(data);
-		sim.run();
-		System.out.println("Failed Tasks: "+ data.failTaskCount);
-		
-//		// Generate Output
-		DataWrapper analyze = new DataWrapper(sim, data);
-		analyze.output();
+//		Simulation sim = new Simulation(data);
+//		sim.run();
+//		System.out.println("Failed Tasks: "+ data.failTaskCount);
+//
+////		// Generate Output
+//		DataWrapper analyze = new DataWrapper(sim, data);
+//		analyze.output();
 	}
 	
 	private static void printBasicInfo(loadparam data){

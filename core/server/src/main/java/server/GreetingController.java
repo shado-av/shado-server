@@ -29,7 +29,7 @@ public class GreetingController {
         //TODO: Sanity Check and pass to Shado Object
 
         shado.runShado(payload);
-        System.out.println(payload);
+//        System.out.println(payload);
         return "Post Success!";
     }
 }

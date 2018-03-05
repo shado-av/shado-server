@@ -32,17 +32,15 @@ public class loadparam {
     public double[] traffic;
     public int numReps;
     public int[] ops;
-    //SCHEN 11/10/17 Change numvehicles to array
-	//public int numvehicles;
     public int[] numvehicles;
 
     public int numRemoteOp;
     public Replication[] reps;
     public int[] RemoteOpTasks;
-//    public List<Pair<Operator, Task>> failedTasks = new ArrayList<>();
     public HashMap<Integer,ArrayList> rep_failTask;
     public HashMap<Integer,Integer> failTaskCount;
     public int replicationTracker;
+
     //SCHEN 12/4/17 Fleet Autonomy level param
 	// None-> default,
 	// Some ->70%
@@ -104,7 +102,7 @@ public class loadparam {
 	public static boolean RAND_RUN_ON = true;
 
 	//SCHEN 11/15/17 test separated replication
-	public int currRepnum =0;
+	public int currRepnum = 0;
 	public ArrayList<ArrayList<Pair<Operator,Task>>> expiredTasks;
 	
 	/****************************************************************************
@@ -114,7 +112,9 @@ public class loadparam {
 	*	Purpose:		Load ALL vars in text
 	*																			
 	****************************************************************************/
-		
+	public loadparam(){
+
+    }
 	public loadparam(String file) throws FileNotFoundException{
 		
 		//Declare a scanner for the file
