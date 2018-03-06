@@ -180,7 +180,7 @@ public class Task implements Comparable<Task> {
 		beginTime = arrTime;
 		opNums = vars.opNums[Type];
 		name = vars.taskNames[Type];
-		isLinked = vars.linked[Type] == 1;
+//		isLinked = vars.linked[Type] == 1;
 		elapsedTime = 0;
 		expired = false;
 //        getTriangularDistribution();

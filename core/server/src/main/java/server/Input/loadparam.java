@@ -113,8 +113,35 @@ public class loadparam {
 	*																			
 	****************************************************************************/
 	public loadparam(){
-
     }
+    /*
+    * Set Global data after reading from JSON
+    * */
+    public void setGlobalData(){
+        failTaskCount = new HashMap<>();
+        replicationTracker = 0;
+        crossRepCount = new double[numReps][];
+        reps = new Replication[numReps];
+        rep_failTask = new HashMap<>();
+        expiredTasks = new ArrayList<ArrayList<Pair<Operator,Task>>>();
+        for(int i = 0; i < numReps; i++){
+            expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
+        }
+        teamSizeTotal = numRemoteOp;
+        opNums = new int[numTaskTypes][];
+        //Has exo-factors
+        int numExos = hasExogenous[1];
+        for (int i = 0; i < numTaskTypes; i++){
+            ArrayList<Integer> wha = new ArrayList<Integer>();
+            for (int j = 0; j < numTeams; j++){
+                if (Arrays.asList(opTasks[j]).contains(i)){
+                    wha.add(j);
+                }
+            }
+            opNums[i] = wha.stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
+
 	public loadparam(String file) throws FileNotFoundException{
 		
 		//Declare a scanner for the file

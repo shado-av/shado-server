@@ -24,6 +24,7 @@ public class Parser {
         Gson g = new Gson();
         System.out.println("PARSING JSON...");
         in = g.fromJson(this.input, loadparam.class);
+        in.setGlobalData();
         System.out.println("Traffic: "+ Arrays.toString(in.traffic));
         System.out.println("OpStrats: "+in.opStrats);
         System.out.println("OpNames: "+ in.opNames[1]);

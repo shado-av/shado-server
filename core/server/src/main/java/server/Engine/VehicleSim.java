@@ -138,12 +138,14 @@ public class VehicleSim  {
                         newTask = new Task(taskType, 0, vars, true, checkAI(), vars.teamComm[0]);
 
                 }
-
+//            System.out.println("arr time:"+newTask.getArrTime());
                 // While the next task is within the time frame, generate.
 
+                int cnt = 0;
                 while (newTask.getArrTime() < vars.numHours * 60) {
-                    newTask = new Task(taskType, newTask.getArrTime(), vars, true,true, vars.teamComm[0]);
+                    newTask = new Task(taskType, newTask.getArrTime(), vars, true,checkAI(), vars.teamComm[0]);
                     newTask.setID(vehicleID);
+                    if(cnt++ > 20) System.out.println("generate:"+cnt+" tasks");
                     // TODO if the queue is idle;
 //                    globalTasks.add(newTask);
                     indlist.add(newTask);
