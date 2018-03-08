@@ -1,15 +1,15 @@
 Task name: Communication
 expired: 0
-completed: 175
+completed: 154
 Task name: Paperwork
 expired: 0
-completed: 176
+completed: 164
 Task name: Signal Response Management
 expired: 0
-completed: 152
+completed: 161
 Task name: Communicating Internally
-expired: 1
-completed: 176
+expired: 0
+completed: 154
 *** FAILED TASKS ***
-In Replication 0: Number of Fail Tasks: 3
-In Replication 1: Number of Fail Tasks: 6
+In Replication 0: Number of Fail Tasks: 9
+In Replication 1: Number of Fail Tasks: 3

@@ -54,8 +54,8 @@ public class Shado{
 		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
 		// Generate Output
-		DataWrapper analyze = new DataWrapper(sim, data);
-		analyze.output();
+//		DataWrapper analyze = new DataWrapper(sim, data);
+//		analyze.output();
 	}
 	
 	private static void printBasicInfo(loadparam data){

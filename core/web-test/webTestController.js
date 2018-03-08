@@ -14,6 +14,46 @@ var expire_param = [[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],
 var expire_param_exo = [[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184]];
 var affect_by_IROPS = [[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1]];
 var human_error_prob = [[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007]];
+
+var sample = {
+    "numHours": 8,
+    "traffic":[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+    "numReps": 2,
+    "numRemoteOp" : 7,
+    "numTeams": 3,
+    "numvehicles": [1,3,9,7],
+    "autolvl":2,
+    "numPhases":2,
+
+    "hasExogenous":[1,2],
+    "exNames":["Medical","Weather"],
+    "exTypes":["add_task","long_serv"],
+
+    "failThreshold":0.5,
+    "opStrats":"STF",
+    "opNames":["Dispatcher","Operations Management Specialist","AIDA"],
+    "opTasks":[[0,1,2,3],[0,2],[0,1,2,3]],
+    "teamComm":["N","S","F"],
+    "teamSize":[3,2,2],
+    "fleetTypes": 4,
+    "fleetHetero":[[0,1,2,3],[0,1],[1,2,3],[0]],
+
+    "numTaskTypes":4,
+    "taskNames":["Communication","Paperwork","Signal Response Management","Communicating Internally"],
+    "taskPrty":[[3,5],[2,2],[3,4],[4,3]],
+    "arrDists":["E","E","E","E"],
+    "arrPms":[[0,0.03333],[0,0.03333],[0,0.03333],[0,0.03333]],
+    "serDists":["U","U","U","U"],
+    "serPms":[[0,0.5],[0,0.5],[0,0.5],[0,0.5]],
+    "expDists":["E","E","E","E"],
+    "expPmsLo":[[0,0.184 ],[0,0.184 ],[0,0.184 ],[0,0.184 ]],
+    "expPmsHi":[[0,0.184 ],[0,0.184 ],[0,0.184 ],[0,0.184 ]],
+    "affByTraff":[[0,1],[0,1],[0,1],[0,1]],
+    "teamCoordAff":[0,1,0,1],
+    "humanError":[[0.07,0.02,0.17],[0.003,0.0008,0.007],[0.0004,0.00008,0.007],[0.09,0.06,0.13]]
+
+};
+
 function submit(){
     var num_teams = document.getElementById("num_teams").value;
     var num_exo = document.getElementById("num_exo").value;
@@ -23,14 +63,14 @@ function submit(){
         has_exo[1] = num_exo;
     }
     var traffic = [];
-    var num_hours =  document.getElementById("num_hours").value;
+    var num_hours = parseInt( document.getElementById("num_hours").value);
     for(var i = 0 ; i < num_hours; i++ ){
         if(document.getElementById("traffic_levels").value === 0.5)
-            traffic.add(0.5);
+            traffic[i] = 0.5;
         if(document.getElementById("traffic_levels").value === 0)
-            traffic.add(0);
+            traffic[i] = 0.5;
         if(document.getElementById("traffic_levels").value === 1)
-            traffic.add(1);
+            traffic[i] = 0.5;
     }
     var num_fleet = document.getElementById("num_fleet_types").value;
     var fleet_size = [];
@@ -45,13 +85,13 @@ function submit(){
 
     var out = {
         "numHours":  num_hours,
-        "traffic":traffic,
-        "numReps": document.getElementById("num_replications").value,
+        "traffic":[0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5],
+        "numReps": parseInt(document.getElementById("num_replications").value),
         "numRemoteOp" : 7,
-        "numTeams": document.getElementById("num_teams").value,
+        "numTeams": parseInt(document.getElementById("num_teams").value),
         "numvehicles": [1,3,9,7],
-        "autolvl":document.getElementById("autonomy_lvl").value,
-        "numPhases":document.getElementById("num_phases").value,
+        "autolvl":2,
+        "numPhases":parseInt(document.getElementById("num_phases").value),
 
         "hasExogenous":[1,2],
         "exNames":["Medical","Weather"],
@@ -63,7 +103,7 @@ function submit(){
         "opTasks":[[0,1,2,3],[0,2],[0,1,2,3]],
         "teamComm":["N","S","F"],
         "teamSize":[3,2,2],
-        "fleetTypes": document.getElementById("num_fleet_types").value,
+        "fleetTypes": parseInt(document.getElementById("num_fleet_types").value),
         "fleetHetero":[[0,1,2,3],[0,1],[1,2,3],[0]],
 
         "numTaskTypes":4,
@@ -87,26 +127,30 @@ function submit(){
       type: "POST",
       url: "http://localhost:8080/shado/testpost",
       // The key needs to match your method's input parameter (case-sensitive).
-      data: JSON.stringify(out),
+      data: JSON.stringify(sample),
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(msg){
+          alert(msg);
           console.log("response received");
+          console.log(msg);
           // move(100);
-          // var obj = JSON.stringify(msg)
+          //  var obj = JSON.stringify(msg)
           // // var tempParseData = obj;
           // obj = JSON.parse(obj);
           // console.log(obj);
           // alert(obj);
+          // if(msg.status == 'success')
+          alert("PARAMETERS SUBMITTED!");
       },
       failure: function(errMsg) {
           alert(errMsg);
       }
   });
 
+    // alert("SHADO params SUBMITTED!");
 
 
-  // alert("PARAMETERS SUBMITTED!");
 }
 
 function popFleetTypes(){

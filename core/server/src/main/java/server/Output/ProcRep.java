@@ -104,7 +104,7 @@ public class ProcRep {
 
     public void tmpData(){
 
-        System.out.println("Total Num RemoteOps: " + totalRemoteOp);
+//        System.out.println("Total Num RemoteOps: " + totalRemoteOp);
 //        repdisdata = new Data[numRemoteOp];
         repdisdata = new Data[totalRemoteOp];
         for (int i = 0; i < totalRemoteOp; i++){
