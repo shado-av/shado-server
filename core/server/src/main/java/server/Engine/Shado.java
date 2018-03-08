@@ -35,25 +35,27 @@ public class Shado{
         loadparam data = new loadparam();
         Parser parser = new Parser(inputJson);
         data = parser.parseJSON(data);
+        loadparam txtData;
         try {
-            loadparam txtData = new loadparam("in/params.txt");
+             txtData = new loadparam("../in/params.txt");
+            printBasicInfo(txtData);
         }catch (FileNotFoundException e){
             System.err.println("ERROR: Cannot find local file!");
         }
 //		SCHEN 11/10/17 Test for Reading Fleet Hetero
 
-		printBasicInfo(data);
+//        printBasicInfo(data);
 
 
 		// Runs simulation
-
+//
 		Simulation sim = new Simulation(data);
 		sim.run();
 		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
-//		// Generate Output
-//		DataWrapper analyze = new DataWrapper(sim, data);
-//		analyze.output();
+		// Generate Output
+		DataWrapper analyze = new DataWrapper(sim, data);
+		analyze.output();
 	}
 	
 	private static void printBasicInfo(loadparam data){

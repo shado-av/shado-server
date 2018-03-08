@@ -50,19 +50,19 @@ public class DataWrapper {
 
     public void output() throws IOException {
 
-        setFileHead();
+//        setFileHead();
 
         // RemoteOp & Engineer timetables
 
         for (int i = 0; i < vars.numRemoteOp; i++) {
-            String file_name = file_head + "/out/" + "RemoteOperator" + ".csv";
+            String file_name =   "../out/" + "RemoteOperator" + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getRemoteOpoutput(i).outputdata();
         }
 
         for (int j = 0; j < vars.numTeams; j++) {
-            String file_name = file_head + "/out/" + vars.opNames[j] + ".csv";
+            String file_name =  "../out/" + vars.opNames[j] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getOperatoroutput(j).outputdata();
@@ -71,7 +71,7 @@ public class DataWrapper {
 
         // Expired Tasks
 
-        String file_name = file_head + "/out/Summary/" + "Simulation_Summary_" + ".csv";
+        String file_name =  "../out/Summary/" + "Simulation_Summary_" + ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
         for (int i = 0; i < vars.numTaskTypes; i++) {
@@ -90,7 +90,7 @@ public class DataWrapper {
         }
 
         for(int i = 0; i < vars.numReps;i++) {
-            String summary_file_name = file_head + "/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
+            String summary_file_name = "../out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(summary_file_name, false)), true));
             System.out.println("Fail Task Detail: ");
@@ -108,7 +108,7 @@ public class DataWrapper {
 
         }
         //Cross-Replication Summary for workloads
-        String summary_file_name = file_head + "/out/Summary/" + "Workload_Summary.csv";
+        String summary_file_name =   "../out/Summary/" + "Workload_Summary.csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
 

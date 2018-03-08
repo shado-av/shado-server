@@ -313,16 +313,16 @@ public class ProcRep {
      *
      ****************************************************************************/
     public void sepCSV(Data RemoteOpout, int repNum,String opName)throws IOException{
-        String  file_head = FileWizard.getabspath();
+//        String  file_head = FileWizard.getabspath();
         //SCHEN 11/30/17
         //Make RemoteOper dir if not exists
-        String directoryName = "/out/repCSV/";
+        String directoryName = "../out/repCSV/";
         File directory = new File(directoryName);
         if (!directory.exists()){
             directory.mkdir();
         }
 
-        String file_name = file_head + directoryName + "Op_"+opName+"_Rep_"+repNum+ ".csv";
+        String file_name = directoryName + "Op_"+opName+"_Rep_"+repNum+ ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
         for(String s : attributes){

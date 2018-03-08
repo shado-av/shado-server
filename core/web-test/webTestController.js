@@ -15,21 +15,89 @@ var expire_param_exo = [[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.184],[0,0.1
 var affect_by_IROPS = [[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1]];
 var human_error_prob = [[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007],[0.003,0.00008,0.007]];
 function submit(){
+    var num_teams = document.getElementById("num_teams").value;
+    var num_exo = document.getElementById("num_exo").value;
+    var has_exo = [0,0];
+    if(num_exo !== 0){
+        has_exo[0] = 1;
+        has_exo[1] = num_exo;
+    }
+    var traffic = [];
+    var num_hours =  document.getElementById("num_hours").value;
+    for(var i = 0 ; i < num_hours; i++ ){
+        if(document.getElementById("traffic_levels").value === 0.5)
+            traffic.add(0.5);
+        if(document.getElementById("traffic_levels").value === 0)
+            traffic.add(0);
+        if(document.getElementById("traffic_levels").value === 1)
+            traffic.add(1);
+    }
+    var num_fleet = document.getElementById("num_fleet_types").value;
+    var fleet_size = [];
+    var fleet_hetero = [];
+    for(var i = 0; i < num_fleet; i++){
+        var fleet_size_id =  "fleet_type_size_" +i;
+        var fleet_hetero_id = "fleet_type_" +i;
+        fleet_size.add(document.getElementById(fleet_size_id).value);
+        //?
+        fleet_hetero.add( document.getElementById(fleet_hetero_id).value)
+    }
+
+    var out = {
+        "numHours":  num_hours,
+        "traffic":traffic,
+        "numReps": document.getElementById("num_replications").value,
+        "numRemoteOp" : 7,
+        "numTeams": document.getElementById("num_teams").value,
+        "numvehicles": [1,3,9,7],
+        "autolvl":document.getElementById("autonomy_lvl").value,
+        "numPhases":document.getElementById("num_phases").value,
+
+        "hasExogenous":[1,2],
+        "exNames":["Medical","Weather"],
+        "exTypes":["add_task","long_serv"],
+
+        "failThreshold":0.5,
+        "opStrats":"STF",
+        "opNames":["Dispatcher","Operations Management Specialist","AIDA"],
+        "opTasks":[[0,1,2,3],[0,2],[0,1,2,3]],
+        "teamComm":["N","S","F"],
+        "teamSize":[3,2,2],
+        "fleetTypes": document.getElementById("num_fleet_types").value,
+        "fleetHetero":[[0,1,2,3],[0,1],[1,2,3],[0]],
+
+        "numTaskTypes":4,
+        "taskNames":["Communication","Paperwork","Signal Response Management","Communicating Internally"],
+        "taskPrty":[[3,5],[2,2],[3,4],[4,3]],
+        "arrDists":["E","E","E","E"],
+        "arrPms":[[0,0.03333],[0,0.03333],[0,0.03333],[0,0.03333]],
+        "serDists":["U","U","U","U"],
+        "serPms":[[0,0.5],[0,0.5],[0,0.5],[0,0.5]],
+        "expDists":["E","E","E","E"],
+        "expPmsLo":[[0,0.184 ],[0,0.184 ],[0,0.184 ],[0,0.184 ]],
+        "expPmsHi":[[0,0.184 ],[0,0.184 ],[0,0.184 ],[0,0.184 ]],
+        "affByTraff":[[0,1],[0,1],[0,1],[0,1]],
+        "teamCoordAff":[0,1,0,1],
+        "humanError":[[0.07,0.02,0.17],[0.003,0.0008,0.007],[0.0004,0.00008,0.007],[0.09,0.06,0.13]]
+    };
+
+
+
   $.ajax({
-      type: "GET",
-      url: "http://localhost:8080/shado/hello",
+      type: "POST",
+      url: "http://localhost:8080/shado/testpost",
       // The key needs to match your method's input parameter (case-sensitive).
-      data: JSON.stringify({ text: "Hi" }),
+      data: JSON.stringify(out),
       contentType: "application/json; charset=utf-8",
       dataType: "json",
       success: function(msg){
           console.log("response received");
           // move(100);
-          var obj = JSON.stringify(msg)
-          // var tempParseData = obj;
-          obj = JSON.parse(obj);
-          console.log(obj);
-          alert(obj);
+          // var obj = JSON.stringify(msg)
+          // // var tempParseData = obj;
+          // obj = JSON.parse(obj);
+          // console.log(obj);
+          // alert(obj);
       },
       failure: function(errMsg) {
           alert(errMsg);
@@ -38,7 +106,7 @@ function submit(){
 
 
 
-  alert("PARAMETERS SUBMITTED!");
+  // alert("PARAMETERS SUBMITTED!");
 }
 
 function popFleetTypes(){
@@ -52,7 +120,7 @@ function popFleetTypes(){
     $( ".fleet_option" ).append( "<label class='fleet_type' id='lbl_fleet_"+i+"' value ='Fleet Type"+i+"'>Fleet Type "+i+"'s Tasks </label> "+
     " <input class='fleet_type'id='fleet_type_"+i+"' value='0,1,2,3,4,5,6,7'placeholder='0,1,2,3,4,5,6,7'></input>"+
     "   <label class='fleet_type' id='lbl_fleet_size"+i+"' value ='Fleet Type "+i+"'>   size </label> "+
-    "<input class='fleet_type'id='fleet_type_size"+i+"' value ='2'placeholder='2'></input><br class='fleet_type'><br class='fleet_type'>");
+    "<input class='fleet_type'id='fleet_type_size_"+i+"' value ='2'placeholder='2'></input><br class='fleet_type'><br class='fleet_type'>");
   }
 
 }

@@ -120,8 +120,8 @@ public class loadparam {
     public void setGlobalData(){
         failTaskCount = new HashMap<>();
         replicationTracker = 0;
-        crossRepCount = new double[numReps][];
-        reps = new Replication[numReps];
+		crossRepCount = new double[numReps][];
+		reps = new Replication[numReps];
         rep_failTask = new HashMap<>();
         expiredTasks = new ArrayList<ArrayList<Pair<Operator,Task>>>();
         for(int i = 0; i < numReps; i++){

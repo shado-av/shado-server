@@ -1,6 +1,7 @@
 package server;
 
 /**
+ * SHADO HTTP request handler
  * Created by siyuchen on 3/1/18.
  */
 
@@ -23,13 +24,21 @@ public class GreetingController {
         return new Greeting(counter.incrementAndGet(),
                 String.format(template, name));
     }
-
+    @CrossOrigin
     @RequestMapping(value= "/shado/testpost",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
         //TODO: Sanity Check and pass to Shado Object
 
         shado.runShado(payload);
 //        System.out.println(payload);
-        return "Post Success!";
+        return "Shado Successfully Run!";
+    }
+    @RequestMapping("/error")
+    public String error(@RequestBody String payload) throws Exception{
+        //TODO: Sanity Check and pass to Shado Object
+
+//        shado.runShado(payload);
+//        System.out.println(payload);
+        return "ERROR: Failed to init SHADO!";
     }
 }
