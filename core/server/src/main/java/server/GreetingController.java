@@ -33,12 +33,4 @@ public class GreetingController {
 //        System.out.println(payload);
         return "Shado Successfully Run!";
     }
-    @RequestMapping("/error")
-    public String error(@RequestBody String payload) throws Exception{
-        //TODO: Sanity Check and pass to Shado Object
-
-//        shado.runShado(payload);
-//        System.out.println(payload);
-        return "ERROR: Failed to init SHADO!";
-    }
 }
