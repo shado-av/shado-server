@@ -41,9 +41,9 @@ public class Shado{
         loadparam txtData;
         try {
              txtData = new loadparam("../in/params.txt");
-            printBasicInfo(txtData);
+             printBasicInfo(txtData);
         }catch (FileNotFoundException e){
-            System.err.println("ERROR: Cannot find local file!");
+            System.err.println("ERROR: Cannot find local txt file!");
         }
 //		SCHEN 11/10/17 Test for Reading Fleet Hetero
 
@@ -62,8 +62,8 @@ public class Shado{
 		//Zipping file and return for simple web service
         zipOutput("/home/rapiduser/shado-server/core/server/out/repCSV");
         zipOutput("/home/rapiduser/shado-server/core/server/out/Summary");
-
-	}
+        System.out.println("SIM DONE");
+    }
 
 	public String retrunOutput(){
 
