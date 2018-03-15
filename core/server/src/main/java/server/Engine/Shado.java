@@ -60,8 +60,8 @@ public class Shado{
 		DataWrapper analyze = new DataWrapper(sim, data);
 		analyze.output();
 		//Zipping file and return for simple web service
-        zipOutput("out/repCSV");
-        zipOutput("out/Summary");
+        zipOutput("/home/rapiduser/shado-server/core/server/out/repCSV");
+        zipOutput("/home/rapiduser/shado-server/core/server/out/Summary");
 
 	}
 
