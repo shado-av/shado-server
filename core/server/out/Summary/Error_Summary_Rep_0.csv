@@ -1,0 +1,13 @@
+Fail Task Detail: 
+Dispatcher 1 Fails Communicating,
+Dispatcher 0 Fails Directive_Mandatory, But still proceed by the Operator
+Operations Management Specialist 0 Fails Actuation,
+Operations Management Specialist 0 Fails Actuation,
+Operations Management Specialist 0 Fails Actuation,
+Operations Management Specialist 1 Fails Actuation, But still proceed by the Operator
+Dispatcher 0 Fails Directive_Mandatory, But still proceed by the Operator
+Dispatcher 1 Fails Actuation,
+Dispatcher 0 Fails Actuation, But still proceed by the Operator
+Operations Management Specialist 1 Fails Communicating,
+Operations Management Specialist 1 Fails Communicating,
+Dispatcher 0 Fails Actuation,

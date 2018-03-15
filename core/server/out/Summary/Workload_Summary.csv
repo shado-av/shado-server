@@ -1,0 +1,5 @@
+Workload Summary
+Percentage of utilization 0-30%,Percentage of utilization 30-70%,Percentage of utilization 70-100% 
+82.29166666666666% ,13.541666666666666% ,4.166666666666666%,
+[2m2018-03-15 18:26:50.974[0;39m [32m INFO[0;39m [35m3299[0;39m [2m---[0;39m [2m[       Thread-3][0;39m [36mationConfigEmbeddedWebApplicationContext[0;39m [2m:[0;39m Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@61fc3b1d: startup date [Thu Mar 15 17:56:34 EDT 2018]; root of context hierarchy
+[2m2018-03-15 18:26:50.989[0;39m [32m INFO[0;39m [35m3299[0;39m [2m---[0;39m [2m[       Thread-3][0;39m [36mo.s.j.e.a.AnnotationMBeanExporter       [0;39m [2m:[0;39m Unregistering JMX-exposed beans on shutdown

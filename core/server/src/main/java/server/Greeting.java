@@ -1,6 +1,7 @@
 package server;
 
 /**
+ * Send Server Hello String to client
  * Created by siyuchen on 3/1/18.
  */
 public class Greeting {

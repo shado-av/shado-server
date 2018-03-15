@@ -5,6 +5,7 @@
 /Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Engine/Replication.java
 /Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Engine/Operator.java
 /Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Output/DataWrapper.java
+/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Output/ZipDir.java
 /Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Input/ShadoVar.java
 /Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Engine/Parser.java
 /Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/src/main/java/server/Engine/Task.java

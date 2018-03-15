@@ -1,16 +1,16 @@
 package server.Engine;
 
 import server.Input.FileWizard;
-import server.Input.ShadoVar;
 import server.Input.loadparam;
-import server.Output.DataWrapper;
+import server.Output.*;
 //import Output.OutputTest;
-import server.Output.ProcRep;
 
 import java.io.*;
-import java.lang.reflect.Array;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Scanner;
+import java.util.zip.ZipOutputStream;
 
 
 /***************************************************************************
@@ -25,9 +25,12 @@ import java.util.Scanner;
 
 
 public class Shado{
+    String sessionNum;
+	public Shado(String sess){
+	    sessionNum = sess;
+    }
 
-	public Shado(){}
-
+    private static ZipOutputStream zos;
 	public void runShado(String inputJson) throws Exception{
 		String head = FileWizard.getabspath();
 
@@ -54,10 +57,34 @@ public class Shado{
 		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
 		// Generate Output
-//		DataWrapper analyze = new DataWrapper(sim, data);
-//		analyze.output();
+		DataWrapper analyze = new DataWrapper(sim, data);
+		analyze.output();
+		//Zipping file and return for simple web service
+        zipOutput("out/repCSV");
+        zipOutput("out/Summary");
+
 	}
-	
+
+	public String retrunOutput(){
+
+        return "";
+	}
+	public void zipOutput(String path){
+        String dirPath = path;
+        Path sourceDir = Paths.get(dirPath);
+
+        try {
+            String zipFileName = dirPath.concat(".zip");
+            zos = new ZipOutputStream(new FileOutputStream(zipFileName));
+
+            Files.walkFileTree(sourceDir, new ZipDir(sourceDir,zos));
+
+            zos.close();
+        } catch (IOException ex) {
+            System.err.println("I/O Error: " + ex);
+        }
+    }
+
 	private static void printBasicInfo(loadparam data){
 		System.out.println("FleetHetero: "+ Arrays.deepToString(data.fleetHetero));
 		System.out.println("Fleet Types: "+ data.fleetTypes);

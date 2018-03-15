@@ -7,7 +7,8 @@
         <title>SHADO Request Test</title>
     <body style="text-align: center">
         <br><br>
-        <h1>SHADO parameter test</h1>
+        <div style=" color: white; background-color: rgba(12,105,208,0.99)">  <br><br><h1>SHADO parameter test</h1> <br><br></div>
+
         <h2>Global Parameters</h2>
         <label value="Number of Hours">Simulation Type</label>
         <select id="sim_type">
@@ -25,9 +26,9 @@
 
         <label value ="Traffic Level">Traffic Level</label>
         <select id="traffic_levels">
-          <option value= 0.5>medium</option>
-          <option value= 0>low</option>
-          <option value= 1 >high</option>
+          <option value= "0.5">medium</option>
+          <option value= "0">low</option>
+          <option value= "1" >high</option>
         </select>
         <div id="fleet_div">
           <h2> Fleet Parameters</h2>
@@ -35,12 +36,12 @@
           <!-- <input id="num_fleet_types"type="text" placeholder="4"></input>  <br><br> -->
           <select id="num_fleet_types" onselect="popFleetTypes()" onchange ="popFleetTypes()">
             <option value="0" selected disabled hidden>Choose here</option>
-            <option value=1>1</option>
-            <option value=2>2</option>
-            <option value=3>3</option>
-            <option value=4>4</option>
-            <option value=5>5</option>
-            <option value=6>6</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
           </select><br><br>
           <h3 id="header_fleet_type" hidden>Fleet Type Details</h3>
             <div class="fleet_option"></div>
@@ -49,10 +50,10 @@
           <h2> Team Parameters</h2>
           <label value = "Number of Hours">Number of Teams</label>
           <select id="num_teams" onselect="popTeamTypes()" onchange ="popTeamTypes()">
-            <option value=0 selected disabled hidden>Choose here</option>
-            <option value=1>1</option>
-            <option value=2>2</option>
-            <option value=3>3</option>
+            <option value="0" selected disabled hidden>Choose here</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
           </select><br><br>
 
             <div class="team_option"></div><br>
@@ -61,11 +62,11 @@
             <h2> Exogenous Factor Parameters</h2>
           <label value ="Number of Hours">Number of exogenous Factor</label>
           <select id="num_exo" onselect="popExoFactor()" onchange ="popExoFactor()">
-            <option value=0 selected disabled hidden>Choose here</option>
-            <option value=1>1</option>
-            <option value=2>2</option>
-            <option value=3>3</option>
-            <option value=4>4</option>
+            <option value="0" selected disabled hidden>Choose here</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
           </select><br><br>
           <div class="exo_option"></div><br>
         </div>
@@ -73,21 +74,23 @@
           <h2> Task Parameters</h2>
           <label value="Number of Task">Number of Tasks</label>
           <select id="num_task" onselect="popTask()" onchange ="popTask()">
-            <option value=0 selected disabled hidden>Number of Tasks</option>
-            <option value=1>1</option>
-            <option value=2>2</option>
-            <option value=3>3</option>
-            <option value=4>4</option>
-            <option value=5>5</option>
-            <option value=6>6</option>
-            <option value=7>7</option>
-            <option value=8>8</option>
-            <option value=9>9</option>
+            <option value="0" selected disabled hidden>Number of Tasks</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
           </select><br><br>
 
           <div class ="task_option"></div>
         </div>
 
-            <button id="test" class="button-success pure-button" title="" onclick="submit()">Submit</button><br><br>
+            <p style="border: inherit">Reminder: This form loosely sanitize the parameters, check before submit </p>
+             <div id="container"></div><br>
+            <button id="test" style="font-size: larger" class=" pure-button pure-button-primary" title="" onclick="submit()">Submit</button><br><br>
     </body>
 </html>
