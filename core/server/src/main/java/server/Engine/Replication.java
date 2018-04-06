@@ -254,7 +254,7 @@ public class Replication {
 
         //Put all tasks in a timely order
         sortTask();
-        System.out.println("Total Tasks: "+globalTasks.size());
+        System.out.println("Total Tasks: "+ globalTasks.size());
 
         for (Task task : globalTasks) {
             puttask(task);

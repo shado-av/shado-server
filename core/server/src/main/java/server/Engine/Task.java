@@ -28,6 +28,7 @@ public class Task implements Comparable<Task> {
 	private double serTime;
 	private double expTime;
 	private double elapsedTime;
+	private double waitTime;
 	private double beginTime;
 	private double endTime;
 	private int[] opNums;
@@ -64,6 +65,8 @@ public class Task implements Comparable<Task> {
 	public void setELStime (double time){
 		elapsedTime = time;
 	}
+
+	public void setWaitTime(double time){waitTime = time; }
 
 	public void setID(int id){
 		vehicleID = id;
@@ -120,12 +123,15 @@ public class Task implements Comparable<Task> {
 			changeServTime(lvl_FULL);
 		applyExogenousFactor();
         changeServTime(1.01*(shiftPeriod+1));
+
 		expTime = genExpTime();
+
 		beginTime = arrTime;
 		opNums = vars.opNums[Type];
 		name = vars.taskNames[Type];
 		isLinked = vars.linked[Type] == 1;
 		elapsedTime = 0;
+		waitTime = 0;
 		expired = false;
 //        ExponentialTest();
 	}

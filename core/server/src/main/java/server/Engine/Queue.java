@@ -140,7 +140,7 @@ public class Queue implements Comparable<Queue>{
 
         //NEW FEATURE OPERATOR STRATEGIES
         if(vars.opStrats.equals("STF")){
-
+            //TODO: STF and Wait time
         }
 
         // This if statement avoids error when calling done on an empty queue.
@@ -185,6 +185,8 @@ public class Queue implements Comparable<Queue>{
             // Set the beginTime of the Task in question to now, i.e. begin working on this task.
 
             taskqueue.peek().setBeginTime(time);
+            taskqueue.peek().setWaitTime(taskqueue.peek().getArrTime()-taskqueue.peek().getBeginTime());
+
         }
 
         // Generate a new finTime for the Queue.
