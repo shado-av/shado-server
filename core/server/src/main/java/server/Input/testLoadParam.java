@@ -12,11 +12,11 @@ public class testLoadParam {
         String head = FileWizard.getabspath();
         loadparam data;
         if (args.length == 0){
-            data =  new loadparam(head + "/in/params.txt");
+//            data =  new loadparam(head + "/in/params.txt");
         } else {
-            data = new loadparam(args[0]);
+//            data = new loadparam(args[0]);
         }
-        String strHetero = data.fleetHetero.toString();
-        System.out.println(strHetero);
+//        String strHetero = data.fleetHetero.toString();
+//        System.out.println(strHetero);
     }
 }
