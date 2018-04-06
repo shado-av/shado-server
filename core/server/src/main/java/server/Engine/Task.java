@@ -107,6 +107,9 @@ public class Task implements Comparable<Task> {
 			Phase = getPhase(31, vars.numHours);
             shiftPeriod = getShiftTime(PrevTime,vars.numHours);
 		}
+		if(vars.numPhases == 1)
+		    Phase = 0;
+
 
 		Priority = Param.taskPrty[Type][Phase];
 		if (fromPrev == true) {
