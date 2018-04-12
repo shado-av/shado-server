@@ -7,10 +7,10 @@ import server.Input.loadparam;
  * 	FILE: 			RemoteOp.java
  *
  * 	AUTHOR:			ROCKY LI
+ *                  Richard Chen
+ * 	DATE:			2017/6/12, 2017/12/3
  *
- * 	DATE:			2017/6/12
- *
- * 	VER: 			1.0
+ * 	VER: 			1.1
  *
  * 	Purpose: 		Create simulation for multiple vehicle and RemoteOp
  *

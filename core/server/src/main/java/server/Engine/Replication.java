@@ -228,7 +228,6 @@ public class Replication {
         // Initialize control center.
 
         //TODO 1.generate a global queue and can be modified
-        //TODO 2. Switch to 2 Threads for production and consumption
         globalTasks = new ArrayList<Task>();
 
         remoteOps = new RemoteOp(vars,globalTasks);

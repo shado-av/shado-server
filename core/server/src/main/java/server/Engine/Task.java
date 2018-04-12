@@ -163,6 +163,7 @@ public class Task implements Comparable<Task> {
         }
         if(vars.numPhases == 1)
             Phase = 0;
+
 		Priority = Param.taskPrty[Type][Phase];
 		if (fromPrev) {
 			arrTime = genArrTime(PrevTime);
@@ -182,7 +183,7 @@ public class Task implements Comparable<Task> {
 		applyAI(hasAI);
         applyTeamCoord(lvlComm);
 
-        //NEW FEATURE: SHIFT SCHEDULE 1% fatiqueIncrease serTime
+        //SHIFT SCHEDULE 1% fatiqueIncrease serTime
         changeServTime(1+ 0.01*(shiftPeriod+1));
 
 		// Use Service time to calculate ExpTime
@@ -190,10 +191,9 @@ public class Task implements Comparable<Task> {
 		beginTime = arrTime;
 		opNums = vars.opNums[Type];
 		name = vars.taskNames[Type];
-//		isLinked = vars.linked[Type] == 1;
 		elapsedTime = 0;
 		expired = false;
-//        getTriangularDistribution();
+//      getTriangularDistribution();
 	}
 
 	/****************************************************************************
@@ -471,7 +471,14 @@ public class Task implements Comparable<Task> {
 
 		return  autoLevel;
 	}
+	private double getFleetAutonomy(int fleetType){
+		//SCHEN 12/10/17: Add Fleet autonomy -> adjust arrival rate
+        double autoLevel = 0.0;
+		if(vars.fleetAuto[fleetType] == 1) autoLevel = lvl_SOME;
+		if(vars.fleetAuto[fleetType] == 2) autoLevel = lvl_FULL;
 
+		return  autoLevel;
+	}
 //	private  double getTeamComm(){
 //		double teamComm = 1;
 //		if(vars.teamCoordAff == 1) teamComm = 0.7;
@@ -506,6 +513,7 @@ public class Task implements Comparable<Task> {
 					//TODO: additional Task function
 				}
 				if(vars.exTypes[i].equals("inc_arrival")){
+				    //Reserved for future usage
 					changeArrivalRate(1.1);
 				}
 			}

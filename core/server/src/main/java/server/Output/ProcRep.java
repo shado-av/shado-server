@@ -300,7 +300,8 @@ public class ProcRep {
        try{
            testProcRep(currRep);
        }catch(Exception e){
-           System.out.println("JAVA IO EXCEPTION");
+//           System.out.println("JAVA IO EXCEPTION");
+           System.out.println(e);
        };
 
 
@@ -317,6 +318,7 @@ public class ProcRep {
         //SCHEN 11/30/17
         //Make RemoteOper dir if not exists
         String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
+//        String directoryName = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV/";
         File directory = new File(directoryName);
         if (!directory.exists()){
             directory.mkdir();
