@@ -85,6 +85,7 @@ public class loadparam {
 	public int[][] affByTraff;
 	public int[][] opNums;
 	public int[][] trigger;
+
 	//SCHEN 12/10/17 Added: whether the task is affected by team coordination
 	public int[] teamCoordAff;
 	// Adding isLinked
