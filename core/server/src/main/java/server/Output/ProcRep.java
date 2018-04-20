@@ -255,7 +255,7 @@ public class ProcRep {
      *
      ****************************************************************************/
 
-    public void testProcRep(int currRep) throws IOException {
+    public void outputProcRep(int currRep) throws IOException {
         //get mapping for Operator->Num
         ArrayList<Integer>remoteNum = new ArrayList<>();
         ArrayList<Integer>remoteType = new ArrayList<>();
@@ -298,7 +298,7 @@ public class ProcRep {
         fillRepData();
         appendData();
        try{
-           testProcRep(currRep);
+           outputProcRep(currRep);
        }catch(Exception e){
 //           System.out.println("JAVA IO EXCEPTION");
            System.out.println(e);
