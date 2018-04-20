@@ -105,6 +105,7 @@ public class loadparam {
 	//SCHEN 11/15/17 test separated replication
 	public int currRepnum = 0;
 	public ArrayList<ArrayList<Pair<Operator,Task>>> expiredTasks;
+	public double[][][] repUtilOp;
 	
 	/****************************************************************************
 	*																			
@@ -122,6 +123,13 @@ public class loadparam {
         failTaskCount = new HashMap<>();
         replicationTracker = 0;
 		crossRepCount = new double[numReps][];
+		//Utilization for each type of operator across replications
+		repUtilOp = new double[numReps][numTeams][];
+		for(int i = 0; i < numReps;i++){
+		    for(int j = 0; j < numTeams;j++){
+		        repUtilOp[i][j] = new double[teamSize[j]];
+            }
+        }
 		reps = new Replication[numReps];
         rep_failTask = new HashMap<>();
         expiredTasks = new ArrayList<ArrayList<Pair<Operator,Task>>>();

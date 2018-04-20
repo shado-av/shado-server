@@ -125,7 +125,7 @@ public class Data {
      *              Attributes: "Average","Minimum","1st Quartile","Median","3rd Quartile","Maximum", "Variance"
      *
      ****************************************************************************/
-    public void printMetaData(String type, int repNum, loadparam vars, ProcRep proc,String op) {
+    public void printMetaData(String type, int repNum, loadparam vars, ProcRep proc,String op,int opType,int opID) {
         switch (type) {
             case "Workload":
                 double sum = 0;
@@ -177,6 +177,9 @@ public class Data {
 
                 //Average
                 System.out.print(mean + ",");
+                //Add individual op utilization to global tracker
+                vars.repUtilOp[repNum][opType][opID] = mean;
+
                 //Minimum
                 System.out.print(columnMin + ",");
                 //1st Quartile, Median, 3rd Quartile

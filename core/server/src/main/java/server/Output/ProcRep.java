@@ -271,8 +271,8 @@ public class ProcRep {
         int i = 0;
         for (Data each: repdisdata) {
             each.avgdata();
-            String opName = vars.opNames[remoteType.get(i)]+" "+remoteNum.get(i);
-            sepCSV(each, currRep, opName);
+            String opName = vars.opNames[remoteType.get(i)]+"_"+remoteNum.get(i);
+            sepCSV(each, currRep, opName,remoteType.get(i),remoteNum.get(i));
             i++;
         }
 
@@ -313,7 +313,7 @@ public class ProcRep {
      *	Purpose:		output CSV for every replication (per Operator, per Replication)
      *
      ****************************************************************************/
-    public void sepCSV(Data RemoteOpout, int repNum,String opName)throws IOException{
+    public void sepCSV(Data RemoteOpout, int repNum,String opName,int opType,int opID)throws IOException{
 //        String  file_head = FileWizard.getabspath();
         //SCHEN 11/30/17
         //Make RemoteOper dir if not exists
@@ -334,7 +334,7 @@ public class ProcRep {
         for(String s :rowName){
             System.out.print(s +",");
             //Feed Data
-            RemoteOpout.printMetaData(s,repNum,vars,this,opName);
+            RemoteOpout.printMetaData(s,repNum,vars,this,opName,opType,opID);
             System.out.println();
         }
         //Print raw data

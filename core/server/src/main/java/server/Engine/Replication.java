@@ -191,7 +191,7 @@ public class Replication {
 //        System.out.println("comparing" +distValue+" and "+randomValue);
 
         //If it is AI, skip
-        if(operator.getName().split(" ")[0].equals("Artificially"))
+        if(operator.getName().split(" ")[0].equals("Artificially")||operator.getName().equals("AIDA"))
             return false;
         if(Math.abs(randomValue - distValue) <= 0.0001){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;

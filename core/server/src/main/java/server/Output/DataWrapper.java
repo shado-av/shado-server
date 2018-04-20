@@ -136,12 +136,48 @@ public class DataWrapper {
             }
             //System.out.println(Arrays.toString(vars.crossRepCount[i]));
         }
+        //Display Utilization for each team
+        //repUtilOp:[numRep][Team][operator]
+        double[][] teamUtil = new double[vars.numReps][vars.numTeams];
+        int repPtr = 0;
+        for(double[][] rep_team_op: vars.repUtilOp){
+            int teamPtr = 0;
+            for(double[] team: rep_team_op){
+                double teamAvg = 0;
+                double teamSum = 0; int teamCnt = 0;
+                for(double op: team){
+                    teamSum += op;
+                    teamCnt++;
+                }
+                teamAvg = teamSum/teamCnt;
+                teamUtil[repPtr][teamPtr] = teamAvg;
+                teamPtr++;
+            }
+            repPtr++;
+        }
+        //Get mean across replications
+        double[] teamUtilCrossRep = new double[vars.numTeams];
+        for (int i = 0; i < vars.numTeams; i++){
+            double teamSum = 0;
+            for(int j = 0; j < vars.numReps;j++){
+               teamSum += teamUtil[j][i];
+            }
+            teamUtilCrossRep[i] = teamSum/vars.numReps;
+        }
+
+
+
         double percentage_0 = (workloads[0]/workloadSum) * 100;
         double percentage_30 = workloads[1]/workloadSum * 100;
         double percentage_70 = workloads[2]/workloadSum * 100;
         System.out.println("Workload Summary");
         System.out.println("Percentage of utilization 0-30%,Percentage of utilization 30-70%,Percentage of utilization 70-100% ");
         System.out.println(percentage_0+"% ,"+percentage_30+"% ,"+percentage_70+"%,");
+        System.out.println("AVG Utilization For Each Team");
+        for(int i = 0 ; i < vars.numTeams;i++ ){
+            System.out.println("Team "+ vars.opNames[i]+", "+ teamUtilCrossRep[i]);
+        }
+
     }
 
 }

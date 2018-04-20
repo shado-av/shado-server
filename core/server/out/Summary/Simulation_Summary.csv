@@ -1,23 +1,15 @@
-Task name: Actuation
+Task name: Communication
 expired: 0
-completed: 3
-Task name: Directive_Mandatory
+completed: 159
+Task name: Paperwork
 expired: 0
-completed: 0
-Task name: DC_1
+completed: 230
+Task name: Signal Response Management
 expired: 0
-completed: 0
-Task name: DC_2
+completed: 141
+Task name: Communicating Internally
 expired: 0
-completed: 0
-Task name: Communications_Other
-expired: 0
-completed: 0
-Task name: Recordkeeping
-expired: 0
-completed: 0
-Task name: Referencing
-expired: 0
-completed: 0
+completed: 146
 *** FAILED TASKS ***
-In Replication 0: Number of Fail Tasks: 99
+In Replication 0: Number of Fail Tasks: 6
+In Replication 1: Number of Fail Tasks: 9
