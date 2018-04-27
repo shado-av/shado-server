@@ -57,10 +57,10 @@ public class DataWrapper {
         String localSummary = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary/";
         String localOut = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/";
 
-        File directory = new File("/home/rapiduser/shado-server/core/server/out/Summary");
+        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
         File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
 //        File directory = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
-        FileUtils.cleanDirectory(directory);
+        FileUtils.cleanDirectory(summaryDir);
         FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables
@@ -71,7 +71,7 @@ public class DataWrapper {
                     new FileOutputStream(file_name, false)), true));
             sim.getRemoteOpoutput(i).outputdata();
         }
-
+// "a,b,c"
         for (int j = 0; j < vars.numTeams; j++) {
             String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
 //            String file_name =  localOut + vars.opNames[j] + ".csv";
