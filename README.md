@@ -44,3 +44,8 @@ curl -H POST http://localhost:8080/shado/testpost -d @shadovar.json \
 (Remember to substitue the **"localhost** to your server's URL) 
 To post and you can see the message and session number returned by the server.
 
+### Project Structure
+
+Here is a simple layout of SHADO server-side simulation
+![alt text](https://github.com/shado-av/shado-server/blob/master/SHADO-server_structure.jpg)
+
