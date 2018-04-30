@@ -61,6 +61,12 @@ public class RemoteOp {
      *
      *	Purpose:		Generate RemoteOperators
      *
+     *                  e.g. 3 teams, each has 2 ops:
+     *
+     *                  [dis1,dis2,AI1,AI2,Mgmt1,mgmt2]
+     *                    00   02  10  11   20    21
+     *                  22%10 == 2
+     *
      ****************************************************************************/
 
     public void genRemoteOp() {
@@ -72,6 +78,7 @@ public class RemoteOp {
         for (int i = 0; i < vars.opTasks.length; i++) {
             //TODO[COMPLETE] generate Operator base on different types of remote Ops
             for (int j = 0; j < vars.teamSize[i]; j++) {
+                // TODO: adjust i * 10 + j to meet the team size requirement
                 RemoteOpers[cnt++] = new Operator(i * 10 + j,vars.opNames[i], vars.opTasks[i]);
                 //DEBUG
 //                System.out.println("New "+vars.opNames[i]+", ID: "+ (i*10 + j)+" With Task: " + Arrays.toString(vars.opTasks[i]));

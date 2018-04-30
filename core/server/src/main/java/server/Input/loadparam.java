@@ -31,7 +31,6 @@ public class loadparam {
 	public double numHours;
     public double[] traffic;
     public int numReps;
-//    public int[] ops;
     public int[] numvehicles;
 
     public int numRemoteOp;

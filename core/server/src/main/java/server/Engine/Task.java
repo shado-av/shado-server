@@ -354,9 +354,16 @@ public class Task implements Comparable<Task> {
 				return Lognormal(start, end);
 			case 'U':
 				return Uniform(start, end);
+			case 'T':
+				return Triangular(type);
 			default:
 				throw new IllegalArgumentException("Wrong Letter");
 		}
+	}
+
+	private double Triangular(char type){
+		//DO STUFF
+		return 0.0;
 	}
 
 	/****************************************************************************

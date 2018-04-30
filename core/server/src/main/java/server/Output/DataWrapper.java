@@ -61,7 +61,7 @@ public class DataWrapper {
         File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
 //        File directory = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
         FileUtils.cleanDirectory(summaryDir);
-        FileUtils.cleanDirectory(csvDir);
+//        FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables
         for (int i = 0; i < vars.numRemoteOp; i++) {
@@ -179,7 +179,8 @@ public class DataWrapper {
         for(int i = 0 ; i < vars.numTeams;i++ ){
             System.out.println("Team "+ vars.opNames[i]+", "+ teamUtilCrossRep[i]);
         }
-
+        //ADD 1 line
+        System.out.println("one more line");
     }
 
 }

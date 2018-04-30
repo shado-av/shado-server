@@ -182,6 +182,7 @@ public class Replication {
      *	Purpose:	    determined whethere the task is failed based on the failed param
      *                  add to a fail task map if fails
      *
+     *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
     private boolean failTask(Operator operator,Task task,int type, double distValue){
         double rangeMin = vars.humanError[type][1];

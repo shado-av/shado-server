@@ -36,7 +36,13 @@ public class GreetingController {
         return new Greeting(counter.incrementAndGet(),
                 String.format(template, name));
     }
+//    @RequestMapping("/shado/jello")
+//    public Greeting greeting_jello(@RequestParam(value="name", defaultValue="This is Shado-Jello") String name) {
+//        return new Greeting(counter.incrementAndGet(),
+//                String.format(template, name));
+//    }
     @CrossOrigin
+
     @RequestMapping(value= "/shado/testpost",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
         //TODO: Sanity Check and pass to Shado Object
@@ -66,8 +72,8 @@ public class GreetingController {
     public StreamingResponseBody getSummaryFile(HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=\"Summary.zip\"");
-        InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/Summary.zip"));
-//        InputStream inputStream = new FileInputStream(new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary.zip"));
+//        InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/Summary.zip"));
+        InputStream inputStream = new FileInputStream(new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary.zip"));
         return outputStream -> {
             int iRead;
             byte[] data = new byte[1024];
