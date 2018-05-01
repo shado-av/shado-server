@@ -68,6 +68,7 @@ public class GreetingController {
             }
         };
     }
+
     @RequestMapping(value = "/shado/getSummary", method = RequestMethod.GET)
     public StreamingResponseBody getSummaryFile(HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");

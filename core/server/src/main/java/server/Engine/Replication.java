@@ -106,7 +106,8 @@ public class Replication {
                     //DEBUG:
 //                    System.out.println("    Adding Task "+task.getType()+" to-> "+remoteOps.getRemoteOp()[j].getName()
 //                    +", Current queue Size: " + remoteOps.getRemoteOp()[j].getQueue().taskqueue.size());
-//                        proc.add(operators[j].getQueue());
+                    //TODO: Sort the queue by length
+                    proc.add(remoteOps.getRemoteOp()[j].getQueue());
                     working.add(remoteOps.getRemoteOp()[j]);
 
                 }
@@ -117,7 +118,7 @@ public class Replication {
             return;
 
         // Sort queue by tasks queued.
-        //Collections.sort(proc);
+        Collections.sort(proc);
 
         //SCHEN 2/7 Fix: to get the shortest Queue of Operators
 
