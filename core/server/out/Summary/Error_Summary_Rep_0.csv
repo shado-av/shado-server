@@ -1,7 +1,24 @@
 Fail Task Detail: 
-AIDA 1 Fails Signal Response Management,
-Dispatcher 2 Fails Paperwork, But still proceed by the Operator
-Dispatcher 1 Fails Paperwork,
-AIDA 0 Fails Paperwork, But still proceed by the Operator
-Dispatcher 2 Fails Paperwork, But still proceed by the Operator
-Operations Management Specialist 1 Fails Signal Response Management,
+Dispatcher 1 Fails Comms_Other,
+Dispatcher 0 Fails  Referencing, But still proceed by the Operator
+Dispatcher 1 Fails Comms_Other,
+Dispatcher 1 Fails Record Keeping,
+Dispatcher 0 Fails DM,
+Dispatcher 1 Fails  Referencing, But still proceed by the Operator
+Dispatcher 0 Fails Record Keeping, But still proceed by the Operator
+Dispatcher 1 Fails Record Keeping,
+Dispatcher 0 Fails Comms_Other,
+Dispatcher 1 Fails Comms_Other, But still proceed by the Operator
+Dispatcher 0 Fails Record Keeping,
+Dispatcher 1 Fails Comms_Other, But still proceed by the Operator
+Dispatcher 1 Fails Comms_Other, But still proceed by the Operator
+Dispatcher 1 Fails Record Keeping,
+Dispatcher 1 Fails Record Keeping, But still proceed by the Operator
+Dispatcher 1 Fails DM,
+Dispatcher 1 Fails Comms_Other, But still proceed by the Operator
+Dispatcher 0 Fails  Referencing, But still proceed by the Operator
+Dispatcher 1 Fails  Referencing, But still proceed by the Operator
+Dispatcher 1 Fails  Referencing,
+Dispatcher 1 Fails Record Keeping,
+Dispatcher 0 Fails Record Keeping, But still proceed by the Operator
+Dispatcher 0 Fails Comms_Other,

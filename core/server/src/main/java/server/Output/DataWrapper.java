@@ -56,25 +56,25 @@ public class DataWrapper {
 
         String localSummary = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary/";
         String localOut = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/";
-
-        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
-        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
-//        File directory = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
-        FileUtils.cleanDirectory(summaryDir);
+//        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
+//        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
+        File directory = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
+        FileUtils.cleanDirectory(directory);
+//        FileUtils.cleanDirectory(summaryDir);
 //        FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables
         for (int i = 0; i < vars.numRemoteOp; i++) {
-            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
-//            String file_name =   localOut + "RemoteOperator" + ".csv";
+//            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
+            String file_name =   localOut + "RemoteOperator" + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getRemoteOpoutput(i).outputdata();
         }
 // "a,b,c"
         for (int j = 0; j < vars.numTeams; j++) {
-            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
-//            String file_name =  localOut + vars.opNames[j] + ".csv";
+//            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
+            String file_name =  localOut + vars.opNames[j] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getOperatoroutput(j).outputdata();
@@ -83,10 +83,15 @@ public class DataWrapper {
 
         // Expired Tasks
 
-        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
-//        String file_name =  localSummary + "Simulation_Summary" + ".csv";
+//        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
+        String file_name =  localSummary + "Simulation_Summary" + ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
+        System.out.println("--- Simulation Summary---");
+        System.out.println("Tasks generated:");
+        for(int i = 0; i < vars.numReps; i++){
+            System.out.println("Rep_"+i+","+vars.repNumTasks[i]);
+        }
         for (int i = 0; i < vars.numTaskTypes; i++) {
             System.out.println("Task name: " + vars.taskNames[i]);
             System.out.println("expired: " + sim.getExpiredtask()[i]);
@@ -103,8 +108,8 @@ public class DataWrapper {
         }
 
         for(int i = 0; i < vars.numReps;i++) {
-            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
-//            String summary_file_name = localSummary + "Error_Summary_Rep_" +i+ ".csv";
+//            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
+            String summary_file_name = localSummary + "Error_Summary_Rep_" +i+ ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(summary_file_name, false)), true));
             System.out.println("Fail Task Detail: ");
@@ -122,8 +127,8 @@ public class DataWrapper {
 
         }
         //Cross-Replication Summary for workloads
-        String summary_file_name =   "/home/rapiduser/shado-server/core/server/out/Summary/" + "Workload_Summary.csv";
-//        String summary_file_name =   localSummary + "Workload_Summary.csv";
+//        String summary_file_name =   "/home/rapiduser/shado-server/core/server/out/Summary/" + "Workload_Summary.csv";
+        String summary_file_name =   localSummary + "Workload_Summary.csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
 

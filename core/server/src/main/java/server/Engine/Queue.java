@@ -150,17 +150,13 @@ public class Queue implements Comparable<Queue>{
             // Set the end time of the task being finished.
 
             taskqueue.peek().setEndTime(finTime);
-
             taskqueue.peek().setQueue(NumTask);
-
             taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
 
             // Remove the finished task from the queue and put it into record task list.
-
             recordtasks.add(taskqueue.poll());
 
             // Renew the queue time.
-
             SetTime(finTime);
         }
 
@@ -215,6 +211,7 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() == null) {
             finTime = Double.POSITIVE_INFINITY;
+//            finTime = 0;
         }
 
         // Otherwise grab the current task and return a finish time.

@@ -1,15 +1,124 @@
-Task name: Communication
+--- Simulation Summary---
+Tasks generated:
+Rep_0,746
+Rep_1,732
+Rep_2,687
+Rep_3,691
+Rep_4,694
+Rep_5,739
+Rep_6,671
+Rep_7,715
+Rep_8,726
+Rep_9,711
+Rep_10,725
+Rep_11,724
+Rep_12,713
+Rep_13,677
+Rep_14,702
+Rep_15,710
+Rep_16,698
+Rep_17,712
+Rep_18,763
+Rep_19,665
+Rep_20,677
+Rep_21,726
+Rep_22,720
+Rep_23,703
+Rep_24,751
+Rep_25,706
+Rep_26,659
+Rep_27,779
+Rep_28,758
+Rep_29,700
+Rep_30,713
+Rep_31,722
+Rep_32,666
+Rep_33,703
+Rep_34,746
+Rep_35,729
+Rep_36,701
+Rep_37,750
+Rep_38,682
+Rep_39,704
+Rep_40,704
+Rep_41,712
+Rep_42,724
+Rep_43,721
+Rep_44,713
+Rep_45,717
+Rep_46,703
+Rep_47,697
+Rep_48,679
+Rep_49,730
+Task name: Actuation
 expired: 0
-completed: 159
-Task name: Paperwork
+completed: 2502
+Task name: DM
+expired: 19
+completed: 2433
+Task name: DC1
 expired: 0
-completed: 230
-Task name: Signal Response Management
-expired: 0
-completed: 141
-Task name: Communicating Internally
-expired: 0
-completed: 146
+completed: 87
+Task name: DC2
+expired: 71
+completed: 15
+Task name: Comms_Other
+expired: 3325
+completed: 3698
+Task name: Record Keeping
+expired: 9888
+completed: 1354
+Task name:  Referencing
+expired: 7195
+completed: 4140
 *** FAILED TASKS ***
-In Replication 0: Number of Fail Tasks: 6
-In Replication 1: Number of Fail Tasks: 9
+In Replication 0: Number of Fail Tasks: 23
+In Replication 1: Number of Fail Tasks: 31
+In Replication 2: Number of Fail Tasks: 21
+In Replication 3: Number of Fail Tasks: 18
+In Replication 4: Number of Fail Tasks: 21
+In Replication 5: Number of Fail Tasks: 23
+In Replication 6: Number of Fail Tasks: 13
+In Replication 7: Number of Fail Tasks: 30
+In Replication 8: Number of Fail Tasks: 25
+In Replication 9: Number of Fail Tasks: 16
+In Replication 10: Number of Fail Tasks: 19
+In Replication 11: Number of Fail Tasks: 14
+In Replication 12: Number of Fail Tasks: 18
+In Replication 13: Number of Fail Tasks: 23
+In Replication 14: Number of Fail Tasks: 19
+In Replication 15: Number of Fail Tasks: 16
+In Replication 16: Number of Fail Tasks: 21
+In Replication 17: Number of Fail Tasks: 20
+In Replication 18: Number of Fail Tasks: 16
+In Replication 19: Number of Fail Tasks: 21
+In Replication 20: Number of Fail Tasks: 30
+In Replication 21: Number of Fail Tasks: 22
+In Replication 22: Number of Fail Tasks: 24
+In Replication 23: Number of Fail Tasks: 23
+In Replication 24: Number of Fail Tasks: 20
+In Replication 25: Number of Fail Tasks: 16
+In Replication 26: Number of Fail Tasks: 16
+In Replication 27: Number of Fail Tasks: 14
+In Replication 28: Number of Fail Tasks: 21
+In Replication 29: Number of Fail Tasks: 20
+In Replication 30: Number of Fail Tasks: 26
+In Replication 31: Number of Fail Tasks: 23
+In Replication 32: Number of Fail Tasks: 22
+In Replication 33: Number of Fail Tasks: 18
+In Replication 34: Number of Fail Tasks: 19
+In Replication 35: Number of Fail Tasks: 21
+In Replication 36: Number of Fail Tasks: 16
+In Replication 37: Number of Fail Tasks: 26
+In Replication 38: Number of Fail Tasks: 19
+In Replication 39: Number of Fail Tasks: 19
+In Replication 40: Number of Fail Tasks: 20
+In Replication 41: Number of Fail Tasks: 22
+In Replication 42: Number of Fail Tasks: 27
+In Replication 43: Number of Fail Tasks: 16
+In Replication 44: Number of Fail Tasks: 24
+In Replication 45: Number of Fail Tasks: 26
+In Replication 46: Number of Fail Tasks: 16
+In Replication 47: Number of Fail Tasks: 24
+In Replication 48: Number of Fail Tasks: 19
+In Replication 49: Number of Fail Tasks: 24

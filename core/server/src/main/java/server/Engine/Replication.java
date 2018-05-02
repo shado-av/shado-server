@@ -109,7 +109,7 @@ public class Replication {
                     //TODO: Sort the queue by length
                     proc.add(remoteOps.getRemoteOp()[j].getQueue());
                     working.add(remoteOps.getRemoteOp()[j]);
-
+                    //System.out.println("Op "+remoteOps.getRemoteOp()[j].getName()+" is eligible");
                 }
             }
 //            }
@@ -118,13 +118,14 @@ public class Replication {
             return;
 
         // Sort queue by tasks queued.
-        Collections.sort(proc);
+//        Collections.sort(proc);
 
         //SCHEN 2/7 Fix: to get the shortest Queue of Operators
 
         Operator optimal_op = working.get(0);
         for(Operator op: working){
             if(op.getQueue().taskqueue.size() <= optimal_op.getQueue().taskqueue.size()){
+//                System.out.println("new optimal op: "+op.getName()+" with queue length: "+op.getQueue().taskqueue.size());
                 if(op.getQueue().taskqueue.size() == optimal_op.getQueue().taskqueue.size()) {
                     if (Math.random() > 0.5)
                         optimal_op = op;
@@ -134,16 +135,16 @@ public class Replication {
 
             }
         }
-//        System.out.println("Optimal Operator: " +optimal_op.getName());
+        System.out.println("-- Optimal Operator: " +optimal_op.getName());
 
 
         // Before inserting new tasks, make sure all the tasks that can be finished
         // before the arrival of the new tasks is finished.
         // NEW FEATURE: AI Assistant
-
-        while (optimal_op.getQueue().getfinTime() < task.getArrTime()) {
-            optimal_op.getQueue().done(vars,optimal_op);
-        }
+//        while (optimal_op.getQueue().getfinTime() < task.getArrTime()) {
+//            optimal_op.getQueue().done(vars,optimal_op);
+//            System.out.print("-- done");
+//        }
         // add task to queue.
         // **** I'm setting the operator so that we can access the data arrays of each operator ****
 //        proc.get(0).operator = working.get(0);
@@ -217,6 +218,28 @@ public class Replication {
 
         Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
     }
+
+    public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
+        if (task == null){
+            double totaltime = vars.numHours * 60;
+            for (Operator each : remoteOp.getRemoteOp()) {
+                if (each != null) {
+                    while (each.getQueue().getfinTime() < totaltime) {
+                        each.getQueue().done(vars,each);
+                    }
+                }
+            }
+            return;
+        }
+        //When a new task is added, let operator finish all there tasks
+        for(Operator op: remoteOp.getRemoteOp()) {
+            while (op.getQueue().getfinTime() < task.getArrTime()) {
+                op.getQueue().done(vars, op);
+//            System.out.println("--op "+op.getName()+"'s queue -1 , length == "+op.getQueue().taskqueue.size());
+            }
+        }
+        System.out.println("Operators working...");
+    }
     /****************************************************************************
      *
      *	Method:		run
@@ -258,17 +281,18 @@ public class Replication {
         System.out.println("Total Tasks: "+ globalTasks.size());
 
         for (Task task : globalTasks) {
+            workingUntilNewTaskArrive(remoteOps,task);
             puttask(task);
 
         }
-
-       // Run each vehicle
-        for(int i = 0; i< vars.fleetTypes; i++){
-            for (VehicleSim each : vehicles[i]) {
-                if(each != null)
-                    each.run();
-            }
-        }
+        workingUntilNewTaskArrive(remoteOps,null);
+       // Finish all remaining tasks
+//        for(int i = 0; i< vars.fleetTypes; i++){
+//            for (VehicleSim each : vehicles[i]) {
+//                if(each != null)
+//                    each.run();
+//            }
+//        }
         vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
         System.out.println("Curr Replication: " + vars.replicationTracker);
 

@@ -105,6 +105,8 @@ public class loadparam {
 	public int currRepnum = 0;
 	public ArrayList<ArrayList<Pair<Operator,Task>>> expiredTasks;
 	public double[][][] repUtilOp;
+	public int[] repNumTasks;
+	public int processedRepId;
 	
 	/****************************************************************************
 	*																			
@@ -121,7 +123,9 @@ public class loadparam {
     public void setGlobalData(){
         failTaskCount = new HashMap<>();
         replicationTracker = 0;
+        processedRepId = 0;
 		crossRepCount = new double[numReps][];
+		repNumTasks = new int[numReps];
 		//Utilization for each type of operator across replications
 		repUtilOp = new double[numReps][numTeams][];
 		for(int i = 0; i < numReps;i++){
