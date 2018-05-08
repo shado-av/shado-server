@@ -103,10 +103,11 @@ public class Replication {
             if(remoteOps.getRemoteOp()[j] != null) {
                 if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
                     //Put task in appropriate Queue
+
                     //DEBUG:
 //                    System.out.println("    Adding Task "+task.getType()+" to-> "+remoteOps.getRemoteOp()[j].getName()
 //                    +", Current queue Size: " + remoteOps.getRemoteOp()[j].getQueue().taskqueue.size());
-                    //TODO: Sort the queue by length
+
                     proc.add(remoteOps.getRemoteOp()[j].getQueue());
                     working.add(remoteOps.getRemoteOp()[j]);
                     //System.out.println("Op "+remoteOps.getRemoteOp()[j].getName()+" is eligible");
@@ -135,8 +136,11 @@ public class Replication {
 
             }
         }
-        System.out.println("-- Optimal Operator: " +optimal_op.getName());
-
+        if(vars.metaSnapShot % 50 == 0) {
+            System.out.println("Optimal Operator: " + optimal_op.getName());
+            for (Operator currOp : working)
+                System.out.println("-- Current queue length for [" + currOp.getName() + "]: " + currOp.getQueue().taskqueue.size()+", ExpectedFinTime: "+currOp.getQueue().getExpectedFinTime());
+        }
 
         // Before inserting new tasks, make sure all the tasks that can be finished
         // before the arrival of the new tasks is finished.
@@ -217,6 +221,10 @@ public class Replication {
         // Sort task by time.
 
         Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
+//        for(int i = 0; i< 100; i++){
+//            System.out.println(globalTasks.get(i).getArrTime());
+//        }
+//        System.exit(0);
     }
 
     public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
@@ -233,12 +241,23 @@ public class Replication {
         }
         //When a new task is added, let operator finish all there tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            while (op.getQueue().getfinTime() < task.getArrTime()) {
+            if(vars.metaSnapShot % 50 ==0){
+                System.out.println("---SNAPSHOT---");
+                System.out.println("Op:["+op.getName()+"]" +
+                        "\n\t Queue length: "+op.getQueue().taskqueue.size()+
+                        "\n\t FinTime: "+op.getQueue().getfinTime()+
+                        "\n\t ExpectedFinTime: "+op.getQueue().getExpectedFinTime());
+                if(op.getQueue().taskqueue.peek()!=null)
+                    System.out.println("First Task\n\t Begin: " + op.getQueue().taskqueue.peek().getArrTime() + "\n\t Arr: "+op.getQueue().taskqueue.peek().getArrTime());
+
+            }
+            while (op.getQueue().getNumTask() > 0 &&
+                    op.getQueue().getExpectedFinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
 //            System.out.println("--op "+op.getName()+"'s queue -1 , length == "+op.getQueue().taskqueue.size());
             }
         }
-        System.out.println("Operators working...");
+//        System.out.println("Operators working...");
     }
     /****************************************************************************
      *
@@ -283,16 +302,11 @@ public class Replication {
         for (Task task : globalTasks) {
             workingUntilNewTaskArrive(remoteOps,task);
             puttask(task);
-
+            vars.metaSnapShot++;
         }
+        // Finish all remaining tasks
         workingUntilNewTaskArrive(remoteOps,null);
-       // Finish all remaining tasks
-//        for(int i = 0; i< vars.fleetTypes; i++){
-//            for (VehicleSim each : vehicles[i]) {
-//                if(each != null)
-//                    each.run();
-//            }
-//        }
+
         vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
         System.out.println("Curr Replication: " + vars.replicationTracker);
 

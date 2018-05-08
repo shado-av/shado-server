@@ -107,6 +107,9 @@ public class loadparam {
 	public double[][][] repUtilOp;
 	public int[] repNumTasks;
 	public int processedRepId;
+	public int debugCnt;
+	public int maxTeamSize;
+	public int metaSnapShot;
 	
 	/****************************************************************************
 	*																			
@@ -124,6 +127,9 @@ public class loadparam {
         failTaskCount = new HashMap<>();
         replicationTracker = 0;
         processedRepId = 0;
+        debugCnt = 0;
+        maxTeamSize = 0;
+        metaSnapShot = 0;
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
 		//Utilization for each type of operator across replications
@@ -155,6 +161,11 @@ public class loadparam {
                 }
             }
             opNums[i] = wha.stream().mapToInt(Integer::intValue).toArray();
+        }
+        for(int i = 0; i < teamSize.length; i++){
+            if(teamSize[i] > maxTeamSize){
+                maxTeamSize = teamSize[i];
+            }
         }
     }
 //

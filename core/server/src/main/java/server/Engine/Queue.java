@@ -45,6 +45,9 @@ public class Queue implements Comparable<Queue>{
 
     private int NumTask;
 
+    //Expected Finish Time, used when adding a new taks
+    private double expectedFinTime;
+
     // Record all done tasks for data analysis
 
     private ArrayList<Task> recordtasks = new ArrayList<>();
@@ -59,6 +62,8 @@ public class Queue implements Comparable<Queue>{
         return finTime;
     }
 
+    public double getExpectedFinTime(){ return expectedFinTime; }
+
     public int getNumTask() {
         return NumTask;
     }
@@ -71,6 +76,10 @@ public class Queue implements Comparable<Queue>{
 
     public void SetTime(double Time) {
         this.time = Time;
+    }
+
+    public double getTime(){
+        return this.time;
     }
 
     @Override
@@ -91,6 +100,7 @@ public class Queue implements Comparable<Queue>{
         time = 0;
         finTime = Double.POSITIVE_INFINITY;
         this.operator = op;
+        expectedFinTime = 0;
     }
 
     /****************************************************************************
@@ -106,6 +116,7 @@ public class Queue implements Comparable<Queue>{
         // Set the time of the queue to the arrival time of the task.
 
         SetTime(task.getArrTime());
+        setExpectedFinTime(task);
         if (!taskqueue.isEmpty()) {
             if (task.getPriority() > taskqueue.peek().getPriority()) {
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
@@ -122,7 +133,6 @@ public class Queue implements Comparable<Queue>{
 
         // Else since the task is put behind in the queue, no other queue attribute need to change
         // except numTask.
-
         numtask();
     }
 
@@ -140,7 +150,9 @@ public class Queue implements Comparable<Queue>{
 
         //NEW FEATURE OPERATOR STRATEGIES
         if(vars.opStrats.equals("STF")){
-            //TODO: STF and Wait time
+            //TODO[COMPLETED]: STF and Wait time
+            //Sort the current queue under STF
+            sortTaskQueueOnServTime();
         }
 
         // This if statement avoids error when calling done on an empty queue.
@@ -155,7 +167,6 @@ public class Queue implements Comparable<Queue>{
 
             // Remove the finished task from the queue and put it into record task list.
             recordtasks.add(taskqueue.poll());
-
             // Renew the queue time.
             SetTime(finTime);
         }
@@ -219,7 +230,6 @@ public class Queue implements Comparable<Queue>{
         else {
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
-
             // Error checker
 
 //            System.out.println(onhand.getArrTime() + "\t" + onhand.getName() + "\t" +
@@ -244,6 +254,38 @@ public class Queue implements Comparable<Queue>{
             isBusy = false;
         } else {
             isBusy = true;
+        }
+    }
+
+    private void sortTaskQueueOnServTime(){
+
+        ArrayList<Task> tmpTaskQueue = new ArrayList<>();
+        PriorityQueue<Task> newQueue = new PriorityQueue<>();
+        for(Task t: this.taskqueue){
+            tmpTaskQueue.add(t);
+        }
+
+        Collections.sort(tmpTaskQueue,(o1, o2) -> Double.compare(o1.getSerTime(), o2.getSerTime()));
+
+        for(Task t: tmpTaskQueue){
+            newQueue.add(t);
+        }
+        this.taskqueue = newQueue;
+
+    }
+
+    private void setExpectedFinTime(Task task){
+        if(taskqueue.isEmpty()){
+            expectedFinTime = task.getArrTime()+task.getSerTime();
+        }
+        else{
+            if(task.getArrTime() < expectedFinTime){
+                expectedFinTime += task.getSerTime();
+            }else{
+                // task arrive after all task are done
+                expectedFinTime = task.getArrTime()+task.getSerTime();
+            }
+
         }
     }
 

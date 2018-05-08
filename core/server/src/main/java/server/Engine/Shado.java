@@ -1,5 +1,6 @@
 package server.Engine;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import server.Input.FileWizard;
 import server.Input.loadparam;
 import server.Output.*;
@@ -52,6 +53,11 @@ public class Shado{
 
 		// Runs simulation
 		Simulation sim = new Simulation(data);
+
+		String directoryName = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV/";
+        File directory = new File(directoryName);
+        FileUtils.cleanDirectory(directory);
+
 		sim.run();
 		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
@@ -59,9 +65,13 @@ public class Shado{
 		DataWrapper analyze = new DataWrapper(sim, data);
 		analyze.output();
 		//Zipping file and return for simple web service
-        zipOutput("/home/rapiduser/shado-server/core/server/out/repCSV");
-        zipOutput("/home/rapiduser/shado-server/core/server/out/Summary");
-        System.out.println("SIM DONE");
+//        zipOutput("/home/rapiduser/shado-server/core/server/out/repCSV");
+//        zipOutput("/home/rapiduser/shado-server/core/server/out/Summary");
+
+        //Local path
+		zipOutput("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV");
+		zipOutput("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
+        System.out.println("SIMULATION DONE");
     }
 
 	public String retrunOutput(){

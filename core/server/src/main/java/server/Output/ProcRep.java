@@ -1,5 +1,6 @@
 package server.Output;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import server.Engine.*;
 
 import server.Input.FileWizard;
@@ -320,6 +321,7 @@ public class ProcRep {
 //        String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
         String directoryName = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV/";
         File directory = new File(directoryName);
+
         if (!directory.exists()){
             directory.mkdir();
         }

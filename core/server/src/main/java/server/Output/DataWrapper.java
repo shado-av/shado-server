@@ -58,9 +58,10 @@ public class DataWrapper {
         String localOut = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/";
 //        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
 //        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
-        File directory = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
-        FileUtils.cleanDirectory(directory);
-//        FileUtils.cleanDirectory(summaryDir);
+        File summaryDir = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
+        File csvDir = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV");
+
+        FileUtils.cleanDirectory(summaryDir);
 //        FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables

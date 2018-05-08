@@ -183,7 +183,7 @@ public class Task implements Comparable<Task> {
 		applyAI(hasAI);
         applyTeamCoord(lvlComm);
 
-        //SHIFT SCHEDULE 1% fatiqueIncrease serTime
+        //SHIFT SCHEDULE 1% fatique Increase serTime
         changeServTime(1+ 0.01*(shiftPeriod+1));
 
 		// Use Service time to calculate ExpTime
@@ -193,6 +193,14 @@ public class Task implements Comparable<Task> {
 		name = vars.taskNames[Type];
 		elapsedTime = 0;
 		expired = false;
+
+		//DEBUG
+        System.out.println("task gen arrTime: "+arrTime+", prevTime: "+prevTime+", servTime: "+serTime);
+
+        //DEBUG
+        if(vars.debugCnt++ == 10) {
+            //System.exit(0);
+        }
 //      getTriangularDistribution();
 	}
 
@@ -382,7 +390,7 @@ public class Task implements Comparable<Task> {
 			return Double.POSITIVE_INFINITY;
 		}
 
-		double newArrTime = TimeTaken + prevTime;
+		double newArrTime = TimeTaken + PrevTime;
 
 		if (vars.affByTraff[Type][Phase] == 1 && loadparam.TRAFFIC_ON){
 
@@ -505,7 +513,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	private double changeArrivalRate(double num){
-		return vars.arrPms[Type][Phase];
+		return vars.arrPms[Type][Phase]*num;
 	}
 
 	private void applyExogenousFactor(){
