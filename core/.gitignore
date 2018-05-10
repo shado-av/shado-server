@@ -1,5 +1,7 @@
 bin/
 *.iml
+*.csv
+*.zip
 .idea/
 .settings/
 src/Engine/Main.java
