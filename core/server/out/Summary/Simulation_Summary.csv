@@ -1,26 +1,44 @@
 --- Simulation Summary---
 Tasks generated:
-Rep_0,695
+Rep_0,555
+Rep_1,507
+Rep_2,518
+Rep_3,512
+Rep_4,537
+Rep_5,503
+Rep_6,506
+Rep_7,508
+Rep_8,493
+Rep_9,487
 Task name: Actuation
 expired: 0
-completed: 45
+completed: 368
 Task name: DM
 expired: 1
-completed: 53
+completed: 370
 Task name: DC1
 expired: 0
-completed: 1
+completed: 24
 Task name: DC2
-expired: 2
-completed: 0
+expired: 0
+completed: 12
 Task name: Comms_Other
-expired: 19
-completed: 132
+expired: 29
+completed: 1000
 Task name: Record Keeping
-expired: 66
-completed: 139
+expired: 110
+completed: 1485
 Task name:  Referencing
-expired: 60
-completed: 164
+expired: 79
+completed: 1503
 *** FAILED TASKS ***
-In Replication 0: Number of Fail Tasks: 14
+In Replication 0: Number of Fail Tasks: 10
+In Replication 1: Number of Fail Tasks: 17
+In Replication 2: Number of Fail Tasks: 10
+In Replication 3: Number of Fail Tasks: 18
+In Replication 4: Number of Fail Tasks: 11
+In Replication 5: Number of Fail Tasks: 17
+In Replication 6: Number of Fail Tasks: 17
+In Replication 7: Number of Fail Tasks: 12
+In Replication 8: Number of Fail Tasks: 10
+In Replication 9: Number of Fail Tasks: 17

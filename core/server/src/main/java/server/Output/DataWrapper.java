@@ -165,12 +165,18 @@ public class DataWrapper {
         }
         //Get mean across replications
         double[] teamUtilCrossRep = new double[vars.numTeams];
+        double[] teamUtilVariance = new double[vars.numTeams];
         for (int i = 0; i < vars.numTeams; i++){
             double teamSum = 0;
             for(int j = 0; j < vars.numReps;j++){
                teamSum += teamUtil[j][i];
             }
             teamUtilCrossRep[i] = teamSum/vars.numReps;
+            //calculate Variance
+            for(int j = 0; j < vars.numReps; j++){
+               teamUtilVariance[i] += (teamUtil[j][i] - teamUtilCrossRep[i])*(teamUtil[j][i] - teamUtilCrossRep[i]);
+            }
+            teamUtilVariance[i] = teamUtilVariance[i]/vars.numReps;
         }
 
 
@@ -183,10 +189,12 @@ public class DataWrapper {
         System.out.println(percentage_0+"% ,"+percentage_30+"% ,"+percentage_70+"%,");
         System.out.println("AVG Utilization For Each Team");
         for(int i = 0 ; i < vars.numTeams;i++ ){
-            System.out.println("Team "+ vars.opNames[i]+", "+ teamUtilCrossRep[i]);
+            System.out.println("Team "+ vars.opNames[i]+", "+ teamUtilCrossRep[i]+",Variance,"+teamUtilVariance[i]);
+
         }
-        //ADD 1 line
-        System.out.println("one more line");
+
+        //Variance
+
     }
 
 }

@@ -195,7 +195,11 @@ public class ProcRep {
         Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
 
         for (int i = 0; i < totalRemoteOp; i++){
-            fillRepDataCell(RemoteOpers[i], repdisdata[i], 0);
+            for(int j = 0; j < vars.fleetTypes; j++){
+                for(int k = 0; k < vars.numvehicles[j]; k++)
+                fillRepDataCell(RemoteOpers[i], repdisdata[i],j*10+k);
+            }
+
         }
 //        for(int i = 0; i < rep.vars.fleetTypes;i++) {
 ////            for(int j = 0 ; j < vehicles[i].length; j++){
@@ -204,7 +208,7 @@ public class ProcRep {
 //                    Operator[] operators = vehicle.operators;
 //                    for (int j = 0; j < 2; j++) {
 ////                        System.out.println("fillRepDataCell for vehicleID: " + vehicle.getvehicleID()%10);
-//                        fillRepDataCell(operators[j], repopsdata[j], vehicle.getvehicleID()%10);
+//                        fillRepDataCell(operators[j], repopsdata[j], vehicle.getvehicleID());
 //                    }
 //                }
 ////            }

@@ -158,6 +158,8 @@ public class Data {
                 double columnMax = Double.MIN_VALUE;
                 double columnVar = 0;
                 for(int i  = 0 ; i < columnSum.length;i++){
+                    if(columnSum[i] >=1 )
+                        columnSum[i] = 1;
                     columMean += columnSum[i];
                     if (columnSum[i] > columnMax) columnMax = columnSum[i];
                     if (columnSum[i] < columnMin) columnMin = columnSum[i];
@@ -213,6 +215,7 @@ public class Data {
 
                 break;
             case "Delay":
+
                 break;
 
             case "Error":
