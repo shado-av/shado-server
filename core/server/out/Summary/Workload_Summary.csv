@@ -1,8 +1,8 @@
 Workload Summary
 Percentage of utilization 0-30%,Percentage of utilization 30-70%,Percentage of utilization 70-100% 
-17.916666666666668% ,41.875% ,40.208333333333336%,
+100.0% ,0.0% ,0.0%,
 AVG Utilization For Each Team
-Team Dispatcher, 0.5382647610521067,Variance,6.471998052295627E-4
+Team Dispatcher, 0.018560861920627413,Variance,4.653109892865474E-5
 SIMULATION DONE
-[2m2018-05-09 14:45:34.352[0;39m [32m INFO[0;39m [35m72902[0;39m [2m---[0;39m [2m[       Thread-3][0;39m [36mationConfigEmbeddedWebApplicationContext[0;39m [2m:[0;39m Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@3cb52bca: startup date [Wed May 09 14:42:06 CST 2018]; root of context hierarchy
-[2m2018-05-09 14:45:34.364[0;39m [32m INFO[0;39m [35m72902[0;39m [2m---[0;39m [2m[       Thread-3][0;39m [36mo.s.j.e.a.AnnotationMBeanExporter       [0;39m [2m:[0;39m Unregistering JMX-exposed beans on shutdown
+[2m2018-05-21 09:03:52.401[0;39m [32m INFO[0;39m [35m15443[0;39m [2m---[0;39m [2m[       Thread-2][0;39m [36mationConfigEmbeddedWebApplicationContext[0;39m [2m:[0;39m Closing org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@696aeb0: startup date [Mon May 21 09:03:36 EDT 2018]; root of context hierarchy
+[2m2018-05-21 09:03:52.404[0;39m [32m INFO[0;39m [35m15443[0;39m [2m---[0;39m [2m[       Thread-2][0;39m [36mo.s.j.e.a.AnnotationMBeanExporter       [0;39m [2m:[0;39m Unregistering JMX-exposed beans on shutdown

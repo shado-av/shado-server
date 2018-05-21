@@ -5,9 +5,9 @@ server/Engine/Task.class
 server/shadoParam.class
 server/Input/ShadoVar.class
 server/Input/loadparam.class
-server/Input/testLoadParam.class
 server/Engine/Replication.class
 server/Engine/Shado.class
+server/Input/testLoadParam.class
 server/Engine/index.class
 server/GreetingController.class
 server/Output/ProcRep.class

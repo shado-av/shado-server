@@ -65,6 +65,8 @@ public class ProcRep {
 
     public int[] getCompleted() { return completed; }
 
+    public Data[] getRepdisdata() { return repdisdata; }
+
     public String[] attributes = {"\t", "Average","Minimum","1st Quartile","Median",
             "3rd Quartile","Maximum", "Variance","Count of utilization 0-30%","Count of utilization 30%-70%","Count of utilization 70%-100%"};
     public String[] rowName = {"Workload","Error","Expired",""};
@@ -92,6 +94,7 @@ public class ProcRep {
         expired = new int[numtasktypes];
         completed = new int[numtasktypes];
         this.vars = vars;
+//        totalRemoteOp = rep.vars.numRemoteOp;
         int totalRemoteOp = 0;
     }
 
@@ -128,7 +131,7 @@ public class ProcRep {
      *
      ****************************************************************************/
 
-    public void fillRepDataCell(Operator operator, Data incremented, int vehicleID){
+    public void fillRepDataCell(Operator operator, Data incremented){
 
         // Get Operator's task record.
 
@@ -160,19 +163,23 @@ public class ProcRep {
 
                 // If task began but not finished in this interval.
 
+//                vehicleID = 0;
+//                int zero = 0;
+//                int zero = vehicleID;
+
                 if (endscale > i) {
                     if (!startcheck) {
-                        incremented.datainc(each.getType(), i - 1, vehicleID, i - beginscale);
+                        incremented.datainc(each.getType(), i - 1, 0, i - beginscale);
                         startcheck = true;
                     } else {
-                        incremented.datainc(each.getType(), i - 1, vehicleID, 1);
+                        incremented.datainc(each.getType(), i - 1, 0, 1);
                     }
                 } else {
                     if (!startcheck) {
-                        incremented.datainc(each.getType(), i - 1, vehicleID, endscale - beginscale);
+                        incremented.datainc(each.getType(), i - 1, 0, endscale - beginscale);
                         break;
                     } else {
-                        incremented.datainc(each.getType(), i - 1, vehicleID, endscale - i + 1);
+                        incremented.datainc(each.getType(), i - 1, 0, endscale - i + 1);
                         break;
                     }
                 }
@@ -197,7 +204,7 @@ public class ProcRep {
         for (int i = 0; i < totalRemoteOp; i++){
             for(int j = 0; j < vars.fleetTypes; j++){
                 for(int k = 0; k < vars.numvehicles[j]; k++)
-                fillRepDataCell(RemoteOpers[i], repdisdata[i],j*10+k);
+                fillRepDataCell(RemoteOpers[i], repdisdata[i]);
             }
 
         }
@@ -322,8 +329,8 @@ public class ProcRep {
 //        String  file_head = FileWizard.getabspath();
         //SCHEN 11/30/17
         //Make RemoteOper dir if not exists
-//        String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
-        String directoryName = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV/";
+        String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
+//        String directoryName = "/Users/zhanglian1/Desktop/summer/shado-server/core/server/out/repCSV/";
         File directory = new File(directoryName);
 
         if (!directory.exists()){

@@ -1,4 +1,5 @@
 package server.Input;
+import server.Engine.Data;
 import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
@@ -110,6 +111,10 @@ public class loadparam {
 	public int debugCnt;
 	public int maxTeamSize;
 	public int metaSnapShot;
+
+	//Naixin 05/21/18 to record the utilization
+    //utilization[numRep][numOperator]
+    public Data[][] utilizationOutput;
 	
 	/****************************************************************************
 	*																			
@@ -167,6 +172,7 @@ public class loadparam {
                 maxTeamSize = teamSize[i];
             }
         }
+        utilizationOutput = new Data[numReps][numRemoteOp];
     }
 //
 //	public loadparam(String file) throws FileNotFoundException{

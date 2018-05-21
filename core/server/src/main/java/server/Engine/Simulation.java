@@ -140,6 +140,7 @@ public class Simulation {
         for(int i = 0; i < repnumber; i++){
             ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars);
             process.run(i);
+            vars.utilizationOutput[i] = process.getRepdisdata();
 
             //Global Tracker for replication processed
             vars.currRepnum++;

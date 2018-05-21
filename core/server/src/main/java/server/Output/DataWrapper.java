@@ -54,28 +54,28 @@ public class DataWrapper {
 //        setFileHead();
         //Clean previous Summary Dir every output
 
-        String localSummary = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary/";
-        String localOut = "/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/";
-//        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
-//        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
-        File summaryDir = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary");
-        File csvDir = new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/repCSV");
+//        String localSummary = "/Users/zhanglian1/Desktop/summer/shado-server/core/server/out/Summary/";
+//        String localOut = "/Users/zhanglian1/Desktop/summer/shado-server/core/server/out/";
+        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
+        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
+//        File summaryDir = new File("/Users/zhanglian1/Desktop/summer/shado-server/core/server/out/Summary");
+//        File csvDir = new File("/Users/zhanglian1/Desktop/summer/shado-server/core/server/out/repCSV");
 
         FileUtils.cleanDirectory(summaryDir);
 //        FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables
         for (int i = 0; i < vars.numRemoteOp; i++) {
-//            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
-            String file_name =   localOut + "RemoteOperator" + ".csv";
+            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
+//            String file_name =   localOut + "RemoteOperator" + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getRemoteOpoutput(i).outputdata();
         }
 // "a,b,c"
         for (int j = 0; j < vars.numTeams; j++) {
-//            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
-            String file_name =  localOut + vars.opNames[j] + ".csv";
+            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
+//            String file_name =  localOut + vars.opNames[j] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getOperatoroutput(j).outputdata();
@@ -84,8 +84,8 @@ public class DataWrapper {
 
         // Expired Tasks
 
-//        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
-        String file_name =  localSummary + "Simulation_Summary" + ".csv";
+        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
+//        String file_name =  localSummary + "Simulation_Summary" + ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
         System.out.println("--- Simulation Summary---");
@@ -109,8 +109,8 @@ public class DataWrapper {
         }
 
         for(int i = 0; i < vars.numReps;i++) {
-//            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
-            String summary_file_name = localSummary + "Error_Summary_Rep_" +i+ ".csv";
+            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
+//            String summary_file_name = localSummary + "Error_Summary_Rep_" +i+ ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(summary_file_name, false)), true));
             System.out.println("Fail Task Detail: ");
@@ -128,8 +128,8 @@ public class DataWrapper {
 
         }
         //Cross-Replication Summary for workloads
-//        String summary_file_name =   "/home/rapiduser/shado-server/core/server/out/Summary/" + "Workload_Summary.csv";
-        String summary_file_name =   localSummary + "Workload_Summary.csv";
+        String summary_file_name =   "/home/rapiduser/shado-server/core/server/out/Summary/" + "Workload_Summary.csv";
+//        String summary_file_name =   localSummary + "Workload_Summary.csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
 
@@ -194,6 +194,61 @@ public class DataWrapper {
         }
 
         //Variance
+
+    }
+
+    public void testOutput() throws IOException {
+
+        // print utilization per operator
+        for(int k = 0; k < vars.numRemoteOp; k++){
+            String fileName = "/Users/zhanglian1/Desktop/summer/shado-server/core/server/out/Utilization_" + k + ".csv";
+            System.setOut(new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(fileName, true)), true));
+            int numColumn = (int)Math.ceil(vars.numHours * 6);
+            String[] labels = new String[numColumn];
+            for(int i = 0; i < numColumn; i++){
+                labels[i] = String.valueOf(i * 10) + "~" + String.valueOf((i+1) * 10) + " mins";
+            }
+
+            // print utilization per repulication
+            for(int i = 0; i < vars.numReps; i++) {
+
+                // an extra entry for the sum of whole replication
+                double[] timeSectionSum = new double[numColumn + 1];
+
+                //get the utilization data for replication i, operator k
+                Data taskUtilization = vars.utilizationOutput[i][k];
+
+                //print the labels
+                System.out.print("Replication" + i + ",");
+                System.out.print(Arrays.toString(labels));
+                System.out.print("Sum per task,");
+                System.out.println(" ");
+
+                // for each task is a row
+                for (int j = 0; j < vars.numTaskTypes; j++) {
+                    double taskSum = 0;
+                    System.out.print(vars.taskNames[j] + ",");
+                    for(int time = 0; time < numColumn; time++){
+                        double u = taskUtilization.dataget(j, time, 0);
+                        taskSum = taskSum + u;
+                        timeSectionSum[time] += u;
+                        System.out.print(u + ",");
+                    }
+                    timeSectionSum[numColumn] += taskSum;
+                    System.out.print(taskSum + ",");
+                    System.out.println(" ");
+                }
+
+                // print a line for timeSectionSum
+                System.out.print(",");
+                for(int time = 0; time < numColumn + 1; time++){
+                    System.out.print(timeSectionSum[time] + ",");
+                }
+                System.out.println(" ");
+                System.out.println(" ");
+            }
+        }
 
     }
 
