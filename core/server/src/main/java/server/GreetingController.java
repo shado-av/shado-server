@@ -59,7 +59,8 @@ public class GreetingController {
     public StreamingResponseBody getRepFile(HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=\"repCSV.zip\"");
-        InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/repCSV.zip"));
+//        InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/repCSV.zip"));
+        InputStream inputStream = new FileInputStream(new File("/Users/zhanglian1/shado-server/core/server/out/repCSV.zip"));
         return outputStream -> {
             int nRead;
             byte[] data = new byte[1024];
@@ -74,8 +75,8 @@ public class GreetingController {
     public StreamingResponseBody getSummaryFile(HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=\"Summary.zip\"");
-        InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/Summary.zip"));
-//        InputStream inputStream = new FileInputStream(new File("/Users/siyuchen/Documents/CS/DukeCS/shado-server/core/server/out/Summary.zip"));
+//        InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/Summary.zip"));
+        InputStream inputStream = new FileInputStream(new File("/Users/zhanglian1/shado-server/core/server/out/Summary.zip"));
         return outputStream -> {
             int iRead;
             byte[] data = new byte[1024];

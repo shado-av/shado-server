@@ -299,6 +299,15 @@ public class Replication {
         sortTask();
         System.out.println("Total Tasks: "+ globalTasks.size());
 
+        if(vars.replicationTracker == 0){
+            vars.allTasks = globalTasks;
+        }
+        else{
+            for(Task a : globalTasks){
+                vars.allTasks.add(a);
+            }
+        }
+
         for (Task task : globalTasks) {
             workingUntilNewTaskArrive(remoteOps,task);
             puttask(task);

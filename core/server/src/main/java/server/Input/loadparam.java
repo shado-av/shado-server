@@ -115,6 +115,7 @@ public class loadparam {
 	//Naixin 05/21/18 to record the utilization
     //utilization[numRep][numOperator]
     public Data[][] utilizationOutput;
+    public ArrayList<Task> allTasks;
 	
 	/****************************************************************************
 	*																			
