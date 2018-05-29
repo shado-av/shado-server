@@ -127,8 +127,6 @@ public class DataWrapper {
 
 
         }
-
-
         //Variance
 
     }
@@ -137,15 +135,14 @@ public class DataWrapper {
         output();
         printWorkloadSummary();
         printUtilization();
-        printTaskRecord();
+//        printTaskRecord();
 
     }
 
     //Naixin 05/23/18
     private void printTaskRecord() throws IOException{
         //print task information per task
-
-
+        Collections.sort(vars.allTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
         for(int taskType = 0; taskType < vars.numTaskTypes; taskType++) {
             String fileName = outPutDirectory + "task_" + vars.taskNames[taskType] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
@@ -232,6 +229,10 @@ public class DataWrapper {
     //Naixin 05/21/18
     private void printUtilization() throws IOException {
 
+        double max = 0; //max average utilization across replications
+        double min = 100; //min average utilization across replications
+        double max10mins = 0; //max utiliazation in 10 mins across replications
+
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
             String fileName = outPutDirectory + "Utilization_" + k + ".csv";
@@ -239,10 +240,6 @@ public class DataWrapper {
                     new FileOutputStream(fileName, true)), true));
 
             int numColumn = (int) Math.ceil(vars.numHours * 6);
-            String[] labels = new String[numColumn];
-            for (int i = 0; i < numColumn; i++) {
-                labels[i] = String.valueOf(i * 10) + "~" + String.valueOf((i + 1) * 10) + " mins";
-            }
 
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
@@ -255,11 +252,12 @@ public class DataWrapper {
 
                 //print the labels
                 System.out.print("Replication" + i + ",");
-                System.out.print(Arrays.toString(labels));
-                System.out.print("Sum per task,");
-                System.out.println(" ");
+                for(int col = 0; col < numColumn; col++){
+                    System.out.print(String.valueOf(col * 10) + "~" + String.valueOf((col + 1) * 10) + " mins,");
+                }
+                System.out.println("Sum per task");
 
-                // for each task is a row
+                // one row per task
                 for (int j = 0; j < vars.numTaskTypes; j++) {
                     double taskSum = 0;
                     System.out.print(vars.taskNames[j] + ",");
@@ -269,6 +267,7 @@ public class DataWrapper {
                         timeSectionSum[time] += u;
                         System.out.print(u + ",");
                     }
+                    taskSum /= vars.numHours * 6;
                     timeSectionSum[numColumn] += taskSum;
                     System.out.print(taskSum + ",");
                     System.out.println(" ");
@@ -276,14 +275,34 @@ public class DataWrapper {
 
                 // print a line for timeSectionSum
                 System.out.print(",");
-                for (int time = 0; time < numColumn + 1; time++) {
+
+                for (int time = 0; time < numColumn; time++) {
+                    if(timeSectionSum[time] > max10mins){
+                        max10mins = timeSectionSum[time];
+                    }
                     System.out.print(timeSectionSum[time] + ",");
                 }
+
+                // print the sum of timeSectionSum
+                System.out.print(timeSectionSum[numColumn] + ",");
+
+                // find the max and min average utilization
+                if(timeSectionSum[numColumn] > max){
+                    max = timeSectionSum[numColumn];
+                }
+                if(timeSectionSum[numColumn] < min){
+                    min = timeSectionSum[numColumn];
+                }
+
                 System.out.println(" ");
                 System.out.println(" ");
             }
         }
+        System.out.println("The max average utilization cross replication is " + max);
+        System.out.println("The min average utilization cross replication is " + min);
+        System.out.println("The max utilization in 10 mins is " + max10mins);
         System.setOut(System.out);
     }
+
 }
 

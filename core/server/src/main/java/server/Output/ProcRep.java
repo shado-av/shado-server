@@ -118,6 +118,7 @@ public class ProcRep {
         repopsdata = new Data[numoperator];
         for (int i = 0; i < numoperator; i++) {
             for (int j = 0; j < rep.vars.fleetTypes; j++) {
+                //TODO: it lloks wried here, do you k is tha max length of all the vehicle types?
                 repopsdata[i] = new Data(numtasktypes, (int) hours * 6, vehicles[j].length);
             }
         }
@@ -202,11 +203,7 @@ public class ProcRep {
         Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
 
         for (int i = 0; i < totalRemoteOp; i++){
-            for(int j = 0; j < vars.fleetTypes; j++){
-                for(int k = 0; k < vars.numvehicles[j]; k++)
-                fillRepDataCell(RemoteOpers[i], repdisdata[i]);
-            }
-
+            fillRepDataCell(RemoteOpers[i], repdisdata[i]);
         }
 //        for(int i = 0; i < rep.vars.fleetTypes;i++) {
 ////            for(int j = 0 ; j < vehicles[i].length; j++){

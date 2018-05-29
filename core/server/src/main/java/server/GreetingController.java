@@ -86,4 +86,20 @@ public class GreetingController {
             }
         };
     }
+
+
+    @RequestMapping(value = "/shado/getUtilization", method = RequestMethod.GET)
+    public StreamingResponseBody getUtilization(HttpServletResponse response) throws IOException{
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"Utilization.csv\"");
+        InputStream inputStream = new FileInputStream(new File("/Users/zhanglian1/shado-server/core/server/out/Utilization.csv"));
+        return outputStream -> {
+            int iRead;
+            byte[] data = new byte[1024];
+            while ((iRead = inputStream.read(data, 0, data.length)) != -1) {
+                System.out.println("Writing some bytes for Utiization...");
+                outputStream.write(data, 0, iRead);
+            }
+        };
+    }
 }
