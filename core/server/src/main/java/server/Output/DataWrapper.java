@@ -33,8 +33,8 @@ public class DataWrapper {
     private String outPutDirectory;
 
     public DataWrapper(Simulation o, loadparam param) {
-        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
-//        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
+//        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
+        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
         vars = param;
         sim = o;
     }
@@ -54,28 +54,28 @@ public class DataWrapper {
 //        setFileHead();
         //Clean previous Summary Dir every output
 
-        String localSummary = "/Users/zhanglian1/shado-server/core/server/out/Summary/";
-        String localOut = "/Users/zhanglian1/shado-server/core/server/out/";
-//        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
-//        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
-        File summaryDir = new File("/Users/zhanglian1/shado-server/core/server/out/Summary");
-        File csvDir = new File("/Users/zhanglian1/shado-server/core/server/out/repCSV");
+//        String localSummary = "/Users/zhanglian1/shado-server/core/server/out/Summary/";
+//        String localOut = "/Users/zhanglian1/shado-server/core/server/out/";
+        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
+        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
+//        File summaryDir = new File("/Users/zhanglian1/shado-server/core/server/out/Summary");
+//        File csvDir = new File("/Users/zhanglian1/shado-server/core/server/out/repCSV");
 
         FileUtils.cleanDirectory(summaryDir);
 //        FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables
         for (int i = 0; i < vars.numRemoteOp; i++) {
-//            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
-            String file_name = localOut + "RemoteOperator" + ".csv";
+            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
+//            String file_name = localOut + "RemoteOperator" + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getRemoteOpoutput(i).outputdata();
         }
 // "a,b,c"
         for (int j = 0; j < vars.numTeams; j++) {
-//            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
-            String file_name = localOut + vars.opNames[j] + ".csv";
+            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
+//            String file_name = localOut + vars.opNames[j] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getOperatoroutput(j).outputdata();
@@ -84,8 +84,8 @@ public class DataWrapper {
 
         // Expired Tasks
 
-//        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
-        String file_name = localSummary + "Simulation_Summary" + ".csv";
+        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
+//        String file_name = localSummary + "Simulation_Summary" + ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
         System.out.println("--- Simulation Summary---");
@@ -109,8 +109,8 @@ public class DataWrapper {
         }
 
         for (int i = 0; i < vars.numReps; i++) {
-//            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
-            String summary_file_name = localSummary + "Error_Summary_Rep_" + i + ".csv";
+            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
+//            String summary_file_name = localSummary + "Error_Summary_Rep_" + i + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(summary_file_name, false)), true));
             System.out.println("Fail Task Detail: ");
@@ -298,9 +298,9 @@ public class DataWrapper {
                 System.out.println(" ");
             }
         }
-        System.out.println("The max average utilization cross replication is " + max);
-        System.out.println("The min average utilization cross replication is " + min);
-        System.out.println("The max utilization in 10 mins is " + max10mins);
+//        System.out.println("The max average utilization cross replication is " + max);
+//        System.out.println("The min average utilization cross replication is " + min);
+//        System.out.println("The max utilization in 10 mins is " + max10mins);
         System.setOut(System.out);
     }
 
