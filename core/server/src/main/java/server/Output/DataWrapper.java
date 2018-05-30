@@ -2,6 +2,8 @@ package server.Output;
 
 import java.io.*;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import server.Engine.*;
 import server.Input.FileWizard;
@@ -33,8 +35,8 @@ public class DataWrapper {
     private String outPutDirectory;
 
     public DataWrapper(Simulation o, loadparam param) {
-        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
-//        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
+//        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
+        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
         vars = param;
         sim = o;
     }
@@ -54,28 +56,22 @@ public class DataWrapper {
 //        setFileHead();
         //Clean previous Summary Dir every output
 
-        String localSummary = "/Users/zhanglian1/shado-server/core/server/out/Summary/";
-        String localOut = "/Users/zhanglian1/shado-server/core/server/out/";
-//        File summaryDir = new File("/home/rapiduser/shado-server/core/server/out/Summary");
-//        File csvDir = new File("/home/rapiduser/shado-server/core/server/out/repCSV");
-        File summaryDir = new File("/Users/zhanglian1/shado-server/core/server/out/Summary");
-        File csvDir = new File("/Users/zhanglian1/shado-server/core/server/out/repCSV");
+        File summaryDir = new File(outPutDirectory + "Summary");
+        File csvDir = new File( outPutDirectory + "repCSV");
 
         FileUtils.cleanDirectory(summaryDir);
-//        FileUtils.cleanDirectory(csvDir);
+        FileUtils.cleanDirectory(csvDir);
 
         // RemoteOp & Engineer timetables
         for (int i = 0; i < vars.numRemoteOp; i++) {
-//            String file_name =   "/home/rapiduser/shado-server/core/server/out/" + "RemoteOperator" + ".csv";
-            String file_name = localOut + "RemoteOperator" + ".csv";
+            String file_name = outPutDirectory + "RemoteOperator" + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getRemoteOpoutput(i).outputdata();
         }
 // "a,b,c"
         for (int j = 0; j < vars.numTeams; j++) {
-//            String file_name =  "/home/rapiduser/shado-server/core/server/out/" + vars.opNames[j] + ".csv";
-            String file_name = localOut + vars.opNames[j] + ".csv";
+            String file_name = outPutDirectory + vars.opNames[j] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
             sim.getOperatoroutput(j).outputdata();
@@ -84,8 +80,7 @@ public class DataWrapper {
 
         // Expired Tasks
 
-//        String file_name =  "/home/rapiduser/shado-server/core/server/out/Summary/" + "Simulation_Summary" + ".csv";
-        String file_name = localSummary + "Simulation_Summary" + ".csv";
+        String file_name = outPutDirectory + "Summary/Simulation_Summary" + ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
         System.out.println("--- Simulation Summary---");
@@ -109,8 +104,7 @@ public class DataWrapper {
         }
 
         for (int i = 0; i < vars.numReps; i++) {
-//            String summary_file_name = "/home/rapiduser/shado-server/core/server/out/Summary/" + "Error_Summary_Rep_" +i+ ".csv";
-            String summary_file_name = localSummary + "Error_Summary_Rep_" + i + ".csv";
+            String summary_file_name = outPutDirectory + "Summary/Error_Summary_Rep_" + i + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(summary_file_name, false)), true));
             System.out.println("Fail Task Detail: ");
@@ -134,9 +128,12 @@ public class DataWrapper {
     public void testOutput() throws IOException {
         output();
         printWorkloadSummary();
-        printUtilization();
-//        printTaskRecord();
+        Utilization u = printUtilization();
 
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
+        builder.outputJSON();
+
+//        printTaskRecord();
     }
 
     //Naixin 05/23/18
@@ -227,7 +224,9 @@ public class DataWrapper {
     }
 
     //Naixin 05/21/18
-    private void printUtilization() throws IOException {
+    private Utilization printUtilization() throws IOException {
+
+        Utilization utilization = new Utilization(vars);
 
         double max = 0; //max average utilization across replications
         double min = 100; //min average utilization across replications
@@ -235,7 +234,7 @@ public class DataWrapper {
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
-            String fileName = outPutDirectory + "Utilization_" + k + ".csv";
+            String fileName = outPutDirectory + "repCSV/Utilization_" + k + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, true)), true));
 
@@ -263,6 +262,7 @@ public class DataWrapper {
                     System.out.print(vars.taskNames[j] + ",");
                     for (int time = 0; time < numColumn; time++) {
                         double u = taskUtilization.dataget(j, time, 0);
+                        utilization.utilization[k][i][j][time] = u;
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
                         System.out.print(u + ",");
@@ -285,6 +285,7 @@ public class DataWrapper {
 
                 // print the sum of timeSectionSum
                 System.out.print(timeSectionSum[numColumn] + ",");
+                utilization.averageUtilization[k][i] = timeSectionSum[numColumn] / numColumn;
 
                 // find the max and min average utilization
                 if(timeSectionSum[numColumn] > max){
@@ -302,6 +303,8 @@ public class DataWrapper {
         System.out.println("The min average utilization cross replication is " + min);
         System.out.println("The max utilization in 10 mins is " + max10mins);
         System.setOut(System.out);
+
+        return utilization;
     }
 
 }

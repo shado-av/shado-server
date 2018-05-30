@@ -27,6 +27,8 @@ import java.util.zip.ZipOutputStream;
 
 public class Shado{
     String sessionNum;
+//    private String rootDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
+    private String rootDirectory = "/home/rapiduser/shado-server/core/server/out/";
 	public Shado(String sess){
 	    sessionNum = sess;
     }
@@ -54,8 +56,7 @@ public class Shado{
 		// Runs simulation
 		Simulation sim = new Simulation(data);
 
-		String directoryName = "/Users/zhanglian1/shado-server/core/server/out/repCSV/";
-//		String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
+		String directoryName = rootDirectory + "repCSV/";
         File directory = new File(directoryName);
         FileUtils.cleanDirectory(directory);
 
@@ -65,20 +66,13 @@ public class Shado{
 		// Generate Output
 		DataWrapper analyze = new DataWrapper(sim, data);
 		analyze.testOutput();
-		//Zipping file and return for simple web service
-//        zipOutput("/home/rapiduser/shado-server/core/server/out/repCSV");
-//        zipOutput("/home/rapiduser/shado-server/core/server/out/Summary");
 
-        //Local path
-		zipOutput("/Users/zhanglian1/shado-server/core/server/out/repCSV");
-		zipOutput("/Users/zhanglian1/shado-server/core/server/out/Summary");
-        System.out.println("SIMULATION DONE");
+		//Zipping file and return for simple web service
+		zipOutput(rootDirectory + "repCSV");
+		zipOutput(rootDirectory + "Summary");
+//        System.out.println("SIMULATION DONE");
     }
 
-	public String retrunOutput(){
-
-        return "";
-	}
 	public void zipOutput(String path){
         String dirPath = path;
         Path sourceDir = Paths.get(dirPath);

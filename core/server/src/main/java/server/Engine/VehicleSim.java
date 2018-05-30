@@ -106,8 +106,7 @@ public class VehicleSim  {
      ****************************************************************************/
 
     public synchronized void taskgen() {
-        System.out.println("TaskGen for vehicle ID: "+ vehicleID);
-
+//        System.out.println("TaskGen for vehicle ID: "+ vehicleID);
 
         // TODO[COMPLETED] add AI assitant to shorter the service time.
         // For each type of tasks:
@@ -153,7 +152,7 @@ public class VehicleSim  {
             // Put all task into the master tasklist.
 
             globalTasks.addAll(indlist);
-            System.out.println("    -Type :"+taskType+" Total Number of Task gen: " + indlist.size());
+//            System.out.println("    -Type :"+taskType+" Total Number of Task gen: " + indlist.size());
             vars.repNumTasks[vars.replicationTracker]+= indlist.size();
         }
 

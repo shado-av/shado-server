@@ -136,11 +136,11 @@ public class Replication {
 
             }
         }
-        if(vars.metaSnapShot % 50 == 0) {
-            System.out.println("Optimal Operator: " + optimal_op.getName());
-            for (Operator currOp : working)
-                System.out.println("-- Current queue length for [" + currOp.getName() + "]: " + currOp.getQueue().taskqueue.size()+", ExpectedFinTime: "+currOp.getQueue().getExpectedFinTime());
-        }
+//        if(vars.metaSnapShot % 50 == 0) {
+//            System.out.println("Optimal Operator: " + optimal_op.getName());
+//            for (Operator currOp : working)
+//                System.out.println("-- Current queue length for [" + currOp.getName() + "]: " + currOp.getQueue().taskqueue.size()+", ExpectedFinTime: "+currOp.getQueue().getExpectedFinTime());
+//        }
 
         // Before inserting new tasks, make sure all the tasks that can be finished
         // before the arrival of the new tasks is finished.
@@ -241,16 +241,16 @@ public class Replication {
         }
         //When a new task is added, let operator finish all there tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            if(vars.metaSnapShot % 50 ==0){
-                System.out.println("---SNAPSHOT---");
-                System.out.println("Op:["+op.getName()+"]" +
-                        "\n\t Queue length: "+op.getQueue().taskqueue.size()+
-                        "\n\t FinTime: "+op.getQueue().getfinTime()+
-                        "\n\t ExpectedFinTime: "+op.getQueue().getExpectedFinTime());
-                if(op.getQueue().taskqueue.peek()!=null)
-                    System.out.println("First Task\n\t Begin: " + op.getQueue().taskqueue.peek().getArrTime() + "\n\t Arr: "+op.getQueue().taskqueue.peek().getArrTime());
-
-            }
+//            if(vars.metaSnapShot % 50 ==0){
+//                System.out.println("---SNAPSHOT---");
+//                System.out.println("Op:["+op.getName()+"]" +
+//                        "\n\t Queue length: "+op.getQueue().taskqueue.size()+
+//                        "\n\t FinTime: "+op.getQueue().getfinTime()+
+//                        "\n\t ExpectedFinTime: "+op.getQueue().getExpectedFinTime());
+//                if(op.getQueue().taskqueue.peek()!=null)
+//                    System.out.println("First Task\n\t Begin: " + op.getQueue().taskqueue.peek().getArrTime() + "\n\t Arr: "+op.getQueue().taskqueue.peek().getArrTime());
+//
+//            }
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getExpectedFinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
