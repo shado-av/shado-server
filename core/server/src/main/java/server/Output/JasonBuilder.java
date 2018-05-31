@@ -22,7 +22,7 @@ public class JasonBuilder {
         PrintStream stdout = System.out;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
-        String summary_file_name = outputDirectory + "Utilization.js";
+        String summary_file_name = outputDirectory + "Utilization.json";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
         System.out.println(gson.toJson(utilization));

@@ -37,8 +37,8 @@ public class DataWrapper {
     PrintStream stdout;
 
     public DataWrapper(Simulation o, loadparam param) {
-//        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
         stdout = System.out;
+//        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
         outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
         vars = param;
         sim = o;
@@ -231,12 +231,15 @@ public class DataWrapper {
 
         Utilization utilization = new Utilization(vars);
 
-        double max = 0; //max average utilization across replications
-        double min = 100; //min average utilization across replications
-        double max10mins = 0; //max utiliazation in 10 mins across replications
+
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
+
+            double max = 0; //max average utilization across replications
+            double min = 100; //min average utilization across replications
+            double max10mins = 0; //max utiliazation in 10 mins across replications
+
             String fileName = outPutDirectory + "repCSV/Utilization_" + k + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, true)), true));
@@ -301,10 +304,12 @@ public class DataWrapper {
                 System.out.println(" ");
                 System.out.println(" ");
             }
+
+            System.out.println("The max average utilization cross replication is " + max);
+            System.out.println("The min average utilization cross replication is " + min);
+            System.out.println("The max utilization in 10 mins is " + max10mins);
         }
-        System.out.println("The max average utilization cross replication is " + max);
-        System.out.println("The min average utilization cross replication is " + min);
-        System.out.println("The max utilization in 10 mins is " + max10mins);
+
         System.setOut(stdout);
 
         return utilization;

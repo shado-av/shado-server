@@ -89,8 +89,8 @@ public class GreetingController {
     @RequestMapping(value = "/shado/getUtilizationJSON", method = RequestMethod.GET)
     public StreamingResponseBody getUtilization(HttpServletResponse response) throws IOException{
         response.setContentType("application/json");
-        response.setHeader("Content-Disposition", "attachment; filename=\"Utilization.js\"");
-        InputStream inputStream = new FileInputStream(new File(directory + "Utilization.js"));
+        response.setHeader("Content-Disposition", "attachment; filename=\"Utilization.json\"");
+        InputStream inputStream = new FileInputStream(new File(directory + "Utilization.json"));
         return outputStream -> {
             int iRead;
             byte[] data = new byte[1024];
