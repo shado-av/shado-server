@@ -281,7 +281,7 @@ public class ProcRep {
         for (Data each: repdisdata) {
             each.avgdata();
             String opName = vars.opNames[remoteType.get(i)]+"_"+remoteNum.get(i);
-            sepCSV(each, currRep, opName,remoteType.get(i),remoteNum.get(i));
+            //sepCSV(each, currRep, opName,remoteType.get(i),remoteNum.get(i));
             i++;
         }
 

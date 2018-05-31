@@ -27,10 +27,10 @@ import java.util.zip.ZipOutputStream;
 
 public class Shado{
     String sessionNum;
-//    private String rootDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
-    private String rootDirectory = "/home/rapiduser/shado-server/core/server/out/";
-	public Shado(String sess){
-	    sessionNum = sess;
+    private String rootDirectory;
+	public Shado(String sess, String directory){
+		sessionNum = sess;
+		rootDirectory = directory;
     }
 
     private static ZipOutputStream zos;

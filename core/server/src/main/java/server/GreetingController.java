@@ -47,7 +47,7 @@ public class GreetingController {
     public String index(@RequestBody String payload) throws Exception{
         //TODO: Sanity Check and pass to Shado Object
         String sessionNum = dateFormat.format(date)+"_"+counter.incrementAndGet();
-        shado = new Shado(sessionNum);
+        shado = new Shado(sessionNum, directory);
         shado.runShado(payload);
 //        System.out.println(payload);
         //Generate JSON and send it back

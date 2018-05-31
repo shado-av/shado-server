@@ -1,212 +1,224 @@
 --- Simulation Summary---
 Tasks generated:
-Rep_0,16
-Rep_1,19
-Rep_2,18
-Rep_3,15
-Rep_4,18
-Rep_5,16
-Rep_6,16
-Rep_7,13
-Rep_8,14
-Rep_9,16
-Rep_10,26
-Rep_11,12
-Rep_12,11
-Rep_13,19
-Rep_14,19
-Rep_15,12
-Rep_16,13
-Rep_17,22
-Rep_18,22
-Rep_19,14
-Rep_20,18
-Rep_21,13
-Rep_22,13
-Rep_23,15
-Rep_24,15
-Rep_25,20
-Rep_26,12
-Rep_27,9
-Rep_28,9
-Rep_29,21
-Rep_30,12
-Rep_31,14
-Rep_32,14
-Rep_33,19
-Rep_34,15
-Rep_35,13
-Rep_36,16
-Rep_37,12
-Rep_38,16
-Rep_39,18
-Rep_40,11
-Rep_41,17
-Rep_42,9
-Rep_43,12
-Rep_44,24
-Rep_45,17
-Rep_46,15
-Rep_47,12
-Rep_48,12
-Rep_49,11
-Rep_50,20
-Rep_51,16
-Rep_52,21
-Rep_53,20
-Rep_54,19
-Rep_55,16
-Rep_56,12
-Rep_57,18
-Rep_58,16
-Rep_59,17
-Rep_60,13
-Rep_61,12
-Rep_62,18
-Rep_63,22
-Rep_64,16
-Rep_65,10
-Rep_66,12
-Rep_67,12
-Rep_68,19
-Rep_69,16
-Rep_70,18
-Rep_71,22
-Rep_72,19
-Rep_73,20
-Rep_74,16
-Rep_75,13
-Rep_76,14
-Rep_77,14
-Rep_78,20
-Rep_79,14
-Rep_80,14
-Rep_81,15
-Rep_82,14
-Rep_83,11
-Rep_84,14
-Rep_85,16
-Rep_86,21
-Rep_87,23
-Rep_88,14
-Rep_89,17
-Rep_90,10
-Rep_91,15
-Rep_92,20
-Rep_93,19
-Rep_94,20
-Rep_95,20
-Rep_96,9
-Rep_97,16
-Rep_98,24
-Rep_99,14
+Rep_0,226
+Rep_1,211
+Rep_2,204
+Rep_3,204
+Rep_4,212
+Rep_5,233
+Rep_6,205
+Rep_7,191
+Rep_8,217
+Rep_9,199
+Rep_10,188
+Rep_11,228
+Rep_12,199
+Rep_13,214
+Rep_14,202
+Rep_15,204
+Rep_16,205
+Rep_17,213
+Rep_18,199
+Rep_19,218
+Rep_20,184
+Rep_21,171
+Rep_22,187
+Rep_23,213
+Rep_24,180
+Rep_25,190
+Rep_26,219
+Rep_27,198
+Rep_28,176
+Rep_29,222
+Rep_30,201
+Rep_31,242
+Rep_32,223
+Rep_33,218
+Rep_34,201
+Rep_35,182
+Rep_36,213
+Rep_37,243
+Rep_38,203
+Rep_39,227
+Rep_40,215
+Rep_41,223
+Rep_42,192
+Rep_43,216
+Rep_44,218
+Rep_45,236
+Rep_46,201
+Rep_47,186
+Rep_48,213
+Rep_49,210
+Rep_50,212
+Rep_51,191
+Rep_52,215
+Rep_53,261
+Rep_54,209
+Rep_55,215
+Rep_56,194
+Rep_57,227
+Rep_58,214
+Rep_59,212
+Rep_60,204
+Rep_61,207
+Rep_62,203
+Rep_63,191
+Rep_64,205
+Rep_65,217
+Rep_66,211
+Rep_67,207
+Rep_68,207
+Rep_69,205
+Rep_70,215
+Rep_71,209
+Rep_72,212
+Rep_73,230
+Rep_74,196
+Rep_75,195
+Rep_76,201
+Rep_77,193
+Rep_78,208
+Rep_79,205
+Rep_80,203
+Rep_81,218
+Rep_82,214
+Rep_83,221
+Rep_84,195
+Rep_85,202
+Rep_86,213
+Rep_87,215
+Rep_88,230
+Rep_89,207
+Rep_90,219
+Rep_91,210
+Rep_92,190
+Rep_93,203
+Rep_94,200
+Rep_95,218
+Rep_96,218
+Rep_97,192
+Rep_98,221
+Rep_99,192
 Task name: Daily Operating Bulletin
-expired: 0
-completed: 19
+expired: 5
+completed: 143
 Task name: OK
-expired: 4
-completed: 1029
+expired: 19
+completed: 4094
 Task name: Clear
-expired: 28
-completed: 375
+expired: 145
+completed: 1554
+Task name: Communication
+expired: 90
+completed: 1495
+Task name: Directive_Courtesy_1
+expired: 399
+completed: 9040
+Task name: Directive_Courtesy_2
+expired: 5
+completed: 434
+Task name: Record Keeping
+expired: 80
+completed: 2914
 *** FAILED TASKS ***
-In Replication 0: Number of Fail Tasks: 0
-In Replication 1: Number of Fail Tasks: 1
-In Replication 2: Number of Fail Tasks: 1
-In Replication 3: Number of Fail Tasks: 1
-In Replication 4: Number of Fail Tasks: 0
-In Replication 5: Number of Fail Tasks: 1
-In Replication 6: Number of Fail Tasks: 2
-In Replication 7: Number of Fail Tasks: 0
-In Replication 8: Number of Fail Tasks: 0
-In Replication 9: Number of Fail Tasks: 1
-In Replication 10: Number of Fail Tasks: 0
-In Replication 11: Number of Fail Tasks: 1
-In Replication 12: Number of Fail Tasks: 2
-In Replication 13: Number of Fail Tasks: 1
-In Replication 14: Number of Fail Tasks: 1
-In Replication 15: Number of Fail Tasks: 0
-In Replication 16: Number of Fail Tasks: 0
-In Replication 17: Number of Fail Tasks: 0
-In Replication 18: Number of Fail Tasks: 0
-In Replication 19: Number of Fail Tasks: 0
-In Replication 20: Number of Fail Tasks: 1
-In Replication 21: Number of Fail Tasks: 0
-In Replication 22: Number of Fail Tasks: 2
-In Replication 23: Number of Fail Tasks: 0
-In Replication 24: Number of Fail Tasks: 1
-In Replication 25: Number of Fail Tasks: 3
-In Replication 26: Number of Fail Tasks: 0
-In Replication 27: Number of Fail Tasks: 0
-In Replication 28: Number of Fail Tasks: 0
-In Replication 29: Number of Fail Tasks: 1
-In Replication 30: Number of Fail Tasks: 0
-In Replication 31: Number of Fail Tasks: 0
-In Replication 32: Number of Fail Tasks: 1
-In Replication 33: Number of Fail Tasks: 0
-In Replication 34: Number of Fail Tasks: 0
-In Replication 35: Number of Fail Tasks: 2
-In Replication 36: Number of Fail Tasks: 2
-In Replication 37: Number of Fail Tasks: 0
-In Replication 38: Number of Fail Tasks: 1
-In Replication 39: Number of Fail Tasks: 0
-In Replication 40: Number of Fail Tasks: 0
-In Replication 41: Number of Fail Tasks: 1
-In Replication 42: Number of Fail Tasks: 0
-In Replication 43: Number of Fail Tasks: 0
-In Replication 44: Number of Fail Tasks: 2
-In Replication 45: Number of Fail Tasks: 0
-In Replication 46: Number of Fail Tasks: 0
-In Replication 47: Number of Fail Tasks: 1
-In Replication 48: Number of Fail Tasks: 0
-In Replication 49: Number of Fail Tasks: 1
-In Replication 50: Number of Fail Tasks: 3
-In Replication 51: Number of Fail Tasks: 0
-In Replication 52: Number of Fail Tasks: 1
-In Replication 53: Number of Fail Tasks: 1
-In Replication 54: Number of Fail Tasks: 0
-In Replication 55: Number of Fail Tasks: 1
-In Replication 56: Number of Fail Tasks: 1
-In Replication 57: Number of Fail Tasks: 1
-In Replication 58: Number of Fail Tasks: 0
-In Replication 59: Number of Fail Tasks: 0
-In Replication 60: Number of Fail Tasks: 0
-In Replication 61: Number of Fail Tasks: 1
-In Replication 62: Number of Fail Tasks: 0
-In Replication 63: Number of Fail Tasks: 2
-In Replication 64: Number of Fail Tasks: 1
-In Replication 65: Number of Fail Tasks: 0
-In Replication 66: Number of Fail Tasks: 0
-In Replication 67: Number of Fail Tasks: 0
-In Replication 68: Number of Fail Tasks: 1
-In Replication 69: Number of Fail Tasks: 0
-In Replication 70: Number of Fail Tasks: 0
-In Replication 71: Number of Fail Tasks: 0
-In Replication 72: Number of Fail Tasks: 0
-In Replication 73: Number of Fail Tasks: 0
-In Replication 74: Number of Fail Tasks: 0
-In Replication 75: Number of Fail Tasks: 0
-In Replication 76: Number of Fail Tasks: 0
-In Replication 77: Number of Fail Tasks: 1
-In Replication 78: Number of Fail Tasks: 1
-In Replication 79: Number of Fail Tasks: 1
-In Replication 80: Number of Fail Tasks: 0
-In Replication 81: Number of Fail Tasks: 0
-In Replication 82: Number of Fail Tasks: 0
-In Replication 83: Number of Fail Tasks: 1
-In Replication 84: Number of Fail Tasks: 0
-In Replication 85: Number of Fail Tasks: 0
-In Replication 86: Number of Fail Tasks: 0
-In Replication 87: Number of Fail Tasks: 1
-In Replication 88: Number of Fail Tasks: 2
-In Replication 89: Number of Fail Tasks: 1
-In Replication 90: Number of Fail Tasks: 0
-In Replication 91: Number of Fail Tasks: 0
-In Replication 92: Number of Fail Tasks: 3
-In Replication 93: Number of Fail Tasks: 1
-In Replication 94: Number of Fail Tasks: 0
-In Replication 95: Number of Fail Tasks: 0
-In Replication 96: Number of Fail Tasks: 0
-In Replication 97: Number of Fail Tasks: 0
-In Replication 98: Number of Fail Tasks: 1
-In Replication 99: Number of Fail Tasks: 1
+In Replication 0: Number of Fail Tasks: 7
+In Replication 1: Number of Fail Tasks: 6
+In Replication 2: Number of Fail Tasks: 5
+In Replication 3: Number of Fail Tasks: 8
+In Replication 4: Number of Fail Tasks: 5
+In Replication 5: Number of Fail Tasks: 4
+In Replication 6: Number of Fail Tasks: 9
+In Replication 7: Number of Fail Tasks: 10
+In Replication 8: Number of Fail Tasks: 6
+In Replication 9: Number of Fail Tasks: 10
+In Replication 10: Number of Fail Tasks: 4
+In Replication 11: Number of Fail Tasks: 5
+In Replication 12: Number of Fail Tasks: 6
+In Replication 13: Number of Fail Tasks: 3
+In Replication 14: Number of Fail Tasks: 5
+In Replication 15: Number of Fail Tasks: 3
+In Replication 16: Number of Fail Tasks: 4
+In Replication 17: Number of Fail Tasks: 7
+In Replication 18: Number of Fail Tasks: 8
+In Replication 19: Number of Fail Tasks: 7
+In Replication 20: Number of Fail Tasks: 2
+In Replication 21: Number of Fail Tasks: 4
+In Replication 22: Number of Fail Tasks: 7
+In Replication 23: Number of Fail Tasks: 5
+In Replication 24: Number of Fail Tasks: 4
+In Replication 25: Number of Fail Tasks: 5
+In Replication 26: Number of Fail Tasks: 11
+In Replication 27: Number of Fail Tasks: 1
+In Replication 28: Number of Fail Tasks: 10
+In Replication 29: Number of Fail Tasks: 10
+In Replication 30: Number of Fail Tasks: 3
+In Replication 31: Number of Fail Tasks: 9
+In Replication 32: Number of Fail Tasks: 3
+In Replication 33: Number of Fail Tasks: 10
+In Replication 34: Number of Fail Tasks: 6
+In Replication 35: Number of Fail Tasks: 7
+In Replication 36: Number of Fail Tasks: 4
+In Replication 37: Number of Fail Tasks: 4
+In Replication 38: Number of Fail Tasks: 9
+In Replication 39: Number of Fail Tasks: 4
+In Replication 40: Number of Fail Tasks: 5
+In Replication 41: Number of Fail Tasks: 8
+In Replication 42: Number of Fail Tasks: 7
+In Replication 43: Number of Fail Tasks: 3
+In Replication 44: Number of Fail Tasks: 5
+In Replication 45: Number of Fail Tasks: 6
+In Replication 46: Number of Fail Tasks: 3
+In Replication 47: Number of Fail Tasks: 7
+In Replication 48: Number of Fail Tasks: 10
+In Replication 49: Number of Fail Tasks: 6
+In Replication 50: Number of Fail Tasks: 6
+In Replication 51: Number of Fail Tasks: 12
+In Replication 52: Number of Fail Tasks: 10
+In Replication 53: Number of Fail Tasks: 7
+In Replication 54: Number of Fail Tasks: 4
+In Replication 55: Number of Fail Tasks: 5
+In Replication 56: Number of Fail Tasks: 6
+In Replication 57: Number of Fail Tasks: 8
+In Replication 58: Number of Fail Tasks: 6
+In Replication 59: Number of Fail Tasks: 4
+In Replication 60: Number of Fail Tasks: 9
+In Replication 61: Number of Fail Tasks: 8
+In Replication 62: Number of Fail Tasks: 4
+In Replication 63: Number of Fail Tasks: 1
+In Replication 64: Number of Fail Tasks: 5
+In Replication 65: Number of Fail Tasks: 4
+In Replication 66: Number of Fail Tasks: 6
+In Replication 67: Number of Fail Tasks: 6
+In Replication 68: Number of Fail Tasks: 5
+In Replication 69: Number of Fail Tasks: 4
+In Replication 70: Number of Fail Tasks: 6
+In Replication 71: Number of Fail Tasks: 9
+In Replication 72: Number of Fail Tasks: 7
+In Replication 73: Number of Fail Tasks: 6
+In Replication 74: Number of Fail Tasks: 3
+In Replication 75: Number of Fail Tasks: 2
+In Replication 76: Number of Fail Tasks: 5
+In Replication 77: Number of Fail Tasks: 3
+In Replication 78: Number of Fail Tasks: 7
+In Replication 79: Number of Fail Tasks: 4
+In Replication 80: Number of Fail Tasks: 3
+In Replication 81: Number of Fail Tasks: 4
+In Replication 82: Number of Fail Tasks: 4
+In Replication 83: Number of Fail Tasks: 7
+In Replication 84: Number of Fail Tasks: 9
+In Replication 85: Number of Fail Tasks: 8
+In Replication 86: Number of Fail Tasks: 7
+In Replication 87: Number of Fail Tasks: 7
+In Replication 88: Number of Fail Tasks: 5
+In Replication 89: Number of Fail Tasks: 8
+In Replication 90: Number of Fail Tasks: 8
+In Replication 91: Number of Fail Tasks: 10
+In Replication 92: Number of Fail Tasks: 6
+In Replication 93: Number of Fail Tasks: 4
+In Replication 94: Number of Fail Tasks: 7
+In Replication 95: Number of Fail Tasks: 6
+In Replication 96: Number of Fail Tasks: 7
+In Replication 97: Number of Fail Tasks: 5
+In Replication 98: Number of Fail Tasks: 5
+In Replication 99: Number of Fail Tasks: 7

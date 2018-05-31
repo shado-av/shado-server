@@ -1,1 +1,8 @@
 Fail Task Detail: 
+Specialist1 0 Fails Clear, But still proceed by the Operator
+Specialist2 0 Fails Directive_Courtesy_1,
+Specialist1 0 Fails OK,
+Specialist2 0 Fails Directive_Courtesy_1,
+Specialist2 0 Fails Directive_Courtesy_1, But still proceed by the Operator
+Specialist2 0 Fails Directive_Courtesy_1,
+Specialist2 0 Fails Directive_Courtesy_1, But still proceed by the Operator
