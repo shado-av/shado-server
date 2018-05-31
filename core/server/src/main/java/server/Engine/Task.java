@@ -136,7 +136,6 @@ public class Task implements Comparable<Task> {
 		elapsedTime = 0;
 		waitTime = 0;
 		expired = false;
-//        ExponentialTest();
 	}
 
 	/****************************************************************************
@@ -287,7 +286,6 @@ public class Task implements Comparable<Task> {
     public int getShiftTime(double time, double hours){
 //        System.out.println("at shift period: "+(int)time/60);
         return (int)time/60;
-
     }
 
 
@@ -306,11 +304,8 @@ public class Task implements Comparable<Task> {
 			return Double.POSITIVE_INFINITY;
 		}
 		double result = Math.log(1- Math.random())/(-lambda);
-//        double result = Math.log(0.5)/(-lambda);
-//		System.out.println("Exponential with "+lambda+" : return " + result);
+
 		return result;
-
-
 	}
 
 	/****************************************************************************
@@ -329,7 +324,6 @@ public class Task implements Comparable<Task> {
 		double l = Math.exp(mean + stddev * normal);
 
 		return l;
-
 	}
 
 	/****************************************************************************
@@ -386,6 +380,7 @@ public class Task implements Comparable<Task> {
 		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
 //		double arrivalRate = changeArrivalRate(getFleetAutonomy());
 //		double TimeTaken = Exponential(arrivalRate);
+
 		//Naixin: for test use
 		double TimeTaken = Exponential(vars.arrPms[Type][0]);
 		if (TimeTaken == Double.POSITIVE_INFINITY){
@@ -546,12 +541,6 @@ public class Task implements Comparable<Task> {
 	    if(hasAI)
 	    	changeServTime(0.7);
 	}
-
-	private void ExponentialTest(){
-	    for(double i  = 0; i < 1; i+=0.1) {
-            System.out.println("Exponential: "+i + " = "+Exponential(i));
-        }
-    }
 
 }
 

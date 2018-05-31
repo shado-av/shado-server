@@ -1,11 +1,9 @@
 package server.Output;
 
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import server.Engine.*;
 
-import server.Input.FileWizard;
 import server.Input.loadparam;
-import server.Output.ProcData;
+
 import java.io.*;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;

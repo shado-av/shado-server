@@ -20,6 +20,5 @@ server/Output/ProcRep.class
 server/Output/ZipDir.class
 server/Engine/Operator.class
 server/Engine/Simulation.class
-server/Output/ProcData.class
 server/Engine/VehicleSim.class
 server/Engine/Queue.class
