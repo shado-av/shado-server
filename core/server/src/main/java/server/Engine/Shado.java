@@ -56,12 +56,8 @@ public class Shado{
 		// Runs simulation
 		Simulation sim = new Simulation(data);
 
-<<<<<<< HEAD
-//		String directoryName = "/Users/zhanglian1/shado-server/core/server/out/repCSV/";
-		String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
-=======
 		String directoryName = rootDirectory + "repCSV/";
->>>>>>> origin/naixin-JSON
+
         File directory = new File(directoryName);
         FileUtils.cleanDirectory(directory);
 
@@ -71,22 +67,12 @@ public class Shado{
 		// Generate Output
 		DataWrapper analyze = new DataWrapper(sim, data);
 		analyze.testOutput();
-<<<<<<< HEAD
-		//Zipping file and return for simple web service
-        zipOutput("/home/rapiduser/shado-server/core/server/out/repCSV");
-        zipOutput("/home/rapiduser/shado-server/core/server/out/Summary");
-
-        //Local path
-//		zipOutput("/Users/zhanglian1/shado-server/core/server/out/repCSV");
-//		zipOutput("/Users/zhanglian1/shado-server/core/server/out/Summary");
-        System.out.println("SIMULATION DONE");
-=======
 
 		//Zipping file and return for simple web service
 		zipOutput(rootDirectory + "repCSV");
 		zipOutput(rootDirectory + "Summary");
 //        System.out.println("SIMULATION DONE");
->>>>>>> origin/naixin-JSON
+
     }
 
 	public void zipOutput(String path){
