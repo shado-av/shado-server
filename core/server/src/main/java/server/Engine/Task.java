@@ -195,7 +195,7 @@ public class Task implements Comparable<Task> {
 		expired = false;
 
 		//DEBUG
-        System.out.println("task gen arrTime: "+arrTime+", prevTime: "+prevTime+", servTime: "+serTime);
+//        System.out.println("task gen arrTime: "+arrTime+", prevTime: "+prevTime+", servTime: "+serTime);
 
         //DEBUG
         if(vars.debugCnt++ == 10) {

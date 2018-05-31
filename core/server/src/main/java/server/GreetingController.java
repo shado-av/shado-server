@@ -31,23 +31,23 @@ public class GreetingController {
     private Shado shado;
     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss");
     Date date = new Date();
+
+    private String directory = "/home/rapiduser/shado-server/core/server/out/";
+//    private String directory = "/Users/zhanglian1/shado-server/core/server/out/";
+
     @RequestMapping("/shado/hello")
     public Greeting greeting(@RequestParam(value="name", defaultValue="This is Shado") String name) {
         return new Greeting(counter.incrementAndGet(),
                 String.format(template, name));
     }
-//    @RequestMapping("/shado/jello")
-//    public Greeting greeting_jello(@RequestParam(value="name", defaultValue="This is Shado-Jello") String name) {
-//        return new Greeting(counter.incrementAndGet(),
-//                String.format(template, name));
-//    }
+
     @CrossOrigin
 
     @RequestMapping(value= "/shado/testpost",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
         //TODO: Sanity Check and pass to Shado Object
         String sessionNum = dateFormat.format(date)+"_"+counter.incrementAndGet();
-        shado = new Shado(sessionNum);
+        shado = new Shado(sessionNum, directory);
         shado.runShado(payload);
 //        System.out.println(payload);
         //Generate JSON and send it back
@@ -59,8 +59,12 @@ public class GreetingController {
     public StreamingResponseBody getRepFile(HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=\"repCSV.zip\"");
+<<<<<<< HEAD
         InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/repCSV.zip"));
 //        InputStream inputStream = new FileInputStream(new File("/Users/zhanglian1/shado-server/core/server/out/repCSV.zip"));
+=======
+        InputStream inputStream = new FileInputStream(new File(directory + "repCSV.zip"));
+>>>>>>> origin/naixin-JSON
         return outputStream -> {
             int nRead;
             byte[] data = new byte[1024];
@@ -75,8 +79,12 @@ public class GreetingController {
     public StreamingResponseBody getSummaryFile(HttpServletResponse response) throws IOException {
         response.setContentType("application/zip");
         response.setHeader("Content-Disposition", "attachment; filename=\"Summary.zip\"");
+<<<<<<< HEAD
         InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/Summary.zip"));
 //        InputStream inputStream = new FileInputStream(new File("/Users/zhanglian1/shado-server/core/server/out/Summary.zip"));
+=======
+        InputStream inputStream = new FileInputStream(new File(directory + "Summary.zip"));
+>>>>>>> origin/naixin-JSON
         return outputStream -> {
             int iRead;
             byte[] data = new byte[1024];
@@ -88,12 +96,18 @@ public class GreetingController {
     }
 
 
-    @RequestMapping(value = "/shado/getUtilization", method = RequestMethod.GET)
+    @RequestMapping(value = "/shado/getUtilizationJSON", method = RequestMethod.GET)
     public StreamingResponseBody getUtilization(HttpServletResponse response) throws IOException{
+<<<<<<< HEAD
         response.setContentType("text/csv");
         response.setHeader("Content-Disposition", "attachment; filename=\"Utilization.csv\"");
         InputStream inputStream = new FileInputStream(new File("/home/rapiduser/shado-server/core/server/out/Utilization.csv"));
 //        InputStream inputStream = new FileInputStream(new File("/Users/zhanglian1/shado-server/core/server/out/Utilization.csv"));
+=======
+        response.setContentType("application/json");
+        response.setHeader("Content-Disposition", "attachment; filename=\"Utilization.json\"");
+        InputStream inputStream = new FileInputStream(new File(directory + "Utilization.json"));
+>>>>>>> origin/naixin-JSON
         return outputStream -> {
             int iRead;
             byte[] data = new byte[1024];
