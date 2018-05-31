@@ -2,7 +2,6 @@ package server.Output;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import server.Input.loadparam;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -20,12 +19,13 @@ public class JasonBuilder {
     }
 
     public void outputJSON() throws IOException {
+        PrintStream stdout = System.out;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         String summary_file_name = outputDirectory + "Utilization.js";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
         System.out.println(gson.toJson(utilization));
-        System.setOut(System.out);
+        System.setOut(stdout);
     }
 }

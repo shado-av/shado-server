@@ -34,8 +34,11 @@ public class DataWrapper {
 
     private String outPutDirectory;
 
+    PrintStream stdout;
+
     public DataWrapper(Simulation o, loadparam param) {
 //        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
+        stdout = System.out;
         outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
         vars = param;
         sim = o;
@@ -150,7 +153,7 @@ public class DataWrapper {
                     double waitTime = t.getBeginTime() - t.getArrTime();
                     System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
                 }
-                System.setOut(System.out);
+                System.setOut(stdout);
             }
         }
     }
@@ -220,7 +223,7 @@ public class DataWrapper {
             System.out.println("Team " + vars.opNames[i] + ", " + teamUtilCrossRep[i] + ",Variance," + teamUtilVariance[i]);
 
         }
-        System.setOut(System.out);
+        System.setOut(stdout);
     }
 
     //Naixin 05/21/18
@@ -302,7 +305,7 @@ public class DataWrapper {
         System.out.println("The max average utilization cross replication is " + max);
         System.out.println("The min average utilization cross replication is " + min);
         System.out.println("The max utilization in 10 mins is " + max10mins);
-        System.setOut(System.out);
+        System.setOut(stdout);
 
         return utilization;
     }
