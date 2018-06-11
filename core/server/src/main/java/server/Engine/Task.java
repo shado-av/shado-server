@@ -124,7 +124,7 @@ public class Task implements Comparable<Task> {
 			changeServTime(lvl_SOME);
 		else if(teamCoordParam == 2)
 			changeServTime(lvl_FULL);
-		applyExogenousFactor();
+//		applyExogenousFactor();
         changeServTime(1.01*(shiftPeriod+1));
 
 		expTime = genExpTime();
@@ -178,7 +178,7 @@ public class Task implements Comparable<Task> {
 			changeServTime(lvl_FULL);
 
 		//Modules
-		applyExogenousFactor();
+//		applyExogenousFactor();
 		applyAI(hasAI);
         applyTeamCoord(lvlComm);
 

@@ -324,8 +324,8 @@ public class ProcRep {
 //        String  file_head = FileWizard.getabspath();
         //SCHEN 11/30/17
         //Make RemoteOper dir if not exists
-        String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
-//        String directoryName = "/Users/zhanglian1/shado-server/core/server/out/repCSV/";
+//        String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
+        String directoryName = "/Users/zhanglian1/shado-server/core/server/out/repCSV/";
         File directory = new File(directoryName);
 
         if (!directory.exists()){

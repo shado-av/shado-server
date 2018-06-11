@@ -38,8 +38,8 @@ public class DataWrapper {
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-//        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
-        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
+        outPutDirectory = "/Users/zhanglian1/shado-server/core/server/out/";
+//        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
         vars = param;
         sim = o;
     }
@@ -252,6 +252,8 @@ public class DataWrapper {
                     new FileOutputStream(fileName, true)), true));
 
             int numColumn = (int) Math.ceil(vars.numHours * 6);
+            double[][] utilizationSum = new double[vars.numReps][numColumn]; //the utilization for each operator per time interval per replication
+                                                                             //It is same thing with timeSectionSum. It's just we need another output.
 
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
@@ -278,6 +280,8 @@ public class DataWrapper {
                         utilization.utilization[k][i][j][time] = u;
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
+                        utilizationSum[i][time] += u;
+
                         System.out.print(u + ",");
                     }
                     taskSum /= vars.numHours * 6;
@@ -315,6 +319,22 @@ public class DataWrapper {
             System.out.println("The max average utilization cross replication is " + max);
             System.out.println("The min average utilization cross replication is " + min);
             System.out.println("The max utilization in 10 mins is " + max10mins);
+
+            fileName = outPutDirectory + "repCSV/Utilization_" + k + "_allTasks" + ".csv";
+            System.setOut(new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(fileName, true)), true));
+
+            for(int i = 1; i <= vars.numReps; i++){
+                System.out.print(i + ",");
+            }
+            System.out.println(" ");
+
+            for(int time = 0; time < numColumn; time++){
+                for(int rep = 0; rep < vars.numReps; rep++){
+                    System.out.print(utilizationSum[rep][time] + ",");
+                }
+                System.out.println(" ");
+            }
         }
 
         System.setOut(stdout);
