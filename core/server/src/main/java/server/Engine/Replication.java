@@ -155,6 +155,7 @@ public class Replication {
         if(!failTask(optimal_op,task, task.getType(),getTriangularDistribution(task.getType()))){
                 optimal_op.getQueue().add(task);
         }
+
     }
 
     /****************************************************************************
@@ -276,7 +277,7 @@ public class Replication {
 
         remoteOps = new RemoteOp(vars,globalTasks);
         remoteOps.run();
-        linked = remoteOps.gettasks();
+//        linked = remoteOps.gettasks();
 
         //SCHEN 11/10/17 For this version of Fleet hetero, assume each batch has 10 vehicles
         int maxLen = 0;
@@ -289,8 +290,8 @@ public class Replication {
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
                 // vehicleId to for 2d Array
-                vehicles[i][j] = new VehicleSim(vars,i*10 + j,remoteOps.getRemoteOp(),globalTasks,globalWatingTasks);
-                System.out.println("Vehicle "+(i*10+j)+" generates tasks");
+                vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks,globalWatingTasks);
+                System.out.println("Vehicle "+(i*100+j)+" generates tasks");
                 vehicles[i][j].genVehicleTask();
             }
         }

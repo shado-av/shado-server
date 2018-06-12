@@ -117,12 +117,28 @@ public class Queue implements Comparable<Queue>{
 
         SetTime(task.getArrTime());
         setExpectedFinTime(task);
-        if (!taskqueue.isEmpty()) {
-            if (task.getPriority() > taskqueue.peek().getPriority()) {
-                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
-            }
+
+
+        //Naixin
+        if(!taskqueue.isEmpty()){
+            taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
         }
+//--------Siyu's original code:
+//        if (!taskqueue.isEmpty()) {
+//            if (task.getPriority() > taskqueue.peek().getPriority()) {
+//                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
+//            }
+//        }
+
+        //End of Naixin's change
+
         taskqueue.add(task);
+
+        if(task.vars.opStrats.equals("L")){
+            //TODO[COMPLETED]: STF and Wait time
+            //Sort the current queue under STF
+            sortTaskQueueOnServTime();
+        }
 
         // If the task is processed as first priority, i.e. began immediately, then:
 
@@ -149,11 +165,12 @@ public class Queue implements Comparable<Queue>{
 
 
         //NEW FEATURE OPERATOR STRATEGIES
-        if(vars.opStrats.equals("STF")){
-            //TODO[COMPLETED]: STF and Wait time
-            //Sort the current queue under STF
-            sortTaskQueueOnServTime();
-        }
+//        if(vars.opStrats.equals("STF")){
+//            //TODO[COMPLETED]: STF and Wait time
+//            //Sort the current queue under STF
+//            sortTaskQueueOnServTime();
+//        }
+
 
         // This if statement avoids error when calling done on an empty queue.
 
@@ -257,7 +274,7 @@ public class Queue implements Comparable<Queue>{
         }
     }
 
-    private void sortTaskQueueOnServTime(){
+    public void sortTaskQueueOnServTime(){
 
         ArrayList<Task> tmpTaskQueue = new ArrayList<>();
         PriorityQueue<Task> newQueue = new PriorityQueue<>();

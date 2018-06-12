@@ -32,7 +32,7 @@ public class Task implements Comparable<Task> {
 	private double beginTime;
 	private double endTime;
 	private int[] opNums;
-	private loadparam vars;
+	public loadparam vars;
 	private String name;
 	private int vehicleID;
 	private boolean expired;

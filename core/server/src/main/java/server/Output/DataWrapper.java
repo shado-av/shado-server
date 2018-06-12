@@ -138,6 +138,7 @@ public class DataWrapper {
     public void testOutput() throws IOException {
         output();
         printWorkloadSummary();
+
         Utilization u = printUtilization();
 
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
@@ -227,8 +228,8 @@ public class DataWrapper {
         System.out.println(percentage_0 + "% ," + percentage_30 + "% ," + percentage_70 + "%,");
         System.out.println("AVG Utilization For Each Team");
         for (int i = 0; i < vars.numTeams; i++) {
-            System.out.println("Team " + vars.opNames[i] + ", " + teamUtilCrossRep[i] + ",Variance," + teamUtilVariance[i]);
-
+            double halfWidth = Math.sqrt(teamUtilVariance[i]) * 1.9842 / Math.sqrt(vars.numReps);
+            System.out.println("Team " + vars.opNames[i] + ", " + teamUtilCrossRep[i] + ",Variance," + teamUtilVariance[i] + ",Half Width," + halfWidth);
         }
         System.setOut(stdout);
     }
@@ -237,8 +238,6 @@ public class DataWrapper {
     private Utilization printUtilization() throws IOException {
 
         Utilization utilization = new Utilization(vars);
-
-
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
@@ -258,7 +257,7 @@ public class DataWrapper {
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
 
-                // an extra entry for the sum of whole replication
+                // an extra column for the sum utilization of whole replication
                 double[] timeSectionSum = new double[numColumn + 1];
 
                 //get the utilization data for replication i, operator k

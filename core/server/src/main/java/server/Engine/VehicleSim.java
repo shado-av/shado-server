@@ -110,7 +110,7 @@ public class VehicleSim  {
 
         // TODO[COMPLETED] add AI assitant to shorter the service time.
         // For each type of tasks:
-        int fleetType = this.vehicleID/10;
+        int fleetType = this.vehicleID/100;
         for(int i = 0; i < vars.numRemoteOp; i++){
             if(operators[i].getName().equals("Artificially Intelligent Agent"))
                 this.hasAI = true;
@@ -137,6 +137,7 @@ public class VehicleSim  {
                         newTask = new Task(taskType, 0, vars, true, checkAI(), vars.teamComm[0]);
 
                 }
+                indlist.add(newTask);
 //            System.out.println("arr time:"+newTask.getArrTime());
                 // While the next task is within the time frame, generate.
 
