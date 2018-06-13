@@ -64,6 +64,14 @@ public class Parser {
             }
             System.out.println(" ");
         }
+
+        for(int i = 0; i < in.numTeams; i++){
+            System.out.print("The AIDA for team " + i + ": ");
+            for(int j = 0; j < 3; j++){
+                System.out.print(" " + in.AIDAtype[i][j]);
+            }
+            System.out.println(" ");
+        }
         //System.out.println("arrpms: " + Arrays.toString(in.arrPms));
     }
 

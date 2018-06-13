@@ -93,33 +93,20 @@ public class Replication {
         // Create a new arraylist of queue:
 
         ArrayList<Queue> proc = new ArrayList<Queue>();
-
         ArrayList<Operator> working = new ArrayList<>(proc.size());
 
         // If the task can be operated by this operator, get his queue.
-
-//        for (int i = 0; i < operators.length; i++) {
         for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
             if(remoteOps.getRemoteOp()[j] != null) {
                 if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
                     //Put task in appropriate Queue
-
-                    //DEBUG:
-//                    System.out.println("    Adding Task "+task.getType()+" to-> "+remoteOps.getRemoteOp()[j].getName()
-//                    +", Current queue Size: " + remoteOps.getRemoteOp()[j].getQueue().taskqueue.size());
-
                     proc.add(remoteOps.getRemoteOp()[j].getQueue());
                     working.add(remoteOps.getRemoteOp()[j]);
-                    //System.out.println("Op "+remoteOps.getRemoteOp()[j].getName()+" is eligible");
                 }
             }
-//            }
         }
         if(working.size()==0)
             return;
-
-        // Sort queue by tasks queued.
-//        Collections.sort(proc);
 
         //SCHEN 2/7 Fix: to get the shortest Queue of Operators
 
@@ -136,22 +123,20 @@ public class Replication {
 
             }
         }
-//        if(vars.metaSnapShot % 50 == 0) {
-//            System.out.println("Optimal Operator: " + optimal_op.getName());
-//            for (Operator currOp : working)
-//                System.out.println("-- Current queue length for [" + currOp.getName() + "]: " + currOp.getQueue().taskqueue.size()+", ExpectedFinTime: "+currOp.getQueue().getExpectedFinTime());
-//        }
 
-        // Before inserting new tasks, make sure all the tasks that can be finished
-        // before the arrival of the new tasks is finished.
-        // NEW FEATURE: AI Assistant
-//        while (optimal_op.getQueue().getfinTime() < task.getArrTime()) {
-//            optimal_op.getQueue().done(vars,optimal_op);
-//            System.out.print("-- done");
-//        }
-        // add task to queue.
-        // **** I'm setting the operator so that we can access the data arrays of each operator ****
-//        proc.get(0).operator = working.get(0);
+        //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
+        //The ET AIDA can process the task with 0 service time ans 0 error (default, hard code for now)
+        if(!optimal_op.getQueue().taskqueue.isEmpty()){
+            if(vars.hasET[task.getType()]) return;
+        }
+
+        //AI feature: check if this operator has IA AIDA, if so reduce the service time by 50%
+        if(vars.AIDAtype[optimal_op.dpID/100][1] == 1) {
+            System.out.print("change serve time from " + task.getSerTime());
+            task.changeServTime(0.5);
+            System.out.println(" to " + task.getSerTime());
+        }
+
         if(!failTask(optimal_op,task, task.getType(),getTriangularDistribution(task.getType()))){
                 optimal_op.getQueue().add(task);
         }
@@ -229,6 +214,8 @@ public class Replication {
     }
 
     public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
+
+        //if no new task arrive, finish the remained tasks in the queue
         if (task == null){
             double totaltime = vars.numHours * 60;
             for (Operator each : remoteOp.getRemoteOp()) {
@@ -240,6 +227,7 @@ public class Replication {
             }
             return;
         }
+
         //When a new task is added, let operator finish all there tasks
         for(Operator op: remoteOp.getRemoteOp()) {
 //            if(vars.metaSnapShot % 50 ==0){
@@ -291,14 +279,14 @@ public class Replication {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
                 // vehicleId to for 2d Array
                 vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks,globalWatingTasks);
-                System.out.println("Vehicle "+(i*100+j)+" generates tasks");
+//                System.out.println("Vehicle "+(i*100+j)+" generates tasks");
                 vehicles[i][j].genVehicleTask();
             }
         }
 
         //Put all tasks in a timely order
         sortTask();
-        System.out.println("Total Tasks: "+ globalTasks.size());
+//        System.out.println("Total Tasks: "+ globalTasks.size());
 
         if(vars.replicationTracker == 0){
             vars.allTasks = globalTasks;

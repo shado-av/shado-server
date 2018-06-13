@@ -135,8 +135,6 @@ public class Simulation {
 
             //Global tracker for current replication
             vars.replicationTracker ++;
-            if (i%10 == 0)
-                System.out.println("we're at " + i + " repetition");
         }
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){

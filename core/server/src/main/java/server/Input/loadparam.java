@@ -65,6 +65,7 @@ public class loadparam {
 	public int teamSizeTotal;
 	public String[] opNames;
 	public int[][] opTasks;
+	public int[][] AIDAtype;
 
     public int numTeams;
     public char[] teamComm;
@@ -85,6 +86,7 @@ public class loadparam {
 	public int[][] affByTraff;
 	public int[][] opNums;
 	public int[][] trigger;
+	public boolean[] hasET; //if there is "Equal Teammate AIDA" for each task type
 
 	//SCHEN 12/10/17 Added: whether the task is affected by team coordination
 	public int[] teamCoordAff;
@@ -174,7 +176,36 @@ public class loadparam {
             }
         }
         utilizationOutput = new Data[numReps][numRemoteOp];
+        hasET = new boolean[numTaskTypes];
+        checkET();
     }
+
+    private void checkET(){
+
+        //set hasET default to false
+        for(int i = 0; i < numTaskTypes; i++){
+            hasET[i] = false;
+        }
+
+        for(int team = 0; team < numTeams; team++){
+            //if this team has equal teammate AIDA
+            if(AIDAtype[team][0] == 1){
+                for(int i : opTasks[team]) {
+                    hasET[i] = true;
+                }
+            }
+        }
+
+        //print checkET
+        System.out.print("checking ET : ");
+        for(boolean b : hasET){
+            if(b) System.out.print("true ");
+            else System.out.print("false ");
+        }
+        System.out.println(" ");
+    }
+
+
 //
 //	public loadparam(String file) throws FileNotFoundException{
 //

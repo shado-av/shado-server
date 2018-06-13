@@ -481,14 +481,7 @@ public class Task implements Comparable<Task> {
 
 		return  autoLevel;
 	}
-	private double getFleetAutonomy(int fleetType){
-		//SCHEN 12/10/17: Add Fleet autonomy -> adjust arrival rate
-        double autoLevel = 0.0;
-		if(vars.fleetAuto[fleetType] == 1) autoLevel = lvl_SOME;
-		if(vars.fleetAuto[fleetType] == 2) autoLevel = lvl_FULL;
 
-		return  autoLevel;
-	}
 //	private  double getTeamComm(){
 //		double teamComm = 1;
 //		if(vars.teamCoordAff == 1) teamComm = 0.7;
@@ -503,8 +496,9 @@ public class Task implements Comparable<Task> {
 	 *	Purpose:		change Service time and arrival rate by multiply by a number
 	 *
 	 ****************************************************************************/
-	private double changeServTime(double num){
-		return serTime * num;
+	public double changeServTime(double num){
+		serTime *= num;
+		return serTime;
 	}
 
 	private double changeArrivalRate(double num){

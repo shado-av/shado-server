@@ -123,6 +123,7 @@ public class Queue implements Comparable<Queue>{
         if(!taskqueue.isEmpty()){
             taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
         }
+
 //--------Siyu's original code:
 //        if (!taskqueue.isEmpty()) {
 //            if (task.getPriority() > taskqueue.peek().getPriority()) {
