@@ -378,11 +378,9 @@ public class Task implements Comparable<Task> {
 
 	private double genArrTime(double PrevTime){
 		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
-//		double arrivalRate = changeArrivalRate(getFleetAutonomy());
-//		double TimeTaken = Exponential(arrivalRate);
+		double arrivalRate = changeArrivalRate(getFleetAutonomy());
+		double TimeTaken = Exponential(arrivalRate);
 
-		//Naixin: for test use
-		double TimeTaken = Exponential(vars.arrPms[Type][0]);
 		if (TimeTaken == Double.POSITIVE_INFINITY){
 			return Double.POSITIVE_INFINITY;
 		}
