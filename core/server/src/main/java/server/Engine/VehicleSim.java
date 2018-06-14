@@ -37,9 +37,6 @@ public class VehicleSim  {
 
     public int vehicleID;
 
-    // NEW feature: AI Assistant
-    // SCHEN 1/20/18 whether AI is present in this fleetType
-    public boolean hasAI;
 
     // This is an arraylist of ALL tasks in the order that they're arriving.
     public ArrayList<Task> globalTasks;
@@ -47,10 +44,6 @@ public class VehicleSim  {
     // Inspectors
     public int getvehicleID() {
         return vehicleID;
-    }
-
-    public boolean checkAI(){
-        return this.hasAI;
     }
 
     public double getTotalTime() {
@@ -111,10 +104,7 @@ public class VehicleSim  {
         // TODO[COMPLETED] add AI assitant to shorter the service time.
         // For each type of tasks:
         int fleetType = this.vehicleID/100;
-        for(int i = 0; i < vars.numRemoteOp; i++){
-            if(operators[i].getName().equals("Artificially Intelligent Agent"))
-                this.hasAI = true;
-        }
+
         //If teamCoord Presents task number = total tasknum -1
         for (int i = 0; i < vars.fleetHetero[fleetType].length; i++) {
 
@@ -129,12 +119,12 @@ public class VehicleSim  {
 
             int taskType = vars.fleetHetero[fleetType][i];
             //DEBUG
-//            System.out.println("Now Generating Task type: "+taskType +", Fleet Type:" + fleetType);
+            System.out.println("Now Generating Task type: "+taskType +", Fleet Type:" + fleetType);
                 if (vars.arrPms[taskType][0] == 0) { //First task
-                        newTask = new Task(taskType, 30 + Math.random(), vars, false, checkAI(), vars.teamComm[0]); //New Task
+                        newTask = new Task(taskType, 30 + Math.random(), vars, false); //New Task
                 } else {
 
-                        newTask = new Task(taskType, 0, vars, true, checkAI(), vars.teamComm[0]);
+                        newTask = new Task(taskType, 0, vars, true);
 
                 }
                 indlist.add(newTask);
@@ -143,7 +133,7 @@ public class VehicleSim  {
 
                 int cnt = 0;
                 while (newTask.getArrTime() < vars.numHours * 60) {
-                    newTask = new Task(taskType, newTask.getArrTime(), vars, true,checkAI(), vars.teamComm[0]);
+                    newTask = new Task(taskType, newTask.getArrTime(), vars, true);
                     newTask.setID(vehicleID);
 //                    if(cnt++ > 20) System.out.println("generate:"+cnt+" tasks");
                     indlist.add(newTask);

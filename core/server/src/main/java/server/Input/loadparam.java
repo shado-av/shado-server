@@ -92,7 +92,7 @@ public class loadparam {
 	public int[] teamCoordAff;
 	// Adding isLinked
     public int numPhases;
-	public int[] linked;
+//	public int[] linked;
 	public double[][] humanError;
 
 	// Toggle Global Variables

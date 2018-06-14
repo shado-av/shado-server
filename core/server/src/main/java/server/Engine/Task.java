@@ -93,13 +93,13 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev ) {
+	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
 
 		Type = type;
 		vars = Param;
 		prevTime = PrevTime;
-//        System.out.println("PrevTime: "+prevTime);
         this.fail = false;
+
 		if (vars.arrPms[type][0] != 0) {
 			Phase = getPhase(PrevTime, vars.numHours);
 			shiftPeriod = getShiftTime(PrevTime,vars.numHours);
@@ -109,7 +109,6 @@ public class Task implements Comparable<Task> {
 		}
 		if(vars.numPhases == 1)
 		    Phase = 0;
-
 
 		Priority = Param.taskPrty[Type][Phase];
 		if (fromPrev == true) {
@@ -125,82 +124,19 @@ public class Task implements Comparable<Task> {
 		else if(teamCoordParam == 2)
 			changeServTime(lvl_FULL);
 //		applyExogenousFactor();
-        changeServTime(1.01*(shiftPeriod+1));
+
+		//shift schedule 1% fatigue increase serve time
+		changeServTime(1 + 0.01 * (shiftPeriod+1));
 
 		expTime = genExpTime();
 
 		beginTime = arrTime;
 		opNums = vars.opNums[Type];
 		name = vars.taskNames[Type];
-		isLinked = vars.linked[Type] == 1;
+//		isLinked = vars.linked[Type] == 1;
 		elapsedTime = 0;
 		waitTime = 0;
 		expired = false;
-	}
-
-	/****************************************************************************
-	 *
-	 *	Shado Object:	Task overload with AI
-	 *
-	 *	Purpose:		Generate a new task on completion of old task. And return
-	 *					it's vars.
-	 *
-	 ****************************************************************************/
-
-	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, boolean hasAI, char lvlComm ) {
-
-		Type = type;
-		vars = Param;
-		prevTime = PrevTime;
-		this.fail = false;
-        if (vars.arrPms[type][0] != 0) {
-            Phase = getPhase(PrevTime, vars.numHours);
-            shiftPeriod = getShiftTime(PrevTime,vars.numHours);
-        } else {
-            Phase = getPhase(31, vars.numHours);
-            shiftPeriod = getShiftTime(PrevTime,vars.numHours);
-        }
-        if(vars.numPhases == 1)
-            Phase = 0;
-
-		Priority = Param.taskPrty[Type][Phase];
-		if (fromPrev) {
-			arrTime = genArrTime(PrevTime);
-		} else {
-			arrTime = PrevTime;
-		}
-		//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
-		int teamCoordParam = vars.teamCoordAff[Type];
-		serTime = genSerTime();
-		if(teamCoordParam == 1)
-			changeServTime(lvl_SOME);
-		else if(teamCoordParam == 2)
-			changeServTime(lvl_FULL);
-
-		//Modules
-//		applyExogenousFactor();
-		applyAI(hasAI);
-        applyTeamCoord(lvlComm);
-
-        //SHIFT SCHEDULE 1% fatique Increase serTime
-        changeServTime(1+ 0.01*(shiftPeriod+1));
-
-		// Use Service time to calculate ExpTime
-		expTime = genExpTime();
-		beginTime = arrTime;
-		opNums = vars.opNums[Type];
-		name = vars.taskNames[Type];
-		elapsedTime = 0;
-		expired = false;
-
-		//DEBUG
-//        System.out.println("task gen arrTime: "+arrTime+", prevTime: "+prevTime+", servTime: "+serTime);
-
-        //DEBUG
-        if(vars.debugCnt++ == 10) {
-            //System.exit(0);
-        }
-//      getTriangularDistribution();
 	}
 
 	/****************************************************************************
@@ -527,11 +463,6 @@ public class Task implements Comparable<Task> {
 	private void applyTeamCoord(char lvlTeamCoord){
 		if(lvlTeamCoord =='S') changeArrivalRate(0.7);
         if(lvlTeamCoord =='F') changeArrivalRate(0.3);
-	}
-
-	private void applyAI(boolean hasAI){
-	    if(hasAI)
-	    	changeServTime(0.7);
 	}
 
 }
