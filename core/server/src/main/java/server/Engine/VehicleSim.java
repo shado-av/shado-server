@@ -99,9 +99,7 @@ public class VehicleSim  {
      ****************************************************************************/
 
     public synchronized void taskgen() {
-//        System.out.println("TaskGen for vehicle ID: "+ vehicleID);
 
-        // TODO[COMPLETED] add AI assitant to shorter the service time.
         // For each type of tasks:
         int fleetType = this.vehicleID/100;
 
@@ -119,7 +117,7 @@ public class VehicleSim  {
 
             int taskType = vars.fleetHetero[fleetType][i];
             //DEBUG
-            System.out.println("Now Generating Task type: "+taskType +", Fleet Type:" + fleetType);
+//            System.out.println("Now Generating Task type: "+taskType +", Fleet Type:" + fleetType);
                 if (vars.arrPms[taskType][0] == 0) { //First task
                         newTask = new Task(taskType, 30 + Math.random(), vars, false); //New Task
                 } else {

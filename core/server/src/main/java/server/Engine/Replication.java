@@ -125,17 +125,20 @@ public class Replication {
         }
 
         //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
-        //The ET AIDA can process the task with 0 service time ans 0 error (default, hard code for now)
+        //The ET AIDA can process the task with 0 serve time ans 0 error (default, hard code for now)
+        //TODO: make AI's serve time and error rate adjustable by user
         if(!optimal_op.getQueue().taskqueue.isEmpty()){
             if(vars.hasET[task.getType()]) return;
         }
 
         //AI feature: check if this operator has IA AIDA, if so reduce the service time by 50%
+        //TODO: only change the serve time for certain tasks, make the change rate adjustable
         if(vars.AIDAtype[optimal_op.dpID/100][1] == 1) {
-            System.out.print("change serve time from " + task.getSerTime());
             task.changeServTime(0.5);
-            System.out.println(" to " + task.getSerTime());
         }
+
+        //check team communication, change the serve time
+        task.changeServTime(getTeamComm(optimal_op.dpID));
 
         if(!failTask(optimal_op,task, task.getType(),getTriangularDistribution(task.getType()))){
                 optimal_op.getQueue().add(task);
@@ -183,16 +186,15 @@ public class Replication {
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 //        System.out.println("comparing" +distValue+" and "+randomValue);
 
-        //If it is AI, skip
-        if(operator.getName().split(" ")[0].equals("Artificially")||operator.getName().equals("AIDA"))
-            return false;
         if(Math.abs(randomValue - distValue) <= 0.0001){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
             int currCnt = failCnt.get(vars.replicationTracker);
             failCnt.put(vars.replicationTracker,++currCnt);
 //            System.out.println(operator.getName()+" fails " +task.getName()+", Total Fail "+ currCnt);
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
-            if(Math.random() < vars.failThreshold){
+
+            //If there is team communication, it will be easier to catch error. The failThreshold will decrease.
+            if(Math.random() < vars.failThreshold * getTeamComm(operator.dpID)){
                 //Task Failed but still processed by operator
                 task.setFail();
                 return false;
@@ -284,6 +286,12 @@ public class Replication {
             }
         }
 
+        //TODO: generate team communication tasks
+//        for(int i = 0; i < vars.numTeams; i++){
+//            if(vars.teamComm[i] == 'S') genTeamCommTask('S');
+//            if(vars.teamComm[i] == 'F') genTeamCommTask('F');
+//        }
+
         //Put all tasks in a timely order
         sortTask();
 //        System.out.println("Total Tasks: "+ globalTasks.size());
@@ -309,4 +317,35 @@ public class Replication {
         System.out.println("Curr Replication: " + vars.replicationTracker);
 
     }
+
+    private double getTeamComm(int dpID){
+        int type = dpID / 100;
+        double teamComm = 1;
+        if(vars.teamComm[type] == 'S') teamComm = 0.7;
+        if(vars.teamComm[type] == 'F') teamComm = 0.3;
+        return teamComm;
+    }
+
+    private void genTeamCommTask(char level){
+        int taskType = -1;
+        if(level == 'S') taskType = -1;
+        if(level == 'F') taskType = -2;
+
+        ArrayList<Task> indlist = new ArrayList<Task>();
+        Task newTask = new Task(taskType, 0, vars, true);
+        indlist.add(newTask);
+
+        while(newTask.getArrTime() < vars.numHours * 60){
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            indlist.add(newTask);
+        }
+
+        globalTasks.addAll(indlist);
+        vars.repNumTasks[vars.replicationTracker]+= indlist.size();
+
+    }
+
 }
+
+
+

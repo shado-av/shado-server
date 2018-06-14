@@ -18,11 +18,20 @@ import server.Input.loadparam;
 
 public class Task implements Comparable<Task> {
 
-	//Task specific variables.
+	//General task input params.
 	private int Type;
+	private int Priority;
+	public loadparam vars;
+	private double lvl_SOME = 0.7;
+	private double lvl_FULL = 0.3;
+	private double lvl_None = 1.0;
+	private double[] arrivalRate;
+
+
+
+	//Task specific variables.
 	private int Phase;
 	private int shiftPeriod;
-	private int Priority;
 	private double prevTime;
 	private double arrTime;
 	private double serTime;
@@ -32,14 +41,11 @@ public class Task implements Comparable<Task> {
 	private double beginTime;
 	private double endTime;
 	private int[] opNums;
-	public loadparam vars;
 	private String name;
 	private int vehicleID;
 	private boolean expired;
 	private boolean fail; // Indicates fail but proceed
-	private double lvl_SOME = 0.7;
-	private double lvl_FULL = 0.3;
-	private double lvl_None = 1.0;
+
 
 	// This adds functionalities of the RemoteOper
 
@@ -98,45 +104,57 @@ public class Task implements Comparable<Task> {
 		Type = type;
 		vars = Param;
 		prevTime = PrevTime;
-        this.fail = false;
+		this.fail = false;
 
-		if (vars.arrPms[type][0] != 0) {
-			Phase = getPhase(PrevTime, vars.numHours);
-			shiftPeriod = getShiftTime(PrevTime,vars.numHours);
-		} else {
-			Phase = getPhase(31, vars.numHours);
-            shiftPeriod = getShiftTime(PrevTime,vars.numHours);
-		}
-		if(vars.numPhases == 1)
-		    Phase = 0;
+		if(type >= 0){
+//			arrivalRate = vars.arrPms[type];
+			if (vars.arrPms[type][0] != 0) {
+				Phase = getPhase(PrevTime, vars.numHours);
+				shiftPeriod = getShiftTime(PrevTime,vars.numHours);
+			} else {
+				Phase = getPhase(31, vars.numHours);
+				shiftPeriod = getShiftTime(PrevTime,vars.numHours);
+			}
+			if(vars.numPhases == 1)
+				Phase = 0;
 
-		Priority = Param.taskPrty[Type][Phase];
-		if (fromPrev == true) {
-			arrTime = genArrTime(PrevTime);
-		} else {
-			arrTime = PrevTime;
-		}
-		//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
-		int teamCoordParam = vars.teamCoordAff[Type];
-		serTime = genSerTime();
-		if(teamCoordParam == 1)
-			changeServTime(lvl_SOME);
-		else if(teamCoordParam == 2)
-			changeServTime(lvl_FULL);
+			Priority = Param.taskPrty[Type][Phase];
+			if (fromPrev == true) {
+				arrTime = genArrTime(PrevTime);
+			} else {
+				arrTime = PrevTime;
+			}
+
+
+			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
+			serTime = genSerTime();
+
 //		applyExogenousFactor();
 
-		//shift schedule 1% fatigue increase serve time
-		changeServTime(1 + 0.01 * (shiftPeriod+1));
+			//shift schedule 1% fatigue increase serve time
+			changeServTime(1 + 0.01 * (shiftPeriod+1));
 
-		expTime = genExpTime();
+			expTime = genExpTime();
 
-		beginTime = arrTime;
-		opNums = vars.opNums[Type];
-		name = vars.taskNames[Type];
+			beginTime = arrTime;
+			opNums = vars.opNums[Type];
+			name = vars.taskNames[Type];
 //		isLinked = vars.linked[Type] == 1;
-		elapsedTime = 0;
-		waitTime = 0;
-		expired = false;
+			elapsedTime = 0;
+			waitTime = 0;
+			expired = false;
+		}
+		else{
+
+			if(type == -1){
+
+			}
+			else if(type == -2){
+
+			}
+		}
+
+
 	}
 
 	/****************************************************************************
@@ -212,9 +230,9 @@ public class Task implements Comparable<Task> {
 
     /****************************************************************************
      *
-     *	Method:			GetPhase
+     *	Method:			getShiftTime
      *
-     *	Purpose:		Return the Phase
+     *	Purpose:		Return shift period
      *
      ****************************************************************************/
 
@@ -410,7 +428,7 @@ public class Task implements Comparable<Task> {
 
 	private double getFleetAutonomy(){
 		//SCHEN 12/10/17: Add Fleet autonomy -> adjust arrival rate
-		double autoLevel = 1;
+		double autoLevel = lvl_None; //default
 
 		if(vars.autolvl == 1) autoLevel = lvl_SOME;
 		if(vars.autolvl == 2) autoLevel = lvl_FULL;
@@ -418,13 +436,6 @@ public class Task implements Comparable<Task> {
 		return  autoLevel;
 	}
 
-//	private  double getTeamComm(){
-//		double teamComm = 1;
-//		if(vars.teamCoordAff == 1) teamComm = 0.7;
-//		if(vars.autolvl == 2) teamComm = 0.3;
-//
-//		return  teamComm;
-//	}
 	/****************************************************************************
 	 *
 	 *	Method:			changeServTime, changeArrivalRate
@@ -432,9 +443,9 @@ public class Task implements Comparable<Task> {
 	 *	Purpose:		change Service time and arrival rate by multiply by a number
 	 *
 	 ****************************************************************************/
-	public double changeServTime(double num){
+	public void changeServTime(double num){
 		serTime *= num;
-		return serTime;
+		return;
 	}
 
 	private double changeArrivalRate(double num){
@@ -460,10 +471,6 @@ public class Task implements Comparable<Task> {
 		}
 	}	//END applyExogenousFactor()
 
-	private void applyTeamCoord(char lvlTeamCoord){
-		if(lvlTeamCoord =='S') changeArrivalRate(0.7);
-        if(lvlTeamCoord =='F') changeArrivalRate(0.3);
-	}
 
 }
 

@@ -179,7 +179,14 @@ public class loadparam {
         hasET = new boolean[numTaskTypes];
         checkET();
     }
-
+    /****************************************************************************
+     *
+     *	Shado Object:	checkET
+     *
+     *	Purpose:		Build the checkET matrix to record the Equal Teammate AIDA
+     *                  for each task.
+     *
+     ****************************************************************************/
     private void checkET(){
 
         //set hasET default to false
