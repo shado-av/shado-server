@@ -42,7 +42,8 @@ public class Parser {
         System.out.println("numRemoteOp: " + in.numRemoteOp);
         System.out.println("numTeams: " + in.numTeams);
         System.out.println("numPhases: " + in.numPhases);
-        System.out.println("autolvl: " + in.autolvl);
+        System.out.println("phaseBegin: " + Arrays.toString(in.phaseBegin));
+        System.out.println("autolvl: " + Arrays.toString(in.autolvl));
         System.out.println("the exo: " + Arrays.toString(in.hasExogenous));
         System.out.println("exNames: "+ Arrays.toString(in.exNames));
         System.out.println("exTypes: "+ Arrays.toString(in.exTypes));

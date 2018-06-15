@@ -106,6 +106,8 @@ public class RemoteOp {
      *
      ****************************************************************************/
 
+    //TODO: the vehicleID here may cause problem (cannot be -1)
+
     public void genRemoteOpTask() {
 
         // Creates a new task arraylist of the tasks that are linked
@@ -166,7 +168,7 @@ public class RemoteOp {
                     // Set vehicle ID.
                     //SCHEN 11/10/17 vehicle id for 2d array
 //                    System.out.println("vehicle id: " + (k*10 +j));
-                    int id = k*10 +j;
+                    int id = k*100 +j;
                     newTask.setID(id);
 
                     indlist.add(newTask);

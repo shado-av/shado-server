@@ -95,7 +95,7 @@ public class Shado{
 		System.out.println("FleetHetero: "+ Arrays.deepToString(data.fleetHetero));
 		System.out.println("Fleet Types: "+ data.fleetTypes);
 		System.out.println("numvehicles: "+ Arrays.toString(data.numvehicles));
-		System.out.println("autoLevel: "+ data.autolvl);
+		System.out.println("autoLevel: "+ Arrays.toString(data.autolvl));
 		System.out.println("team Communication: "+ Arrays.toString(data.teamComm));
 		System.out.println("hasExo: "+ Arrays.toString(data.hasExogenous));
 		System.out.println("exNames: "+ Arrays.toString(data.exNames));

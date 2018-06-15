@@ -46,7 +46,7 @@ public class loadparam {
 	// Some ->70%
 	// Full-> 30%
 
-	public int autolvl;
+	public int[] autolvl;
 	public int [] hasExogenous;
 	public String opStrats;
 	public double failThreshold;
@@ -92,13 +92,14 @@ public class loadparam {
 	public int[] teamCoordAff;
 	// Adding isLinked
     public int numPhases;
+    public double[] phaseBegin;
 //	public int[] linked;
 	public double[][] humanError;
 
 	// Toggle Global Variables
     //If there is exogenous factor that add tasks to the queue
 	public static boolean exAddTask = false;
-	public static boolean TRAFFIC_ON = true;
+	public static boolean TRAFFIC_ON = false;
 	public static boolean FATIGUE_ON = true;
 	public static boolean DEBUG_ON = false;
 	public static boolean OUTPUT_ON = true;

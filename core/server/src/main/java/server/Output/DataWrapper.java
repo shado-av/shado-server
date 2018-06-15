@@ -238,6 +238,7 @@ public class DataWrapper {
     private Utilization printUtilization() throws IOException {
 
         Utilization utilization = new Utilization(vars);
+        double[] maxUtiDistribution = new double[vars.numReps];
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
@@ -256,6 +257,7 @@ public class DataWrapper {
 
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
+                maxUtiDistribution[i] = 0;
 
                 // an extra column for the sum utilization of whole replication
                 double[] timeSectionSum = new double[numColumn + 1];
@@ -277,6 +279,7 @@ public class DataWrapper {
                     for (int time = 0; time < numColumn; time++) {
                         double u = taskUtilization.dataget(j, time, 0);
                         utilization.utilization[k][i][j][time] = u;
+                        if(u > maxUtiDistribution[i]) maxUtiDistribution[i] = u;
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
                         utilizationSum[i][time] += u;
@@ -334,6 +337,15 @@ public class DataWrapper {
                 }
                 System.out.println(" ");
             }
+        }
+
+        //output the max 10 min utilization distribution file
+        String fileName = outPutDirectory + "maxUtilizationDistribution.csv";
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(fileName, false)), true));
+
+        for(int i = 0; i < vars.numReps; i++){
+            System.out.println(maxUtiDistribution[i]);
         }
 
         System.setOut(stdout);

@@ -332,7 +332,8 @@ public class Task implements Comparable<Task> {
 
 	private double genArrTime(double PrevTime){
 		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
-		double arrivalRate = changeArrivalRate(getFleetAutonomy());
+		int fleet = vehicleID / 100;
+		double arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
 		double TimeTaken = Exponential(arrivalRate);
 
 		if (TimeTaken == Double.POSITIVE_INFINITY){
@@ -426,12 +427,12 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double getFleetAutonomy(){
+	private double getFleetAutonomy(int fleet){
 		//SCHEN 12/10/17: Add Fleet autonomy -> adjust arrival rate
 		double autoLevel = lvl_None; //default
 
-		if(vars.autolvl == 1) autoLevel = lvl_SOME;
-		if(vars.autolvl == 2) autoLevel = lvl_FULL;
+		if(vars.autolvl[fleet] == 1) autoLevel = lvl_SOME;
+		if(vars.autolvl[fleet] == 2) autoLevel = lvl_FULL;
 
 		return  autoLevel;
 	}

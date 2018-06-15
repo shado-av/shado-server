@@ -50,7 +50,6 @@ public class GreetingController {
         shado = new Shado(sessionNum, directory);
         shado.runShado(payload);
 //        System.out.println(payload);
-        //Generate JSON and send it back
         return "Shado Successfully Run! SESSION #: "+ sessionNum;
     }
 
