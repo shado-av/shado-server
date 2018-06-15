@@ -104,19 +104,14 @@ public class Task implements Comparable<Task> {
 		Type = type;
 		vars = Param;
 		prevTime = PrevTime;
+		Phase = getPhase(PrevTime);
+		shiftPeriod = getShiftTime(PrevTime);
 		this.fail = false;
+		elapsedTime = 0;
+		waitTime = 0;
+		expired = false;
 
 		if(type >= 0){
-//			arrivalRate = vars.arrPms[type];
-			if (vars.arrPms[type][0] != 0) {
-				Phase = getPhase(PrevTime, vars.numHours);
-				shiftPeriod = getShiftTime(PrevTime,vars.numHours);
-			} else {
-				Phase = getPhase(31, vars.numHours);
-				shiftPeriod = getShiftTime(PrevTime,vars.numHours);
-			}
-			if(vars.numPhases == 1)
-				Phase = 0;
 
 			Priority = Param.taskPrty[Type][Phase];
 			if (fromPrev == true) {
@@ -140,12 +135,10 @@ public class Task implements Comparable<Task> {
 			opNums = vars.opNums[Type];
 			name = vars.taskNames[Type];
 //		isLinked = vars.linked[Type] == 1;
-			elapsedTime = 0;
-			waitTime = 0;
-			expired = false;
+
 		}
 		else{
-
+			Priority = 0;
 			if(type == -1){
 
 			}
@@ -228,6 +221,17 @@ public class Task implements Comparable<Task> {
 
 	}
 
+	public int getPhase(double time){
+		int currentPhase = 0;
+		for(int i = 0; i < vars.numPhases; i++){
+			if(vars.phaseBegin[i] <= time){
+				currentPhase = i;
+			}
+			else break;
+		}
+		return currentPhase;
+	}
+
     /****************************************************************************
      *
      *	Method:			getShiftTime
@@ -237,7 +241,7 @@ public class Task implements Comparable<Task> {
      ****************************************************************************/
 
 
-    public int getShiftTime(double time, double hours){
+    public int getShiftTime(double time){
 //        System.out.println("at shift period: "+(int)time/60);
         return (int)time/60;
     }
