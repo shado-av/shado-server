@@ -33,7 +33,7 @@ public class GreetingController {
     Date date = new Date();
 
 //    private String directory = "/home/rapiduser/shado-server/core/server/out/";
-    private String directory = "/Users/zhanglian1/shado-server/core/server/out/";
+    private String directory = "/Users/zhanglian1/Desktop/out/";
 
     @RequestMapping("/shado/hello")
     public Greeting greeting(@RequestParam(value="name", defaultValue="This is Shado") String name) {
