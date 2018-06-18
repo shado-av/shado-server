@@ -97,7 +97,10 @@ public class Replication {
 
         //If this is a team coordination task, which can only be handled within certain team
         if(task.getType() < 0){
-            int operatorType = task.opNums[0]; //I save the operator type in opNums[0] in the constructor, because I don't want to create a new filed for it
+            int operatorType = task.opNums[0]; //I save the operator type in opNums[0] for special tasks
+            if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
+                task.changeServTime(0.5);
+            }
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
                 if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
                         //Put task in appropriate Queue

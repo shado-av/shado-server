@@ -38,7 +38,7 @@ public class Simulation {
 
     private int totalRemoteOp;
 
-    private int numSpecialTasks = 0;
+    private int numSpecialTasks = 2;
 
 
 
@@ -57,6 +57,8 @@ public class Simulation {
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
     }
+
+    public int getNumSpecialTasks(){ return numSpecialTasks; }
 
     public Data[] getopsdata() { return operatoroutput; }
 
@@ -77,7 +79,6 @@ public class Simulation {
         vars = param;
         repnumber = param.numReps;
         System.out.println("NumReps: " + repnumber);
-        getNumSpecialTasks();
         // Generate overall data field
 
         checkExogenousFactor();
@@ -95,21 +96,6 @@ public class Simulation {
         expiredtaskcount = new int[param.numTaskTypes + numSpecialTasks];
         completedtaskcount = new int[param.numTaskTypes + numSpecialTasks];
 
-    }
-
-    /****************************************************************************
-     *
-     *	Method:			getNumSpecialTasks
-     *
-     *	Purpose:		Find the number of special task types
-     *                  e.g. Coordination task level 1 & 2, Exogenous task
-     *
-     ****************************************************************************/
-
-
-    private void getNumSpecialTasks(){
-        numSpecialTasks = 2;
-        return;
     }
 
     /****************************************************************************

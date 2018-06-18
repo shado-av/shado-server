@@ -135,7 +135,7 @@ public class Queue implements Comparable<Queue>{
 
         taskqueue.add(task);
 
-        if(task.vars.opStrats.equals("L")){
+        if(task.vars.opStrats.equals("STF")){
             //TODO[COMPLETED]: STF and Wait time
             //Sort the current queue under STF
             sortTaskQueueOnServTime();

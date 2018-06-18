@@ -34,6 +34,8 @@ public class DataWrapper {
 
     private String outPutDirectory;
 
+    private int numSpecialTasks;
+
     PrintStream stdout;
 
     public DataWrapper(Simulation o, loadparam param) {
@@ -42,6 +44,7 @@ public class DataWrapper {
 //        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
         vars = param;
         sim = o;
+        numSpecialTasks = o.getNumSpecialTasks();
     }
 
 
@@ -100,8 +103,11 @@ public class DataWrapper {
             System.out.println("Task name: " + vars.taskNames[i]);
             System.out.println("expired: " + sim.getExpiredtask()[i]);
             System.out.println("completed: " + sim.getCompletedtaskcount()[i]);
-
-
+        }
+        for(int i = 0; i < numSpecialTasks; i++){
+            System.out.println("Special Task" + i);
+            System.out.println("expired: " + sim.getExpiredtask()[vars.numTaskTypes + i]);
+            System.out.println("completed: " + sim.getCompletedtaskcount()[vars.numTaskTypes + i]);
         }
         System.out.println("*** FAILED TASKS ***");
 //            System.out.println("Operator "+ p.getKey().getName()+" Failed: "+p.getValue().getName());
@@ -137,7 +143,7 @@ public class DataWrapper {
 
     public void testOutput() throws IOException {
         output();
-        printWorkloadSummary();
+//        printWorkloadSummary();
 
         Utilization u = printUtilization();
 
@@ -238,7 +244,6 @@ public class DataWrapper {
     private Utilization printUtilization() throws IOException {
 
         Utilization utilization = new Utilization(vars);
-        double[] maxUtiDistribution = new double[vars.numReps];
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
@@ -249,7 +254,7 @@ public class DataWrapper {
 
             String fileName = outPutDirectory + "repCSV/Utilization_" + k + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, true)), true));
+                    new FileOutputStream(fileName, false)), true));
 
             int numColumn = (int) Math.ceil(vars.numHours * 6);
             double[][] utilizationSum = new double[vars.numReps][numColumn]; //the utilization for each operator per time interval per replication
@@ -257,7 +262,6 @@ public class DataWrapper {
 
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
-                maxUtiDistribution[i] = 0;
 
                 // an extra column for the sum utilization of whole replication
                 double[] timeSectionSum = new double[numColumn + 1];
@@ -273,13 +277,21 @@ public class DataWrapper {
                 System.out.println("Sum per task");
 
                 // one row per task
-                for (int j = 0; j < vars.numTaskTypes; j++) {
+                for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
                     double taskSum = 0;
-                    System.out.print(vars.taskNames[j] + ",");
+                    if(j < vars.numTaskTypes){
+                        System.out.print(vars.taskNames[j] + ",");
+                    }
+                    else if(j == vars.numTaskTypes){
+                        System.out.print("Team Coordinate Task 1: ,");
+                    }
+                    else if(j == vars.numTaskTypes + 1){
+                        System.out.print("Team Coordinate Task 2: ,");
+                    }
+
                     for (int time = 0; time < numColumn; time++) {
                         double u = taskUtilization.dataget(j, time, 0);
                         utilization.utilization[k][i][j][time] = u;
-                        if(u > maxUtiDistribution[i]) maxUtiDistribution[i] = u;
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
                         utilizationSum[i][time] += u;
@@ -337,15 +349,6 @@ public class DataWrapper {
                 }
                 System.out.println(" ");
             }
-        }
-
-        //output the max 10 min utilization distribution file
-        String fileName = outPutDirectory + "maxUtilizationDistribution.csv";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(fileName, false)), true));
-
-        for(int i = 0; i < vars.numReps; i++){
-            System.out.println(maxUtiDistribution[i]);
         }
 
         System.setOut(stdout);
