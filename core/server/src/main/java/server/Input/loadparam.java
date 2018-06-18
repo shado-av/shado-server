@@ -81,8 +81,7 @@ public class loadparam {
     public char[] serDists;
     public double[][] serPms;
     public char[] expDists;
-   	public double[][] expPmsLo;
-    public double[][] expPmsHi;
+   	public double[][][] expPms;
 	public int[][] affByTraff;
 	public int[][] opNums;
 	public int[][] trigger;

@@ -121,7 +121,7 @@ public class Task implements Comparable<Task> {
 			}
 
 			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
-			serTime = genSerTime();
+			serTime = GenTime(vars.serDists[Type], vars.serPms[Type]);
 
 //		applyExogenousFactor();
 
@@ -289,31 +289,48 @@ public class Task implements Comparable<Task> {
 
 	/****************************************************************************
 	 *
+	 *	Method:			Triangular
+	 *
+	 *	Purpose:		Return a triangular distributed random variables
+	 *
+	 ****************************************************************************/
+
+	private double Triangular(double min, double max, double mode){
+		double F = (mode - min)/(max - min);
+		double rand = Math.random();
+		if (rand < F) {
+			return min + Math.sqrt(rand * (max - min) * (mode - min));
+		} else {
+			return max - Math.sqrt((1 - rand) * (max - min) * (max - mode));
+		}
+	}
+
+	/****************************************************************************
+	 *
 	 *	Method:			genTime
 	 *
 	 *	Purpose:		Generate a new time with the specified type and vars.
 	 *
 	 ****************************************************************************/
 
-	private double GenTime (char type, double start, double end){
+	private double GenTime (char type, double[] param){
 		switch (type){
 			case 'E':
-				return Exponential(start);
+				return Exponential(param[0]);
 			case 'L':
-				return Lognormal(start, end);
+				return Lognormal(param[0], param[1]);
 			case 'U':
-				return Uniform(start, end);
+				return Uniform(param[0], param[1]);
 			case 'T':
-				return Triangular(type);
+				return Triangular(param[0], param[1], param[2]);
+			case 'C':
+				return param[0];
 			default:
 				throw new IllegalArgumentException("Wrong Letter");
 		}
 	}
 
-	private double Triangular(char type){
-		//DO STUFF
-		return 0.0;
-	}
+
 
 	/****************************************************************************
 	 *
@@ -366,23 +383,6 @@ public class Task implements Comparable<Task> {
 		return newArrTime;
 	}
 
-	/****************************************************************************
-	 *
-	 *	Method:			genSerTime
-	 *
-	 *	Purpose:		Generate a new service time.
-	 *
-	 ****************************************************************************/
-
-	private double genSerTime(){
-
-		char type = vars.serDists[Type];
-		double start = vars.serPms[Type][0];
-		double end = vars.serPms[Type][1];
-//		System.out.println("genSerTime: Sertime " +start+ " " +end);
-		return GenTime(type, start, end);
-
-	}
 
 	/****************************************************************************
 	 *
@@ -394,17 +394,7 @@ public class Task implements Comparable<Task> {
 
 	private double genExpTime(){
 
-		double param;
-		double expiration = 0;
-		int hour = (int) arrTime/60;
-		if (hour >= vars.traffic.length){
-			return arrTime;
-		} else if (vars.traffic[hour] == 2){
-			param = vars.expPmsHi[Type][Phase];
-		} else {
-			param = vars.expPmsLo[Type][Phase];
-		}
-		expiration = GenTime(vars.expDists[Type], param, 0);
+		double expiration = GenTime(vars.expDists[Type], vars.expPms[Phase][Type]);
 		return arrTime + 2*serTime + expiration;
 
 	}
