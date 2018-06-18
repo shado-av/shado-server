@@ -123,8 +123,6 @@ public class Task implements Comparable<Task> {
 			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
 			serTime = GenTime(vars.serDists[Type], vars.serPms[Type]);
 
-//		applyExogenousFactor();
-
 			expTime = genExpTime();
 			opNums = vars.opNums[Type];
 			name = vars.taskNames[Type];
@@ -135,13 +133,21 @@ public class Task implements Comparable<Task> {
 			Priority = 0;
 			if(type == -1){
 				arrTime = PrevTime + Exponential(0.1);
+				serTime = Exponential(0.1667);
+				name = "Team Coordination Task level some";
 			}
 			else if(type == -2){
 				arrTime = PrevTime + Exponential(0.2);
+				serTime = Exponential(0.1667);
+				name = "Team Coordination Task level full";
 			}
-			serTime = Exponential(0.1667);
+			else if(type == -3){
+				arrTime = PrevTime + Exponential(0.0021);
+				serTime = Uniform(20,40);
+				name = "Exogenous Task";
+			}
+
 			expTime = Double.POSITIVE_INFINITY;
-			name = "Team Coordination Task";
 			opNums = new int[1];
 		}
 
@@ -173,8 +179,6 @@ public class Task implements Comparable<Task> {
 
 	// The following are inspector functions.
 
-	public int getvehicle() {return this.vehicleID;}
-
 	public String getName() {return this.name;}
 
 	public int getQueued() {return this.queued;}
@@ -184,8 +188,6 @@ public class Task implements Comparable<Task> {
 	public int getType() {return this.Type;}
 
 	public int getPriority(){return this.Priority;}
-
-	public double getPrevTime(){return this.prevTime;}
 
 	public double getArrTime(){return this.arrTime;}
 
@@ -198,8 +200,6 @@ public class Task implements Comparable<Task> {
 	public double getELSTime() {return this.elapsedTime;}
 
 	public double getBeginTime() {return this.beginTime;}
-
-	public int[] getOpNums() {return this.opNums;}
 
 
 	/****************************************************************************
@@ -229,12 +229,10 @@ public class Task implements Comparable<Task> {
      *
      ****************************************************************************/
 
-
     public int getShiftTime(double time){
 //        System.out.println("at shift period: "+(int)time/60);
         return (int)time/60;
     }
-
 
 	/****************************************************************************
 	 *
@@ -283,7 +281,7 @@ public class Task implements Comparable<Task> {
 
 	private double Uniform(double min, double max){
 
-		return min + (max-min)*Math.random();
+		return min + (max-min) * Math.random();
 
 	}
 
@@ -329,8 +327,6 @@ public class Task implements Comparable<Task> {
 				throw new IllegalArgumentException("Wrong Letter");
 		}
 	}
-
-
 
 	/****************************************************************************
 	 *
@@ -435,26 +431,6 @@ public class Task implements Comparable<Task> {
 	private double changeArrivalRate(double num){
 		return vars.arrPms[Type][Phase]*num;
 	}
-
-	private void applyExogenousFactor(){
-
-		if(vars.hasExogenous[0] == 1){
-			int numExo = vars.hasExogenous[1];
-			for(int i = 0; i < numExo; i++){
-				if(vars.exTypes[i].equals("long_serv")){
-					changeServTime(1.1);
-				}
-				if (vars.exTypes[i].equals("add_task")) {
-					//TODO: additional Task function
-				}
-				if(vars.exTypes[i].equals("inc_arrival")){
-				    //Reserved for future usage
-					changeArrivalRate(1.1);
-				}
-			}
-		}
-	}	//END applyExogenousFactor()
-
 
 }
 

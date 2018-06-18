@@ -295,10 +295,11 @@ public class Replication {
             }
         }
 
-        //TODO: generate team communication tasks
+        //TODO: generate team communication tasks and exogenous task
         for(int i = 0; i < vars.numTeams; i++){
             if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
             if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
+            if(vars.hasExogenous[0] == 1) genExoTask();
         }
 
         //Put all tasks in a timely order
@@ -348,6 +349,21 @@ public class Replication {
         while(newTask.getArrTime() < vars.numHours * 60){
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
             newTask.opNums[0] = team;
+            indlist.add(newTask);
+        }
+
+        globalTasks.addAll(indlist);
+        vars.repNumTasks[vars.replicationTracker]+= indlist.size();
+    }
+
+    private void genExoTask(){
+        int taskType = -3;
+        ArrayList<Task> indlist = new ArrayList<Task>();
+        Task newTask = new Task(taskType, 0, vars, true);
+        indlist.add(newTask);
+
+        while(newTask.getArrTime() < vars.numHours * 60){
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
             indlist.add(newTask);
         }
 

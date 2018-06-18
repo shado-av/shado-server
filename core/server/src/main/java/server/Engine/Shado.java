@@ -71,7 +71,6 @@ public class Shado{
 		//Zipping file and return for simple web service
 		zipOutput(rootDirectory + "repCSV");
 		zipOutput(rootDirectory + "Summary");
-//        System.out.println("SIMULATION DONE");
 
     }
 
@@ -90,19 +89,5 @@ public class Shado{
             System.err.println("I/O Error: " + ex);
         }
     }
-
-	private static void printBasicInfo(loadparam data){
-		System.out.println("FleetHetero: "+ Arrays.deepToString(data.fleetHetero));
-		System.out.println("Fleet Types: "+ data.fleetTypes);
-		System.out.println("numvehicles: "+ Arrays.toString(data.numvehicles));
-		System.out.println("autoLevel: "+ Arrays.toString(data.autolvl));
-		System.out.println("team Communication: "+ Arrays.toString(data.teamComm));
-		System.out.println("hasExo: "+ Arrays.toString(data.hasExogenous));
-		System.out.println("exNames: "+ Arrays.toString(data.exNames));
-		System.out.println("exTypes: "+ Arrays.toString(data.exTypes));
-		System.out.println("Total Number of Remote Ops: "+ data.teamSizeTotal);
-		System.out.println("Remote Ops taskType"+ Arrays.deepToString(data.opTasks));
-		System.out.println("Human Error Input: "+ Arrays.deepToString(data.humanError));
-	}
 
 }

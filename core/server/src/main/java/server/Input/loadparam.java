@@ -54,12 +54,6 @@ public class loadparam {
 	// SCHEN 11/10/17 Fleet heterogeneity
 	public int fleetTypes;
 	public int[][] fleetHetero;
-	public int[] fleetAuto;
-
-	//SCHEN 12/10/17 Team Corrdination
-	public String[] exNames;
-	public String[] exTypes;
-
 
     // Operator settings
 	public int teamSizeTotal;
@@ -97,7 +91,6 @@ public class loadparam {
 
 	// Toggle Global Variables
     //If there is exogenous factor that add tasks to the queue
-	public static boolean exAddTask = false;
 	public static boolean TRAFFIC_ON = false;
 	public static boolean FATIGUE_ON = true;
 	public static boolean DEBUG_ON = false;
@@ -156,11 +149,6 @@ public class loadparam {
         teamSizeTotal = numRemoteOp;
         opNums = new int[numTaskTypes][];
 
-        //Has exo-factors
-        int numExos = hasExogenous[1];
-        if(numExos == 2){
-            exAddTask = true;
-        }
         for (int i = 0; i < numTaskTypes; i++){
             ArrayList<Integer> wha = new ArrayList<Integer>();
             for (int j = 0; j < numTeams; j++){

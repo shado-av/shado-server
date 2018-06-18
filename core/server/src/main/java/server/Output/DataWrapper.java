@@ -283,10 +283,13 @@ public class DataWrapper {
                         System.out.print(vars.taskNames[j] + ",");
                     }
                     else if(j == vars.numTaskTypes){
-                        System.out.print("Team Coordinate Task 1: ,");
+                        System.out.print("Team Coordinate Task level some: ,");
                     }
                     else if(j == vars.numTaskTypes + 1){
-                        System.out.print("Team Coordinate Task 2: ,");
+                        System.out.print("Team Coordinate Task level full: ,");
+                    }
+                    else if(j == vars.numTaskTypes + 2){
+                        System.out.print("Exogenous Task: ,");
                     }
 
                     for (int time = 0; time < numColumn; time++) {

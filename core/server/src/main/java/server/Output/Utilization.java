@@ -37,7 +37,7 @@ public class Utilization {
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.numTaskTypes + 2][numColumn];
+        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.numTaskTypes + 3][numColumn];
         averageUtilization = new Double[vars.numRemoteOp][vars.numReps];
 
     }

@@ -38,7 +38,7 @@ public class Simulation {
 
     private int totalRemoteOp;
 
-    private int numSpecialTasks = 2;
+    private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
 
 
 
@@ -81,7 +81,10 @@ public class Simulation {
         System.out.println("NumReps: " + repnumber);
         // Generate overall data field
 
-        checkExogenousFactor();
+        //check if it has type 2 exogenous factor (increasing arrival rate)
+        if(vars.hasExogenous[1] == 1){
+            changeArrivalRate(1.1);
+        }
 
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
@@ -168,24 +171,11 @@ public class Simulation {
     }
     /*************************************************************************************
      *
-     *	Method:			checkExogeneousFactor
+     *	Method:			changeArrivalRate
      *
-     *	Purpose:		modify the input parameters according to the exogeneous factor
+     *	Purpose:		Change the overall arrival rate
      *
      **************************************************************************************/
-    private void checkExogenousFactor(){
-        if(vars.hasExogenous[0] == 1){
-            int numExo = vars.hasExogenous[1];
-            for(int i = 0; i < numExo; i++){
-//                if (vars.exTypes[i].equals("add_task")) {
-//                    addTask();
-//                }
-                if(vars.exTypes[i].equals("inc_arrival")){
-                    changeArrivalRate(1.1);
-                }
-            }
-        }
-    }
 
     private void changeArrivalRate(Double changeRate){
         for(int i = 0; i < vars.arrPms.length; i++){
