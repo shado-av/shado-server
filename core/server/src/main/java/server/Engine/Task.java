@@ -40,7 +40,7 @@ public class Task implements Comparable<Task> {
 	private double waitTime;
 	private double beginTime;
 	private double endTime;
-	private int[] opNums;
+	public int[] opNums;
 	private String name;
 	private int vehicleID;
 	private boolean expired;
@@ -120,18 +120,12 @@ public class Task implements Comparable<Task> {
 				arrTime = PrevTime;
 			}
 
-
 			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
 			serTime = genSerTime();
 
 //		applyExogenousFactor();
 
-			//shift schedule 1% fatigue increase serve time
-			changeServTime(1 + 0.01 * (shiftPeriod+1));
-
 			expTime = genExpTime();
-
-			beginTime = arrTime;
 			opNums = vars.opNums[Type];
 			name = vars.taskNames[Type];
 //		isLinked = vars.linked[Type] == 1;
@@ -140,14 +134,20 @@ public class Task implements Comparable<Task> {
 		else{
 			Priority = 0;
 			if(type == -1){
-
+				arrTime = PrevTime + Exponential(0.1);
 			}
 			else if(type == -2){
-
+				arrTime = PrevTime + Exponential(0.2);
 			}
+			serTime = Exponential(0.1667);
+			expTime = Double.POSITIVE_INFINITY;
+			name = "Team Coordination Task";
+			opNums = new int[1];
 		}
 
-
+		beginTime = arrTime;
+		//shift schedule 1% fatigue increase serve time
+		changeServTime(1 + 0.01 * (shiftPeriod+1));
 	}
 
 	/****************************************************************************
@@ -209,17 +209,6 @@ public class Task implements Comparable<Task> {
 	 *	Purpose:		Return the Phase
 	 *
 	 ****************************************************************************/
-
-
-	public int getPhase(double time, double hours){
-
-		if (time<30){
-			return 0;
-		} else if (time >= 30 && time < hours * 60 - 30) {
-			return 1;
-		} else return 1;
-
-	}
 
 	public int getPhase(double time){
 		int currentPhase = 0;

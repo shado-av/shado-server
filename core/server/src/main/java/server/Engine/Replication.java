@@ -95,13 +95,26 @@ public class Replication {
         ArrayList<Queue> proc = new ArrayList<Queue>();
         ArrayList<Operator> working = new ArrayList<>(proc.size());
 
-        // If the task can be operated by this operator, get his queue.
-        for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
-            if(remoteOps.getRemoteOp()[j] != null) {
-                if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
-                    //Put task in appropriate Queue
-                    proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                    working.add(remoteOps.getRemoteOp()[j]);
+        //If this is a team coordination task, which can only be handled within certain team
+        if(task.getType() < 0){
+            int operatorType = task.opNums[0]; //I save the operator type in opNums[0] in the constructor, because I don't want to create a new filed for it
+            for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
+                if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
+                        //Put task in appropriate Queue
+                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                        working.add(remoteOps.getRemoteOp()[j]);
+                }
+            }
+        }
+        else {
+            // If the task can be operated by this operator, get his queue.
+            for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
+                if (remoteOps.getRemoteOp()[j] != null) {
+                    if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
+                        //Put task in appropriate Queue
+                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                        working.add(remoteOps.getRemoteOp()[j]);
+                    }
                 }
             }
         }
@@ -124,24 +137,30 @@ public class Replication {
             }
         }
 
-        //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
-        //The ET AIDA can process the task with 0 serve time ans 0 error (default, hard code for now)
-        //TODO: make AI's serve time and error rate adjustable by user
-        if(!optimal_op.getQueue().taskqueue.isEmpty()){
-            if(vars.hasET[task.getType()]) return;
+        if(task.getType() > 0) {
+
+            //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
+            //The ET AIDA can process the task with 0 serve time ans 0 error (default, hard code for now)
+            //TODO: make AI's serve time and error rate adjustable by user
+            if (!optimal_op.getQueue().taskqueue.isEmpty()) {
+                if (vars.hasET[task.getType()]) return;
+            }
+
+            //AI feature: check if this operator has IA AIDA, if so reduce the service time by 50%
+            //TODO: only change the serve time for certain tasks, make the change rate adjustable
+            if (vars.AIDAtype[optimal_op.dpID / 100][1] == 1) {
+                task.changeServTime(0.5);
+            }
+
+            //check team communication, change the serve time
+            task.changeServTime(getTeamComm(optimal_op.dpID));
+
         }
+        //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
+        int taskType = Math.max(task.getType(),0);
 
-        //AI feature: check if this operator has IA AIDA, if so reduce the service time by 50%
-        //TODO: only change the serve time for certain tasks, make the change rate adjustable
-        if(vars.AIDAtype[optimal_op.dpID/100][1] == 1) {
-            task.changeServTime(0.5);
-        }
-
-        //check team communication, change the serve time
-        task.changeServTime(getTeamComm(optimal_op.dpID));
-
-        if(!failTask(optimal_op,task, task.getType(),getTriangularDistribution(task.getType()))){
-                optimal_op.getQueue().add(task);
+        if (!failTask(optimal_op, task, taskType, getTriangularDistribution(taskType))) {
+            optimal_op.getQueue().add(task);
         }
 
     }
@@ -180,6 +199,7 @@ public class Replication {
      *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
     private boolean failTask(Operator operator,Task task,int type, double distValue){
+
         double rangeMin = vars.humanError[type][1];
         double rangeMax = vars.humanError[type][2];
         Random r = new Random();
@@ -207,12 +227,8 @@ public class Replication {
     public void sortTask() {
 
         // Sort task by time.
-
         Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
-//        for(int i = 0; i< 100; i++){
-//            System.out.println(globalTasks.get(i).getArrTime());
-//        }
-//        System.exit(0);
+
     }
 
     public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
@@ -232,16 +248,6 @@ public class Replication {
 
         //When a new task is added, let operator finish all there tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-//            if(vars.metaSnapShot % 50 ==0){
-//                System.out.println("---SNAPSHOT---");
-//                System.out.println("Op:["+op.getName()+"]" +
-//                        "\n\t Queue length: "+op.getQueue().taskqueue.size()+
-//                        "\n\t FinTime: "+op.getQueue().getfinTime()+
-//                        "\n\t ExpectedFinTime: "+op.getQueue().getExpectedFinTime());
-//                if(op.getQueue().taskqueue.peek()!=null)
-//                    System.out.println("First Task\n\t Begin: " + op.getQueue().taskqueue.peek().getArrTime() + "\n\t Arr: "+op.getQueue().taskqueue.peek().getArrTime());
-//
-//            }
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getExpectedFinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
@@ -287,10 +293,10 @@ public class Replication {
         }
 
         //TODO: generate team communication tasks
-//        for(int i = 0; i < vars.numTeams; i++){
-//            if(vars.teamComm[i] == 'S') genTeamCommTask('S');
-//            if(vars.teamComm[i] == 'F') genTeamCommTask('F');
-//        }
+        for(int i = 0; i < vars.numTeams; i++){
+            if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
+            if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
+        }
 
         //Put all tasks in a timely order
         sortTask();
@@ -326,23 +332,24 @@ public class Replication {
         return teamComm;
     }
 
-    private void genTeamCommTask(char level){
+    private void genTeamCommTask(char level, int team){
         int taskType = -1;
         if(level == 'S') taskType = -1;
         if(level == 'F') taskType = -2;
 
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true);
+        newTask.opNums[0] = team;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask.opNums[0] = team;
             indlist.add(newTask);
         }
 
         globalTasks.addAll(indlist);
         vars.repNumTasks[vars.replicationTracker]+= indlist.size();
-
     }
 
 }

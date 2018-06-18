@@ -38,6 +38,8 @@ public class Simulation {
 
     private int totalRemoteOp;
 
+    private int numSpecialTasks = 0;
+
 
 
     public int[] getExpiredtask() {
@@ -75,23 +77,39 @@ public class Simulation {
         vars = param;
         repnumber = param.numReps;
         System.out.println("NumReps: " + repnumber);
+        getNumSpecialTasks();
         // Generate overall data field
 
         checkExogenousFactor();
 
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
-            operatoroutput[i] = new Data(param.numTaskTypes, (int) param.numHours * 6, param.numReps);
+            operatoroutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
         setTotalRemoteOps();
         RemoteOpoutput = new Data[totalRemoteOp];
         for (int i = 0; i < totalRemoteOp; i++) {
-            RemoteOpoutput[i] = new Data(param.numTaskTypes, (int) param.numHours * 6, param.numReps);
+            RemoteOpoutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
 
-        expiredtaskcount = new int[param.numTaskTypes];
-        completedtaskcount = new int[param.numTaskTypes];
+        expiredtaskcount = new int[param.numTaskTypes + numSpecialTasks];
+        completedtaskcount = new int[param.numTaskTypes + numSpecialTasks];
 
+    }
+
+    /****************************************************************************
+     *
+     *	Method:			getNumSpecialTasks
+     *
+     *	Purpose:		Find the number of special task types
+     *                  e.g. Coordination task level 1 & 2, Exogenous task
+     *
+     ****************************************************************************/
+
+
+    private void getNumSpecialTasks(){
+        numSpecialTasks = 2;
+        return;
     }
 
     /****************************************************************************
@@ -138,13 +156,13 @@ public class Simulation {
         }
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
-            ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars);
+            ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars,numSpecialTasks);
             process.run(i);
             vars.utilizationOutput[i] = process.getRepdisdata();
 
             //Global Tracker for replication processed
             vars.currRepnum++;
-            for (int j = 0; j < vars.numTaskTypes; j++) {
+            for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
                 expiredtaskcount[j] += process.getExpired()[j];
                 completedtaskcount[j] += process.getCompleted()[j];
             }

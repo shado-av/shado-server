@@ -164,15 +164,6 @@ public class Queue implements Comparable<Queue>{
 
     public void done(loadparam vars,Operator op) {
 
-
-        //NEW FEATURE OPERATOR STRATEGIES
-//        if(vars.opStrats.equals("STF")){
-//            //TODO[COMPLETED]: STF and Wait time
-//            //Sort the current queue under STF
-//            sortTaskQueueOnServTime();
-//        }
-
-
         // This if statement avoids error when calling done on an empty queue.
 
         if (taskqueue.peek() != null) {
