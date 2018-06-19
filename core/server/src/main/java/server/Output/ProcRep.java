@@ -150,7 +150,7 @@ public class ProcRep {
                 completed[taskType]++;
             }
 
-            double beginscale = (each.getEndTime() - each.getSerTime()) / 10;
+            double beginscale = each.getBeginTime() / 10;
             double endscale = each.getEndTime() / 10;
 
             boolean startcheck = false;

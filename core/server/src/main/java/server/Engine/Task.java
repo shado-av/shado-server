@@ -62,8 +62,6 @@ public class Task implements Comparable<Task> {
 
 	public void setFail(){this.fail = true;}
 
-	public void setArrTime(double time) { arrTime = time;}
-
 	public void setexpired() {
 		expired = true;
 	}
@@ -115,7 +113,7 @@ public class Task implements Comparable<Task> {
 
 			Priority = Param.taskPrty[Type][Phase];
 			if (fromPrev == true) {
-				arrTime = genArrTime(PrevTime);
+				arrTime = genArrTime(PrevTime, Type);
 			} else {
 				arrTime = PrevTime;
 			}
@@ -336,11 +334,12 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double genArrTime(double PrevTime){
+	private double genArrTime(double PrevTime, int taskType){
 		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
 		int fleet = vehicleID / 100;
 		double arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
-		double TimeTaken = Exponential(arrivalRate);
+		double TimeTaken = GenTime(vars.arrDists[taskType], vars.arrPms[taskType]);
+//		double TimeTaken = Exponential(arrivalRate);
 
 		if (TimeTaken == Double.POSITIVE_INFINITY){
 			return Double.POSITIVE_INFINITY;
@@ -430,6 +429,16 @@ public class Task implements Comparable<Task> {
 
 	private double changeArrivalRate(double num){
 		return vars.arrPms[Type][Phase]*num;
+	}
+
+
+	public void printBasicInfo(){
+		System.out.println("Name : " + name);
+		System.out.println("Arrival time : " + arrTime);
+		System.out.println("Begin Time : " + beginTime);
+		System.out.println("Service Time : " + serTime);
+//		System.out.println("ELS TIme : " + elapsedTime);
+		System.out.println("Finish Time : " + endTime);
 	}
 
 }

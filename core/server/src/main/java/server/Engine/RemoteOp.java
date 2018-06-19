@@ -73,7 +73,7 @@ public class RemoteOp {
         // SCHEN 11/20/17
         // Note: RemoteOper is a 1d array, to fit in the data structure,
         // change it to 2d array with each subarray with length == 1
-        RemoteOpers = new Operator[vars.teamSizeTotal];
+        RemoteOpers = new Operator[vars.numRemoteOp];
         int cnt = 0;
         for (int i = 0; i < vars.opTasks.length; i++) {
             //TODO[COMPLETE] generate Operator base on different types of remote Ops

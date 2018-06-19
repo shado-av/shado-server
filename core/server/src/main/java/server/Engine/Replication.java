@@ -95,8 +95,8 @@ public class Replication {
         ArrayList<Queue> proc = new ArrayList<Queue>();
         ArrayList<Operator> working = new ArrayList<>(proc.size());
 
-        //If this is a team coordination task, which can only be handled within certain team
-        if(task.getType() < 0){
+
+        if(task.getType() == -1 || task.getType() == -2){  // team coordination task, which can only be handled within certain team
             int operatorType = task.opNums[0]; //I save the operator type in opNums[0] for special tasks
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
                 task.changeServTime(0.5);
@@ -109,8 +109,13 @@ public class Replication {
                 }
             }
         }
-        else {
-            // If the task can be operated by this operator, get his queue.
+        else if(task.getType() == -3){ // exogenous task can be handled by all the operator
+            for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
+                proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                working.add(remoteOps.getRemoteOp()[j]);
+            }
+        }
+        else { // regular task. If the task can be operated by this operator, get his queue.
             for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
                 if (remoteOps.getRemoteOp()[j] != null) {
                     if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
@@ -159,6 +164,7 @@ public class Replication {
             task.changeServTime(getTeamComm(optimal_op.dpID));
 
         }
+
         //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
         int taskType = Math.max(task.getType(),0);
 
@@ -249,15 +255,18 @@ public class Replication {
             return;
         }
 
-        //When a new task is added, let operator finish all there tasks
+        //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
+
+            System.out.println(op.toString());
+            System.out.println(op.getQueue().toString());
+
             while (op.getQueue().getNumTask() > 0 &&
-                    op.getQueue().getExpectedFinTime() < task.getArrTime()) {
+                    op.getQueue().getfinTime() < task.getArrTime()) { //Naixin: change getExpectedFinTime to getfinTime
                 op.getQueue().done(vars, op);
-//            System.out.println("--op "+op.getName()+"'s queue -1 , length == "+op.getQueue().taskqueue.size());
             }
         }
-//        System.out.println("Operators working...");
+
     }
     /****************************************************************************
      *
@@ -304,7 +313,10 @@ public class Replication {
 
         //Put all tasks in a timely order
         sortTask();
-//        System.out.println("Total Tasks: "+ globalTasks.size());
+
+        for(Task t : globalTasks){
+            System.out.println(t.getArrTime() + " : " + t.getName());
+        }
 
         if(vars.replicationTracker == 0){
             vars.allTasks = globalTasks;

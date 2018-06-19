@@ -101,6 +101,12 @@ public class Queue implements Comparable<Queue>{
         finTime = Double.POSITIVE_INFINITY;
         this.operator = op;
         expectedFinTime = 0;
+        numtask();
+    }
+
+    @Override
+    public String toString() {
+        return "My queue has " + getNumTask() + " tasks. The time is " + time + " now.";
     }
 
     /****************************************************************************
@@ -118,28 +124,23 @@ public class Queue implements Comparable<Queue>{
         SetTime(task.getArrTime());
         setExpectedFinTime(task);
 
-
-        //Naixin
-        if(!taskqueue.isEmpty()){
-            taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
-        }
-
-//--------Siyu's original code:
-//        if (!taskqueue.isEmpty()) {
-//            if (task.getPriority() > taskqueue.peek().getPriority()) {
-//                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
-//            }
+        //TODO: Not sure where to put this part
+//        int operatorType = operator.dpID / 100;
+//        if(task.vars.opStrats[operatorType].equals("STF")){
+//            //TODO[COMPLETED]: STF and Wait time
+//            //Sort the current queue under STF
+//            sortTaskQueueOnServTime();
 //        }
 
-        //End of Naixin's change
+
+        if (!taskqueue.isEmpty()) {
+            if (task.getPriority() > taskqueue.peek().getPriority()) {
+                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
+            }
+        }
+
 
         taskqueue.add(task);
-
-        if(task.vars.opStrats.equals("STF")){
-            //TODO[COMPLETED]: STF and Wait time
-            //Sort the current queue under STF
-            sortTaskQueueOnServTime();
-        }
 
         // If the task is processed as first priority, i.e. began immediately, then:
 
@@ -152,6 +153,24 @@ public class Queue implements Comparable<Queue>{
         // except numTask.
         numtask();
     }
+
+//    public void add(Task task) {
+//        if(taskqueue.isEmpty()){
+//            SetTime(task.getArrTime());
+//            setExpectedFinTime(task);
+//            taskqueue.add(task);
+//            taskqueue.peek().setBeginTime(time);
+//            finTime();
+//        }
+//        else{
+//
+//        }
+//        numtask();
+//    }
+
+
+
+
 
     /****************************************************************************
      *
@@ -174,14 +193,19 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().setQueue(NumTask);
             taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
 
+            taskqueue.peek().printBasicInfo();
+
+
             // Remove the finished task from the queue and put it into record task list.
             recordtasks.add(taskqueue.poll());
             // Renew the queue time.
             SetTime(finTime);
+
         }
 
         // If there are ANOTHER task in the queue following the completion of this one:
 
+        //Remove all the expired tasks
         while (taskqueue.peek() != null) {
 
             if (taskqueue.peek().getExpTime() > time) {

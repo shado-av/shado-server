@@ -27,13 +27,53 @@ import java.util.*;
 
 public class loadparam {
 	
-	// General input variables
-	public String outputPath;
+	// Global input variables
 	public double numHours;
     public double[] traffic;
     public int numReps;
-    public int[] numvehicles;
+    public int numPhases;
+    public double[] phaseBegin;
+    public int [] hasExogenous;
 
+    // Team Variables
+    public int numTeams;
+    public int[] teamSize;
+    public String[] opNames;
+    public String[] opStrats;
+    public int[][] opTasks;
+    public int[][] taskPrty;
+    public char[] teamComm;
+    public double failThreshold;
+
+    //AIDA Variables
+    public int[][] AIDAtype;
+    private double[] ETServiceTime;
+    private double[] ETErrorRate;
+    private int[][] IAtasks;
+    private double[][] IAServiceTime;
+    private double[] TCAServiceTime;
+    private double[] TCAErrorRate;
+
+    // Fleet Variables
+    public int fleetTypes;
+    public int[] numvehicles;
+    public int[] autolvl;
+    public int[][] fleetHetero;
+
+    // Task Variables
+    public int numTaskTypes;
+    public String[] taskNames;
+    public char[] arrDists;
+    public double[][] arrPms;
+    public char[] serDists;
+    public double[][] serPms;
+    public char[] expDists;
+    public double[][][] expPms;
+    public int[][] affByTraff;
+
+
+
+    // Other parameters
     public int numRemoteOp;
     public Replication[] reps;
     public int[] RemoteOpTasks;
@@ -41,42 +81,11 @@ public class loadparam {
     public HashMap<Integer,Integer> failTaskCount;
     public int replicationTracker;
 
-    //SCHEN 12/4/17 Fleet Autonomy level param
-	// None-> default,
-	// Some ->70%
-	// Full-> 30%
-
-	public int[] autolvl;
-	public int [] hasExogenous;
-	public String opStrats;
-	public double failThreshold;
-
-	// SCHEN 11/10/17 Fleet heterogeneity
-	public int fleetTypes;
-	public int[][] fleetHetero;
-
     // Operator settings
-	public int teamSizeTotal;
-	public String[] opNames;
-	public int[][] opTasks;
-	public int[][] AIDAtype;
 
-    public int numTeams;
-    public char[] teamComm;
-    public int[] teamSize;
+
     public double[][] crossRepCount;
 
-	// Task Settings
-	public int numTaskTypes;
-    public String[] taskNames;
-    public int[][] taskPrty;
-    public char[] arrDists;
-    public double[][] arrPms;
-    public char[] serDists;
-    public double[][] serPms;
-    public char[] expDists;
-   	public double[][][] expPms;
-	public int[][] affByTraff;
 	public int[][] opNums;
 	public int[][] trigger;
 	public boolean[] hasET; //if there is "Equal Teammate AIDA" for each task type
@@ -84,8 +93,7 @@ public class loadparam {
 	//SCHEN 12/10/17 Added: whether the task is affected by team coordination
 	public int[] teamCoordAff;
 	// Adding isLinked
-    public int numPhases;
-    public double[] phaseBegin;
+
 //	public int[] linked;
 	public double[][] humanError;
 
@@ -131,6 +139,7 @@ public class loadparam {
         debugCnt = 0;
         maxTeamSize = 0;
         metaSnapShot = 0;
+        getNumRemoteOp();
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
 		//Utilization for each type of operator across replications
@@ -146,7 +155,6 @@ public class loadparam {
         for(int i = 0; i < numReps; i++){
             expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
         }
-        teamSizeTotal = numRemoteOp;
         opNums = new int[numTaskTypes][];
 
         for (int i = 0; i < numTaskTypes; i++){
@@ -166,6 +174,13 @@ public class loadparam {
         utilizationOutput = new Data[numReps][numRemoteOp];
         hasET = new boolean[numTaskTypes];
         checkET();
+    }
+
+    private void getNumRemoteOp(){
+        numRemoteOp = 0;
+        for(int i : teamSize){
+            numRemoteOp += i;
+        }
     }
     /****************************************************************************
      *

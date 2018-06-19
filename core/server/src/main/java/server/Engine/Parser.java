@@ -26,10 +26,6 @@ public class Parser {
         in = g.fromJson(this.input, loadparam.class);
         printloadparam(in);
         in.setGlobalData();
-//        System.out.println("Traffic: "+ Arrays.toString(in.traffic));
-//        System.out.println("OpStrats: "+in.opStrats);
-////        System.out.println("OpNames: "+ in.opNames[0]);
-//        System.out.println("Fleet Hetero: "+Arrays.toString(in.fleetHetero));
         return in;
     }
 
@@ -46,7 +42,7 @@ public class Parser {
         System.out.println("autolvl: " + Arrays.toString(in.autolvl));
         System.out.println("the exo: " + Arrays.toString(in.hasExogenous));
         System.out.println("failThreshold: " + in.failThreshold);
-        System.out.println("OpStrats: "+in.opStrats);
+//        System.out.println("OpStrats: "+in.opStrats);
         System.out.println("OpNames: "+ in.opNames[0]);
 //        System.out.println("opTasks: : " + Arrays.toString(in.opTasks));
         System.out.println("teamComm: "+ Arrays.toString(in.teamComm));
