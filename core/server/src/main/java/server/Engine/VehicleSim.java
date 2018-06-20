@@ -118,24 +118,24 @@ public class VehicleSim  {
             int taskType = vars.fleetHetero[fleetType][i];
             //DEBUG
 //            System.out.println("Now Generating Task type: "+taskType +", Fleet Type:" + fleetType);
-                if (vars.arrPms[taskType][0] == 0) { //First task
-                        newTask = new Task(taskType, 30 + Math.random(), vars, false); //New Task
-                } else {
-
-                        newTask = new Task(taskType, 0, vars, true);
-
-                }
-                indlist.add(newTask);
+            newTask = new Task(taskType, 0, vars, true);
+//                if (vars.arrPms[taskType][0] == 0) { //First task
+//                        newTask = new Task(taskType, 30 + Math.random(), vars, false); //New Task
+//                } else {
+//
+//                        newTask = new Task(taskType, 0, vars, true);
+//
+//                }
+            indlist.add(newTask);
 //            System.out.println("arr time:"+newTask.getArrTime());
                 // While the next task is within the time frame, generate.
 
-                int cnt = 0;
-                while (newTask.getArrTime() < vars.numHours * 60) {
-                    newTask = new Task(taskType, newTask.getArrTime(), vars, true);
-                    newTask.setID(vehicleID);
-//                    if(cnt++ > 20) System.out.println("generate:"+cnt+" tasks");
-                    indlist.add(newTask);
-                }
+            int cnt = 0;
+            while (newTask.getArrTime() < vars.numHours * 60) {
+                newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+                newTask.setID(vehicleID);
+                indlist.add(newTask);
+            }
 
 
             // Put all task into the master tasklist.

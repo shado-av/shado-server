@@ -36,8 +36,6 @@ public class Simulation {
 
     private int repnumber;
 
-    private int totalRemoteOp;
-
     private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
 
 
@@ -60,9 +58,6 @@ public class Simulation {
 
     public int getNumSpecialTasks(){ return numSpecialTasks; }
 
-    public Data[] getopsdata() { return operatoroutput; }
-
-    public Data[] getdisdata() { return RemoteOpoutput; }
 
     /****************************************************************************
      *
@@ -90,9 +85,8 @@ public class Simulation {
         for (int i = 0; i < param.numTeams; i++) {
             operatoroutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
-        setTotalRemoteOps();
-        RemoteOpoutput = new Data[totalRemoteOp];
-        for (int i = 0; i < totalRemoteOp; i++) {
+        RemoteOpoutput = new Data[vars.numRemoteOp];
+        for (int i = 0; i < vars.numRemoteOp; i++) {
             RemoteOpoutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
 
@@ -114,15 +108,6 @@ public class Simulation {
         Replication processed = new Replication(vars, repID);
         processed.run();
         vars.reps[repID] = processed;
-//        vars.currRepnum = repID;
-//        ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, processed);
-//
-//        process.run(repID);
-//
-//        for (int i = 0; i < vars.numTaskTypes; i++) {
-//            expiredtaskcount[i] += process.getExpired()[i];
-//            completedtaskcount[i] += process.getCompleted()[i];
-//        }
     }
 
     /****************************************************************************
@@ -142,7 +127,9 @@ public class Simulation {
 
             //Global tracker for current replication
             vars.replicationTracker ++;
+
         }
+
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
             ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars,numSpecialTasks);
@@ -164,11 +151,7 @@ public class Simulation {
             each.avgdata();
         }
     }
-    private void setTotalRemoteOps(){
-        for(int i : vars.teamSize){
-            totalRemoteOp += i;
-        }
-    }
+
     /*************************************************************************************
      *
      *	Method:			changeArrivalRate
@@ -180,7 +163,9 @@ public class Simulation {
     private void changeArrivalRate(Double changeRate){
         for(int i = 0; i < vars.arrPms.length; i++){
             for(int j = 0; j < vars.arrPms[0].length; j++){
-                vars.arrPms[i][j] *= changeRate;
+                for(int k = 0; k < vars.arrPms[0][0].length; k++){
+                    vars.arrPms[i][j][k] *= changeRate;
+                }
             }
         }
     }

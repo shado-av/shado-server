@@ -64,9 +64,9 @@ public class loadparam {
     public int numTaskTypes;
     public String[] taskNames;
     public char[] arrDists;
-    public double[][] arrPms;
+    public double[][][] arrPms;
     public char[] serDists;
-    public double[][] serPms;
+    public double[][][] serPms;
     public char[] expDists;
     public double[][][] expPms;
     public int[][] affByTraff;

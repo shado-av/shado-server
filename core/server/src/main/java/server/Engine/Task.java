@@ -119,7 +119,7 @@ public class Task implements Comparable<Task> {
 			}
 
 			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
-			serTime = GenTime(vars.serDists[Type], vars.serPms[Type]);
+			serTime = GenTime(vars.serDists[Type], vars.serPms[Phase][Type]);
 
 			expTime = genExpTime();
 			opNums = vars.opNums[Type];
@@ -337,9 +337,8 @@ public class Task implements Comparable<Task> {
 	private double genArrTime(double PrevTime, int taskType){
 		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
 		int fleet = vehicleID / 100;
-		double arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
-		double TimeTaken = GenTime(vars.arrDists[taskType], vars.arrPms[taskType]);
-//		double TimeTaken = Exponential(arrivalRate);
+		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
+		double TimeTaken = GenTime(vars.arrDists[taskType], arrivalRate);
 
 		if (TimeTaken == Double.POSITIVE_INFINITY){
 			return Double.POSITIVE_INFINITY;
@@ -427,8 +426,14 @@ public class Task implements Comparable<Task> {
 		return;
 	}
 
-	private double changeArrivalRate(double num){
-		return vars.arrPms[Type][Phase]*num;
+	private double[] changeArrivalRate(double num){
+		double[] arrivalRate = new double[vars.arrPms[Phase][Type].length];
+		int count = 0;
+		for(double d : vars.arrPms[Phase][Type]){
+			arrivalRate[count] = d * num;
+			count++;
+		}
+		return arrivalRate;
 	}
 
 

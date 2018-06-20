@@ -278,6 +278,8 @@ public class Replication {
 
     public void run() {
 
+        System.out.println("Curr Replication: " + vars.replicationTracker);
+
         // Initialize control center.
 
         //TODO 1.generate a global queue and can be modified
@@ -336,7 +338,7 @@ public class Replication {
         workingUntilNewTaskArrive(remoteOps,null);
 
         vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
-        System.out.println("Curr Replication: " + vars.replicationTracker);
+
 
     }
 
