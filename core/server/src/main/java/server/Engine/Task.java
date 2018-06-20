@@ -110,10 +110,10 @@ public class Task implements Comparable<Task> {
 		elapsedTime = 0;
 		waitTime = 0;
 		expired = false;
+		Priority = 0;
 
 		if(type >= 0){
 
-			Priority = Param.taskPrty[Type][Phase];
 			if (fromPrev == true) {
 				arrTime = genArrTime(PrevTime, Type);
 			} else {
@@ -130,7 +130,7 @@ public class Task implements Comparable<Task> {
 
 		}
 		else{
-			Priority = 0;
+
 			if(type == -1){
 				arrTime = PrevTime + Exponential(0.1);
 				serTime = Exponential(0.1667);

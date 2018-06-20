@@ -41,7 +41,7 @@ public class loadparam {
     public String[] opNames;
     public String[] opStrats;
     public int[][] opTasks;
-    public int[][] taskPrty;
+    public int[][][] taskPrty; //phase * team * task
     public char[] teamComm;
     public double[][][] humanError;
     public double[] failThreshold;

@@ -52,12 +52,14 @@ public class Parser {
         System.out.println("numTaskTypes: "+in.numTaskTypes);
         System.out.println("taskNames: "+ Arrays.toString(in.taskNames));
         for(int i = 0; i < in.numTaskTypes; i++) {
-            System.out.println("For task type " + i);
-            System.out.print("taskPrty:");
-            for(int j = 0; j < in.numPhases; j++) {
-                System.out.print(in.taskPrty[i][j] + " ");
+            for(int k = 0; k < in.numTeams; k++){
+                System.out.println("For task type " + i + " team " + k);
+                System.out.print("taskPrty:");
+                for(int j = 0; j < in.numPhases; j++) {
+                    System.out.print(in.taskPrty[j][k][i] + " ");
+                }
+                System.out.println(" ");
             }
-            System.out.println(" ");
         }
 
         for(int i = 0; i < in.numTeams; i++){
