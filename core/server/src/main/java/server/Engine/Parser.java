@@ -41,8 +41,8 @@ public class Parser {
         System.out.println("phaseBegin: " + Arrays.toString(in.phaseBegin));
         System.out.println("autolvl: " + Arrays.toString(in.autolvl));
         System.out.println("the exo: " + Arrays.toString(in.hasExogenous));
-        System.out.println("failThreshold: " + in.failThreshold);
-//        System.out.println("OpStrats: "+in.opStrats);
+        System.out.println("failThreshold: " + Arrays.toString(in.failThreshold));
+        System.out.println("OpStrats: "+ Arrays.toString(in.opStrats));
         System.out.println("OpNames: "+ in.opNames[0]);
 //        System.out.println("opTasks: : " + Arrays.toString(in.opTasks));
         System.out.println("teamComm: "+ Arrays.toString(in.teamComm));

@@ -44,7 +44,7 @@ public class loadparam {
     public int[][] taskPrty;
     public char[] teamComm;
     public double[][][] humanError;
-    public double failThreshold;
+    public double[] failThreshold;
 
     //AIDA Variables
     public int[][] AIDAtype;
@@ -72,6 +72,7 @@ public class loadparam {
     public double[][][] expPms;
     public int[][] affByTraff;
     public int[] interruptable;
+    public int[] essential;
 
 
 

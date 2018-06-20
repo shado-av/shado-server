@@ -231,7 +231,7 @@ public class Replication {
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
             //If there is team communication, it will be easier to catch error. The failThreshold will decrease.
-            if(Math.random() < vars.failThreshold * getTeamComm(operator.dpID)){
+            if(Math.random() < vars.failThreshold[teamType] * getTeamComm(operator.dpID)){
                 //Task Failed but still processed by operator
                 task.setFail();
                 return false;
