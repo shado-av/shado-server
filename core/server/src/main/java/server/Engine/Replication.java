@@ -97,7 +97,7 @@ public class Replication {
 
 
         if(task.getType() == -1 || task.getType() == -2){  // team coordination task, which can only be handled within certain team
-            int operatorType = task.opNums[0]; //I save the operator type in opNums[0] for special tasks
+            int operatorType = task.getTeamType();
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
                 task.changeServTime(0.5);
             }
@@ -169,6 +169,7 @@ public class Replication {
 
             if(task.getType() > 0){
                 task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
+                task.setTeamType(optimal_op.dpID / 100);
             }
 
             optimal_op.getQueue().add(task);
@@ -366,11 +367,13 @@ public class Replication {
 
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true);
+        newTask.setTeamType(team);
         newTask.opNums[0] = team;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask.setTeamType(team);
             newTask.opNums[0] = team;
             indlist.add(newTask);
         }

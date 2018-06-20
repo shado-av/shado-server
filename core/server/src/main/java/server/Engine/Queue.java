@@ -25,6 +25,8 @@ public class Queue implements Comparable<Queue>{
 
     public PriorityQueue<Task> taskqueue;
 
+//    public Deque<Task> taskqueue;
+
     // Operator ID.
 
     public Operator operator;
@@ -96,7 +98,8 @@ public class Queue implements Comparable<Queue>{
      ****************************************************************************/
 
     public Queue(Operator op) {
-        taskqueue = new PriorityQueue<Task>();
+//        taskqueue = new ArrayDeque<>();
+        taskqueue = new PriorityQueue<>();
         time = 0;
         finTime = Double.POSITIVE_INFINITY;
         this.operator = op;
@@ -124,21 +127,24 @@ public class Queue implements Comparable<Queue>{
         SetTime(task.getArrTime());
         setExpectedFinTime(task);
 
-        //TODO: Not sure where to put this part
+        //"STF" has been added to the comparator of the priority queue. We don't need this here.
 //        int operatorType = operator.dpID / 100;
 //        if(task.vars.opStrats[operatorType].equals("STF")){
-//            //TODO[COMPLETED]: STF and Wait time
 //            //Sort the current queue under STF
-            sortTaskQueueOnServTime();
+//            sortTaskQueueOnServTime();
 //        }
 
-
-        if (!taskqueue.isEmpty()) {
-            if (task.getPriority() > taskqueue.peek().getPriority()) {
+        if(!taskqueue.isEmpty()){
+            if(taskqueue.peek().compareTo(task) > 0){ //the new task will go in front of the current top task
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
             }
         }
 
+//        if (!taskqueue.isEmpty()) {
+//            if (task.getPriority() > taskqueue.peek().getPriority()) {
+//                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
+//            }
+//        }
 
         taskqueue.add(task);
 

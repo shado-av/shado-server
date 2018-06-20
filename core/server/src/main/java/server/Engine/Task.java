@@ -21,6 +21,7 @@ public class Task implements Comparable<Task> {
 	//General task input params.
 	private int Type;
 	private int Priority;
+	private int teamType;
 	public loadparam vars;
 	private double lvl_SOME = 0.7;
 	private double lvl_FULL = 0.3;
@@ -62,6 +63,8 @@ public class Task implements Comparable<Task> {
 
 	public int getPhase(){ return Phase;}
 
+	public int getTeamType() { return teamType; }
+
 	public void setFail(){this.fail = true;}
 
 	public void setPriority(int Priority){ this.Priority = Priority; }
@@ -79,6 +82,8 @@ public class Task implements Comparable<Task> {
 	public void setID(int id){
 		vehicleID = id;
 	}
+
+	public void setTeamType(int type) {teamType = type;}
 
 	public void setQueue(int q){
 		queued = q-1;
@@ -150,7 +155,6 @@ public class Task implements Comparable<Task> {
 			}
 
 			expTime = Double.POSITIVE_INFINITY;
-			opNums = new int[1];
 		}
 
 		beginTime = arrTime;
@@ -168,14 +172,25 @@ public class Task implements Comparable<Task> {
 
 	@Override
 	public int compareTo(Task other){
+
 		if (this.Priority != other.Priority){
 			return other.Priority - this.Priority;
 		} else {
-			if (this.arrTime - other.arrTime > 0){
-				return 1;
-			} else {
-				return -1;
+			if(vars.opStrats[teamType] == "FIFO"){
+				if (this.arrTime - other.arrTime > 0){ //this task arrives latter, other task should come first
+					return 1;
+				} else {
+					return -1;
+				}
 			}
+			else if(vars.opStrats[teamType] == "STF"){
+				if(this.serTime - other.getSerTime() > 0){ //this task needs more serve time, other task should come first
+					return -1;
+				} else {
+					return 1;
+				}
+			}
+			return -1;
 		}
 	}
 
@@ -442,7 +457,7 @@ public class Task implements Comparable<Task> {
 
 
 	public void printBasicInfo(){
-		System.out.println("Name : " + name);
+		System.out.println("Name : " + name + " Priority : " + Priority);
 		System.out.println("Arrival time : " + arrTime);
 		System.out.println("Begin Time : " + beginTime);
 		System.out.println("Service Time : " + serTime);
