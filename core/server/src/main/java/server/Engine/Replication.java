@@ -165,10 +165,9 @@ public class Replication {
 
         }
 
-        //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
-        int taskType = Math.max(task.getType(),0);
 
-        if (!failTask(optimal_op, task, taskType, getTriangularDistribution(taskType))) {
+
+        if (!failTask(optimal_op, task, optimal_op.dpID)) {
             optimal_op.getQueue().add(task);
         }
 
@@ -181,10 +180,13 @@ public class Replication {
      *	Purpose:	    generate a TriangularDistribution value
      *
      ****************************************************************************/
-    private double getTriangularDistribution(int Type){
-        double c = vars.humanError[Type][0];
-        double a = vars.humanError[Type][1];
-        double b = vars.humanError[Type][2];
+    private double getTriangularDistribution(int teamType, int Phase){
+        System.out.println("team Type : " + teamType);
+        System.out.println("Phases : " + Phase);
+        System.out.println("Human Error Rate : " + vars.humanError.length + " * " + vars.humanError[0].length + " * " + vars.humanError[0][0].length);
+        double c = vars.humanError[teamType][Phase][0]; //mode
+        double a = vars.humanError[teamType][Phase][1]; //min
+        double b = vars.humanError[teamType][Phase][2]; //max
 
         double F = (c - a)/(b - a);
         double rand = Math.random();
@@ -207,10 +209,16 @@ public class Replication {
      *
      *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
-    private boolean failTask(Operator operator,Task task,int type, double distValue){
+    private boolean failTask(Operator operator,Task task, int operatorID){
 
-        double rangeMin = vars.humanError[type][1];
-        double rangeMax = vars.humanError[type][2];
+        //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
+        int teamType = operatorID / 100;
+        int Phase = task.getPhase();
+
+        double distValue = getTriangularDistribution(teamType, Phase);
+
+        double rangeMin = vars.humanError[teamType][Phase][1];
+        double rangeMax = vars.humanError[teamType][Phase][2];
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 //        System.out.println("comparing" +distValue+" and "+randomValue);
@@ -306,7 +314,7 @@ public class Replication {
             }
         }
 
-        //TODO: generate team communication tasks and exogenous task
+        //TODO: (Complete) generate team communication tasks and exogenous task
         for(int i = 0; i < vars.numTeams; i++){
             if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
             if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
@@ -338,7 +346,6 @@ public class Replication {
         workingUntilNewTaskArrive(remoteOps,null);
 
         vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
-
 
     }
 

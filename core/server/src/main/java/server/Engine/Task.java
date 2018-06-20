@@ -60,6 +60,8 @@ public class Task implements Comparable<Task> {
 
 	public boolean getFail(){return this.fail;}
 
+	public int getPhase(){ return Phase;}
+
 	public void setFail(){this.fail = true;}
 
 	public void setexpired() {
@@ -119,7 +121,7 @@ public class Task implements Comparable<Task> {
 			}
 
 			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
-			serTime = GenTime(vars.serDists[Type], vars.serPms[Phase][Type]);
+			serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
 
 			expTime = genExpTime();
 			opNums = vars.opNums[Type];
@@ -338,7 +340,7 @@ public class Task implements Comparable<Task> {
 		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
 		int fleet = vehicleID / 100;
 		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
-		double TimeTaken = GenTime(vars.arrDists[taskType], arrivalRate);
+		double TimeTaken = GenTime(vars.arrDists[Phase][taskType], arrivalRate);
 
 		if (TimeTaken == Double.POSITIVE_INFINITY){
 			return Double.POSITIVE_INFINITY;
@@ -388,8 +390,8 @@ public class Task implements Comparable<Task> {
 
 	private double genExpTime(){
 
-		double expiration = GenTime(vars.expDists[Type], vars.expPms[Phase][Type]);
-		return arrTime + 2*serTime + expiration;
+		double expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
+		return arrTime + 2 * serTime + expiration;
 
 	}
 
@@ -408,8 +410,8 @@ public class Task implements Comparable<Task> {
 		//SCHEN 12/10/17: Add Fleet autonomy -> adjust arrival rate
 		double autoLevel = lvl_None; //default
 
-		if(vars.autolvl[fleet] == 1) autoLevel = lvl_SOME;
-		if(vars.autolvl[fleet] == 2) autoLevel = lvl_FULL;
+		if(vars.autolvl[fleet] == 'S') autoLevel = lvl_SOME;
+		if(vars.autolvl[fleet] == 'F') autoLevel = lvl_FULL;
 
 		return  autoLevel;
 	}

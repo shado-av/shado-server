@@ -43,33 +43,36 @@ public class loadparam {
     public int[][] opTasks;
     public int[][] taskPrty;
     public char[] teamComm;
+    public double[][][] humanError;
     public double failThreshold;
 
     //AIDA Variables
     public int[][] AIDAtype;
     private double[] ETServiceTime;
     private double[] ETErrorRate;
+    private double[] ETFailThreshold;
     private int[][] IAtasks;
-    private double[][] IAServiceTime;
-    private double[] TCAServiceTime;
-    private double[] TCAErrorRate;
+    private char[] IALevel;
+    private char[] TCALevel;
 
     // Fleet Variables
     public int fleetTypes;
     public int[] numvehicles;
-    public int[] autolvl;
+    public char[] autolvl;
     public int[][] fleetHetero;
 
     // Task Variables
     public int numTaskTypes;
     public String[] taskNames;
-    public char[] arrDists;
+    public char[][] arrDists;
     public double[][][] arrPms;
-    public char[] serDists;
+    public char[][] serDists;
     public double[][][] serPms;
-    public char[] expDists;
+    public char[][] expDists;
     public double[][][] expPms;
     public int[][] affByTraff;
+    public int[] interruptable;
+
 
 
 
@@ -95,7 +98,7 @@ public class loadparam {
 	// Adding isLinked
 
 //	public int[] linked;
-	public double[][] humanError;
+
 
 	// Toggle Global Variables
     //If there is exogenous factor that add tasks to the queue
