@@ -27,8 +27,6 @@ public class Operator {
 
 	private Queue myQueue;
 
-	private loadparam vars;
-
 	// Inspector
 
 	public Queue getQueue(){
@@ -37,7 +35,8 @@ public class Operator {
 
 	public String getName(){return this.name;}
 
-
+	@Override
+	public String toString() { return "This is operator " + name; }
 
 	/****************************************************************************
 	 *
@@ -56,8 +55,4 @@ public class Operator {
 
 	}
 
-	@Override
-	public String toString() {
-		return "This is operator " + name;
-	}
 }

@@ -170,6 +170,7 @@ public class Replication {
             if(task.getType() > 0){
                 task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
             }
+
             optimal_op.getQueue().add(task);
         }
 
@@ -307,10 +308,10 @@ public class Replication {
 
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
-                // vehicleId to for 2d Array
+
                 vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks,globalWatingTasks);
-//                System.out.println("Vehicle "+(i*100+j)+" generates tasks");
                 vehicles[i][j].genVehicleTask();
+
             }
         }
 
@@ -358,6 +359,7 @@ public class Replication {
     }
 
     private void genTeamCommTask(char level, int team){
+
         int taskType = -1;
         if(level == 'S') taskType = -1;
         if(level == 'F') taskType = -2;
