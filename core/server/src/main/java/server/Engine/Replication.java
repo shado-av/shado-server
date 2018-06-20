@@ -165,9 +165,11 @@ public class Replication {
 
         }
 
-
-
         if (!failTask(optimal_op, task, optimal_op.dpID)) {
+
+            if(task.getType() > 0){
+                task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
+            }
             optimal_op.getQueue().add(task);
         }
 
@@ -181,9 +183,7 @@ public class Replication {
      *
      ****************************************************************************/
     private double getTriangularDistribution(int teamType, int Phase){
-        System.out.println("team Type : " + teamType);
-        System.out.println("Phases : " + Phase);
-        System.out.println("Human Error Rate : " + vars.humanError.length + " * " + vars.humanError[0].length + " * " + vars.humanError[0][0].length);
+
         double c = vars.humanError[teamType][Phase][0]; //mode
         double a = vars.humanError[teamType][Phase][1]; //min
         double b = vars.humanError[teamType][Phase][2]; //max
@@ -231,7 +231,7 @@ public class Replication {
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
             //If there is team communication, it will be easier to catch error. The failThreshold will decrease.
-            if(Math.random() < vars.failThreshold[teamType] * getTeamComm(operator.dpID)){
+            if(Math.random() > vars.ECC[teamType] * (2 - getTeamComm(operator.dpID))){
                 //Task Failed but still processed by operator
                 task.setFail();
                 return false;

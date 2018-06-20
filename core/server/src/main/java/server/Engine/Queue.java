@@ -154,23 +154,6 @@ public class Queue implements Comparable<Queue>{
         numtask();
     }
 
-//    public void add(Task task) {
-//        if(taskqueue.isEmpty()){
-//            SetTime(task.getArrTime());
-//            setExpectedFinTime(task);
-//            taskqueue.add(task);
-//            taskqueue.peek().setBeginTime(time);
-//            finTime();
-//        }
-//        else{
-//
-//        }
-//        numtask();
-//    }
-
-
-
-
 
     /****************************************************************************
      *

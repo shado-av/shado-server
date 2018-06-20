@@ -56,8 +56,6 @@ public class VehicleSim  {
         globalTasks.add(task);
     }
 
-    //SCHEN 12/16/17 Modify fleet heterogeniety, fix bug: all vehicle has all operator settings
-    public int vehicleType;
     /****************************************************************************
      *
      *	Side Object:	VehicleSim
@@ -167,29 +165,6 @@ public class VehicleSim  {
         }
     }
 
-//    /****************************************************************************
-//     *
-//     *	Method:			operatorgen
-//     *
-//     *	Purpose:		Generate an array of operators.
-//     *
-//     ****************************************************************************/
-//
-//    public void operatorgen() {
-//
-//        // Create Operators
-//        //SCHEN 11/20/17:
-//        //TODO[COMPLETED]: Create Different Operatorset for different types of vehicles
-//        operators = new Operator[vars.ops.length];
-//        int fleetType = vehicleID/10;
-//        operators = new Operator[vars.numTeams];
-//        for(int j = 0; j < vars.numTeams; j++) {
-//            if(operators[j].getName().equals("Artificially Intelligent Agent")) hasAI = true;
-//        }
-//        }
-//    }
-
-
     /****************************************************************************
      *
      *	Method:			genVehicleTask
@@ -201,23 +176,6 @@ public class VehicleSim  {
     public void genVehicleTask() {
         taskgen();
     }
-
-    /****************************************************************************
-     *
-     *	Method:			checkTeamCoord
-     *
-     *	Purpose:	    check Whether teamCoordination is present in this simulation
-     *
-     ****************************************************************************/
-    public int checkTeamCoord(){
-        for(char c: vars.teamComm){
-//            System.out.println("Team Coord presents");
-            if(c != 'N') return 0;
-        }
-        return -1;
-    }
-
-
 
     /****************************************************************************
      *

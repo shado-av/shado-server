@@ -44,7 +44,7 @@ public class loadparam {
     public int[][][] taskPrty; //phase * team * task
     public char[] teamComm;
     public double[][][] humanError;
-    public double[] failThreshold;
+    public double[] ECC; //short for "Error Catching Chance"
 
     //AIDA Variables
     public int[][] AIDAtype;
@@ -120,8 +120,8 @@ public class loadparam {
 	public int metaSnapShot;
 
 	//Naixin 05/21/18 to record the utilization
-    //utilization[numRep][numOperator]
-    public Data[][] utilizationOutput;
+
+    public Data[][] utilizationOutput;   //utilization[numRep][numOperator]
     public ArrayList<Task> allTasks;
 	
 	/****************************************************************************

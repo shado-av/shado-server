@@ -64,6 +64,8 @@ public class Task implements Comparable<Task> {
 
 	public void setFail(){this.fail = true;}
 
+	public void setPriority(int Priority){ this.Priority = Priority; }
+
 	public void setexpired() {
 		expired = true;
 	}
