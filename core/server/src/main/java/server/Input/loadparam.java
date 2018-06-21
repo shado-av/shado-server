@@ -48,11 +48,11 @@ public class loadparam {
 
     //AIDA Variables
     public int[][] AIDAtype;
-    private double[] ETServiceTime;
+    public double[] ETServiceTime;
     private double[] ETErrorRate;
     private double[] ETFailThreshold;
-    private int[][] IAtasks;
-    private char[] IALevel;
+    public int[][] IAtasks;
+    public char[] IALevel;
     private char[] TCALevel;
 
     // Fleet Variables

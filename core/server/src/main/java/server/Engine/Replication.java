@@ -154,11 +154,8 @@ public class Replication {
                 if (vars.hasET[task.getType()]) return;
             }
 
-            //AI feature: check if this operator has IA AIDA, if so reduce the service time by 50%
-            //TODO: only change the serve time for certain tasks, make the change rate adjustable
-            if (vars.AIDAtype[optimal_op.dpID / 100][1] == 1) {
-                task.changeServTime(0.5);
-            }
+            //AI feature: Individual Assistant AIDA
+            applyIndividualAssistant(optimal_op, task);
 
             //check team communication, change the serve time
             task.changeServTime(getTeamComm(optimal_op.dpID));
@@ -179,9 +176,27 @@ public class Replication {
 
     /****************************************************************************
      *
+     *	Method:		    applyIndividualAssistant
+     *
+     *	Purpose:	    check if this operator has IA AIDA, if so reduce the
+     *              	service time for certain tasks by 30%(some) or 70%(full)
+     *
+     ****************************************************************************/
+
+    private void applyIndividualAssistant(Operator op, Task task){
+        if (vars.AIDAtype[op.dpID / 100][1] == 1 &&
+                IntStream.of(vars.IAtasks[op.dpID / 100]).anyMatch(x -> x == task.getType())) {
+            double changeRate = getIndividualAssistantLevel(op.dpID);
+            task.changeServTime(changeRate);
+        }
+        return;
+    }
+
+    /****************************************************************************
+     *
      *	Method:		    getTriangularDistribution
      *
-     *	Purpose:	    generate a TriangularDistribution value
+     *	Purpose:	    generate a TriangularDistribution value for human error prediction
      *
      ****************************************************************************/
     private double getTriangularDistribution(int teamType, int Phase){
@@ -192,15 +207,12 @@ public class Replication {
 
         double F = (c - a)/(b - a);
         double rand = Math.random();
-//        System.out.print("Triangular Distribution: ");
         if (rand < F) {
-//            System.out.println( a + Math.sqrt(rand * (b - a) * (c - a)));
             return a + Math.sqrt(rand * (b - a) * (c - a));
         } else {
-//            System.out.println( b - Math.sqrt((1 - rand) * (b - a) * (b - c)));
             return b - Math.sqrt((1 - rand) * (b - a) * (b - c));
-
         }
+
     }
     /****************************************************************************
      *
@@ -223,16 +235,14 @@ public class Replication {
         double rangeMax = vars.humanError[teamType][Phase][2];
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-//        System.out.println("comparing" +distValue+" and "+randomValue);
 
         if(Math.abs(randomValue - distValue) <= 0.0001){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
             int currCnt = failCnt.get(vars.replicationTracker);
             failCnt.put(vars.replicationTracker,++currCnt);
-//            System.out.println(operator.getName()+" fails " +task.getName()+", Total Fail "+ currCnt);
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
-            //If there is team communication, it will be easier to catch error. The failThreshold will decrease.
+            //If there is team communication, it will be easier to catch error. Increase the ECC(Error Catch Chance)
             if(Math.random() > vars.ECC[teamType] * (2 - getTeamComm(operator.dpID))){
                 //Task Failed but still processed by operator
                 task.setFail();
@@ -243,12 +253,30 @@ public class Replication {
         return false;
     }
 
+
+    /****************************************************************************
+     *
+     *	Method:		    sortTask
+     *
+     *	Purpose:	    Sort the tasks in the globalTask in a timely order
+     *
+     ****************************************************************************/
+
     public void sortTask() {
 
-        // Sort task by time.
         Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
 
     }
+
+    /****************************************************************************
+     *
+     *	Method:		    workingUntilNewTaskArrive
+     *
+     *	Purpose:	    For each operator, complete all the tasks in its queue,
+     *              	which has a end time earlier than the new task's arrival
+     *              	time.
+     *
+     ****************************************************************************/
 
     public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
 
@@ -268,8 +296,8 @@ public class Replication {
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
 
-            System.out.println(op.toString());
-            System.out.println(op.getQueue().toString());
+//            System.out.println(op.toString());
+//            System.out.println(op.getQueue().toString());
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) { //Naixin: change getExpectedFinTime to getfinTime
@@ -299,7 +327,6 @@ public class Replication {
         remoteOps.run();
 //        linked = remoteOps.gettasks();
 
-        //SCHEN 11/10/17 For this version of Fleet hetero, assume each batch has 10 vehicles
         int maxLen = 0;
         for(int i = 0; i < vars.fleetTypes; i++ )
             if(vars.numvehicles[i] > maxLen)
@@ -357,6 +384,14 @@ public class Replication {
         if(vars.teamComm[type] == 'S') teamComm = 0.7;
         if(vars.teamComm[type] == 'F') teamComm = 0.3;
         return teamComm;
+    }
+
+    private double getIndividualAssistantLevel(int dpId){
+        int type = dpId / 100;
+        double IAlvl = 1;
+        if(vars.IALevel[type] == 'S') IAlvl = 0.7;
+        if(vars.IALevel[type] == 'N') IAlvl = 0.3;
+        return IAlvl;
     }
 
     private void genTeamCommTask(char level, int team){

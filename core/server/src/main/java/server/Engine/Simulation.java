@@ -73,7 +73,7 @@ public class Simulation {
 
         vars = param;
         repnumber = param.numReps;
-        System.out.println("NumReps: " + repnumber);
+        System.out.println("Number of reputations: " + repnumber);
         // Generate overall data field
 
         //check if it has type 2 exogenous factor (increasing arrival rate)
@@ -169,56 +169,6 @@ public class Simulation {
             }
         }
     }
-
-//    private void addTask(){
-//
-//        loadparam vars_n = new loadparam();
-//
-//        vars_n.numHours = vars.numHours;
-//        vars_n.traffic = vars.traffic;
-//        vars_n.numReps = vars.numReps;
-//        vars_n.numRemoteOp = vars.numRemoteOp;
-//        vars_n.numTeams = vars.numTeams;
-//        vars_n.autolvl = vars.autolvl;
-//        vars_n.numPhases = vars.numPhases;
-//        vars_n.hasExogenous = vars.hasExogenous;
-//        vars_n.exNames = vars.exNames;
-//        vars_n.exTypes = vars.exTypes;
-//        vars_n.failThreshold = vars.failThreshold;
-//        vars_n.opStrats = vars.opStrats;
-//        vars_n.opNames = vars.opNames;
-//        vars_n.teamComm = vars.teamComm;
-//        vars_n.teamSize = vars.teamSize;
-//        vars_n.fleetTypes = vars.fleetTypes + 1;
-//        vars_n.numTaskTypes = vars.numTaskTypes + 1;
-//
-//
-//
-//        vars_n.numvehicles = new int[vars.numvehicles.length + 1];
-//        vars_n.opTasks = new int[vars_n.numTeams][vars.opTasks[0].length + 1];
-//        vars_n.fleetHetero;
-//        vars_n.taskNames;
-//        vars_n.taskPrty;
-//
-//        for(int i = 0; i < vars.numvehicles.length; i++){
-//            vars_n.numvehicles[i] = vars.numvehicles[i];
-//        }
-//        vars_n.numvehicles[vars.numvehicles.length] = 1;
-//
-//        vars_n.numTaskTypes = vars.numTaskTypes + 1;
-//        String[] taskNames_n = new String[vars.numTaskTypes];
-//
-//        //copy the original parameters
-//        for(int i = 0; i < vars.numTaskTypes-1; i++){
-//            taskNames_n[i] = vars.taskNames[i];
-//        }
-//
-//        //add new parameters
-//        taskNames_n[vars.numTaskTypes-1] = "Exogenous Event";
-//
-//        //replace the old vars with the new one
-
-//    }
 
 
 }
