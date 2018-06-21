@@ -49,11 +49,11 @@ public class loadparam {
     //AIDA Variables
     public int[][] AIDAtype;
     public double[] ETServiceTime;
-    private double[] ETErrorRate;
-    private double[] ETFailThreshold;
+    public double[] ETErrorRate;
+    public double[] ETFailThreshold;
     public int[][] IAtasks;
     public char[] IALevel;
-    private char[] TCALevel;
+    public char[] TCALevel;
 
     // Fleet Variables
     public int fleetTypes;
@@ -92,7 +92,7 @@ public class loadparam {
 
 	public int[][] opNums;
 	public int[][] trigger;
-	public boolean[] hasET; //if there is "Equal Teammate AIDA" for each task type
+    public int[] ETteam; //which team has ET for this task type
 
 	//SCHEN 12/10/17 Added: whether the task is affected by team coordination
 	public int[] teamCoordAff;
@@ -123,6 +123,7 @@ public class loadparam {
 
     public Data[][] utilizationOutput;   //utilization[numRep][numOperator]
     public ArrayList<Task> allTasks;
+    public ArrayList<Task> AITasks;
 	
 	/****************************************************************************
 	*																			
@@ -176,7 +177,7 @@ public class loadparam {
             }
         }
         utilizationOutput = new Data[numReps][numRemoteOp];
-        hasET = new boolean[numTaskTypes];
+        ETteam = new int[numTaskTypes];
         checkET();
     }
 
@@ -198,25 +199,18 @@ public class loadparam {
 
         //set hasET default to false
         for(int i = 0; i < numTaskTypes; i++){
-            hasET[i] = false;
+            ETteam[i] = -1;
         }
 
         for(int team = 0; team < numTeams; team++){
             //if this team has equal teammate AIDA
             if(AIDAtype[team][0] == 1){
                 for(int i : opTasks[team]) {
-                    hasET[i] = true;
+                    ETteam[i] = team;
                 }
             }
         }
 
-        //print checkET
-        System.out.print("checking ET : ");
-        for(boolean b : hasET){
-            if(b) System.out.print("true ");
-            else System.out.print("false ");
-        }
-        System.out.println(" ");
     }
 
 

@@ -127,13 +127,6 @@ public class Queue implements Comparable<Queue>{
         SetTime(task.getArrTime());
         setExpectedFinTime(task);
 
-        //"STF" has been added to the comparator of the priority queue. We don't need this here.
-//        int operatorType = operator.dpID / 100;
-//        if(task.vars.opStrats[operatorType].equals("STF")){
-//            //Sort the current queue under STF
-//            sortTaskQueueOnServTime();
-//        }
-
         if(!taskqueue.isEmpty()){
             if(taskqueue.peek().compareTo(task) > 0){ //the new task will go in front of the current top task
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
@@ -180,10 +173,9 @@ public class Queue implements Comparable<Queue>{
 
             taskqueue.peek().setEndTime(finTime);
             taskqueue.peek().setQueue(NumTask);
-            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
+//            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
 
             taskqueue.peek().printBasicInfo();
-
 
             // Remove the finished task from the queue and put it into record task list.
             recordtasks.add(taskqueue.poll());
@@ -252,6 +244,7 @@ public class Queue implements Comparable<Queue>{
         else {
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
+//            finTime = time + onhand.getSerTime() - onhand.getELSTime();
             // Error checker
 
 //            System.out.println(onhand.getArrTime() + "\t" + onhand.getName() + "\t" +

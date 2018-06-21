@@ -148,10 +148,12 @@ public class Replication {
         if(task.getType() > 0) {
 
             //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
-            //The ET AIDA can process the task with 0 serve time ans 0 error (default, hard code for now)
-            //TODO: make AI's serve time and error rate adjustable by user
             if (!optimal_op.getQueue().taskqueue.isEmpty()) {
-                if (vars.hasET[task.getType()]) return;
+                int team = vars.ETteam[task.getType()];
+                if (team > -1){
+                    equalTeammateDone(task, team);
+                    return;
+                }
             }
 
             //AI feature: Individual Assistant AIDA
@@ -174,6 +176,25 @@ public class Replication {
 
     }
 
+
+    /****************************************************************************
+     *
+     *	Method:		    equalTeammateDone
+     *
+     *	Purpose:	    A record for the tasks done by equal teammate AIDA
+     *
+     ****************************************************************************/
+
+    private void equalTeammateDone(Task task, int team){
+        //TODO: not apply the fail task part
+        task.setBeginTime(task.getArrTime());
+        task.changeServTime(vars.ETServiceTime[team]);
+//        task.setELStime(task.getSerTime());
+        task.setEndTime(task.getArrTime() + task.getSerTime());
+        vars.AITasks.add(task);
+    }
+
+
     /****************************************************************************
      *
      *	Method:		    applyIndividualAssistant
@@ -189,7 +210,6 @@ public class Replication {
             double changeRate = getIndividualAssistantLevel(op.dpID);
             task.changeServTime(changeRate);
         }
-        return;
     }
 
     /****************************************************************************
@@ -214,6 +234,7 @@ public class Replication {
         }
 
     }
+
     /****************************************************************************
      *
      *	Method:		    failTask
@@ -296,8 +317,8 @@ public class Replication {
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
 
-//            System.out.println(op.toString());
-//            System.out.println(op.getQueue().toString());
+            System.out.print(op.toString() + ", ");
+            System.out.println(op.getQueue().toString());
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) { //Naixin: change getExpectedFinTime to getfinTime

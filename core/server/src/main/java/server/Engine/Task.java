@@ -177,17 +177,17 @@ public class Task implements Comparable<Task> {
 			return other.Priority - this.Priority;
 		} else {
 			if(vars.opStrats[teamType] == "FIFO"){
-				if (this.arrTime - other.arrTime > 0){ //this task arrives latter, other task should come first
+				if (this.arrTime > other.arrTime){ //this task arrives latter, other task should come first
 					return 1;
 				} else {
 					return -1;
 				}
 			}
 			else if(vars.opStrats[teamType] == "STF"){
-				if(this.serTime - other.getSerTime() > 0){ //this task needs more serve time, other task should come first
-					return -1;
-				} else {
+				if(other.getSerTime() < this.getSerTime()){ //this task needs more serve time, other task should come first
 					return 1;
+				} else {
+					return -1;
 				}
 			}
 			return -1;
@@ -365,7 +365,7 @@ public class Task implements Comparable<Task> {
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (vars.affByTraff[Type][Phase] == 1 && loadparam.TRAFFIC_ON){
+		if (loadparam.TRAFFIC_ON && vars.affByTraff[Type][Phase] == 1 ){
 
 			double budget = TimeTaken;
 			double currTime = prevTime;
@@ -459,9 +459,10 @@ public class Task implements Comparable<Task> {
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);
 		System.out.println("Arrival time : " + arrTime);
+		System.out.println("I was interrupted at : " + (arrTime + getELSTime()));
 		System.out.println("Begin Time : " + beginTime);
 		System.out.println("Service Time : " + serTime);
-//		System.out.println("ELS TIme : " + elapsedTime);
+		System.out.println("ELS TIme : " + elapsedTime);
 		System.out.println("Finish Time : " + endTime);
 	}
 

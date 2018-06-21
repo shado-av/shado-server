@@ -153,37 +153,46 @@ public class ProcRep {
             double beginscale = each.getBeginTime() / 10;
             double endscale = each.getEndTime() / 10;
 
-            boolean startcheck = false;
+            fill(beginscale, endscale, incremented, taskType);
 
-            for (int i = 1; i < (int) hours*6 + 1; i++) {
+            if(each.getELSTime() != 0){
+                beginscale = each.getArrTime() / 10;
+                endscale = (each.getArrTime() + each.getELSTime()) / 10;
+                fill(beginscale, endscale, incremented, taskType);
+            }
+        }
 
-                // If task hasn't began yet
+    }
 
-                if (beginscale > i) {
-                    continue;
-                }
 
-                // If task began but not finished in this interval.
+    private void fill(double beginscale, double endscale, Data incremented, int taskType){
 
-//                vehicleID = 0;
-//                int zero = 0;
-//                int zero = vehicleID;
+        boolean startcheck = false;
 
-                if (endscale > i) {
-                    if (!startcheck) {
-                        incremented.datainc(taskType, i - 1, 0, i - beginscale);
-                        startcheck = true;
-                    } else {
-                        incremented.datainc(taskType, i - 1, 0, 1);
-                    }
+        for (int i = 1; i < (int) hours*6 + 1; i++) {
+
+            // If task hasn't began yet
+
+            if (beginscale > i) {
+                continue;
+            }
+
+            // If task began but not finished in this interval.
+
+            if (endscale > i) {
+                if (!startcheck) {
+                    incremented.datainc(taskType, i - 1, 0, i - beginscale);
+                    startcheck = true;
                 } else {
-                    if (!startcheck) {
-                        incremented.datainc(taskType, i - 1, 0, endscale - beginscale);
-                        break;
-                    } else {
-                        incremented.datainc(taskType, i - 1, 0, endscale - i + 1);
-                        break;
-                    }
+                    incremented.datainc(taskType, i - 1, 0, 1);
+                }
+            } else {
+                if (!startcheck) {
+                    incremented.datainc(taskType, i - 1, 0, endscale - beginscale);
+                    break;
+                } else {
+                    incremented.datainc(taskType, i - 1, 0, endscale - i + 1);
+                    break;
                 }
             }
         }

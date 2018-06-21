@@ -69,6 +69,13 @@ public class Parser {
             }
             System.out.println(" ");
         }
+
+        for(int i = 0; i < in.numPhases; i++){
+            for(int j = 0; j < in.numTaskTypes; j++){
+                System.out.print("In phase " + i + " Task " + j + " : ");
+                System.out.println(Arrays.toString(in.arrPms[i][j]));
+            }
+        }
         //System.out.println("arrpms: " + Arrays.toString(in.arrPms));
     }
 
