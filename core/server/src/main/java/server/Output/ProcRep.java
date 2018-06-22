@@ -150,16 +150,22 @@ public class ProcRep {
                 completed[taskType]++;
             }
 
-            double beginscale = each.getBeginTime() / 10;
-            double endscale = each.getEndTime() / 10;
-
-            fill(beginscale, endscale, incremented, taskType);
-
-            if(each.getELSTime() != 0){
-                beginscale = each.getArrTime() / 10;
-                endscale = (each.getArrTime() + each.getELSTime()) / 10;
+            for(int i = 0; i < each.workSchedule.size(); i++){
+                double beginscale = each.workSchedule.get(i)[0] / 10;
+                double endscale = each.workSchedule.get(i)[1] / 10;
                 fill(beginscale, endscale, incremented, taskType);
             }
+
+//            double beginscale = each.getBeginTime() / 10;
+//            double endscale = each.getEndTime() / 10;
+//
+//            fill(beginscale, endscale, incremented, taskType);
+//
+//            if(each.getELSTime() != 0){
+//                beginscale = each.getArrTime() / 10;
+//                endscale = (each.getArrTime() + each.getELSTime()) / 10;
+//                fill(beginscale, endscale, incremented, taskType);
+//            }
         }
 
     }

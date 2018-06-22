@@ -38,7 +38,7 @@ public class Task implements Comparable<Task> {
 	private double serTime;
 	private double expTime;
 	private double elapsedTime;
-	private ArrayList<Double[]> workSchedule;
+	public ArrayList<double[]> workSchedule;
 	private double waitTime;
 	private double beginTime;
 	private double endTime;
@@ -188,12 +188,10 @@ public class Task implements Comparable<Task> {
 
 		if(vars.interruptable[other.getType()] == 0 ||
 				vars.essential[other.getType()] == 1){ // If the old task cannot be interrupted
-			System.out.println("In task.compareTo, old task cannot be interrupted.");
 			return 1;
 		}
 
 		if(vars.essential[this.getType()] == 1){ // If the new task is essential task, which can interrupt any other task
-			System.out.println("In task.compareTo, the new task is essential.");
 			return -1;
 		}
 
@@ -214,7 +212,6 @@ public class Task implements Comparable<Task> {
 		}
 
 		else if(vars.opStrats[teamType].equals("STF")){
-			System.out.println("In task.compareTo, we are using STF now.");
 			if(other.getSerTime() < this.getSerTime() - this.getELSTime()){ //this task needs more serve time, other task should come first
 				return 1;
 			} else {
@@ -235,8 +232,6 @@ public class Task implements Comparable<Task> {
 	public boolean linked() {return this.isLinked;}
 
 	public int getType() {return this.Type;}
-
-	public int getPriority(){return this.Priority;}
 
 	public double getArrTime(){return this.arrTime;}
 
@@ -486,22 +481,31 @@ public class Task implements Comparable<Task> {
 		}
 		return arrivalRate;
 	}
-//
-//	public void addBeginTime(double beginTime){
-//		double[] newSchedule = new double[2];
-//		newSchedule[0] = beginTime;
-//		newSchedule[1] = 0;
-//		workSchedule.add(newSchedule);
-//	}
+
+	public void addBeginTime(double beginTime){
+		double[] newSchedule = new double[2];
+		newSchedule[0] = beginTime;
+		newSchedule[1] = 0;
+		workSchedule.add(newSchedule);
+	}
+
+	public void addInterruptTime(double time){
+		int lastOne = workSchedule.size() - 1;
+		workSchedule.get(lastOne)[1] = time;
+	}
 
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);
 		System.out.println("Arrival time : " + arrTime);
-		System.out.println("I was interrupted at : " + (arrTime + getELSTime()));
 		System.out.println("Begin Time : " + beginTime);
 		System.out.println("Service Time : " + serTime);
-		System.out.println("ELS TIme : " + elapsedTime);
+		System.out.println("ELS Time : " + elapsedTime);
 		System.out.println("Finish Time : " + endTime);
+		System.out.print("Here is my work schedule: ");
+		for(int i = 0; i < workSchedule.size(); i++){
+			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");
+		}
+		System.out.println(" ");
 	}
 
 }

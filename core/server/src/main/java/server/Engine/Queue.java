@@ -132,7 +132,9 @@ public class Queue implements Comparable<Queue>{
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
                 System.out.println("In queue.add, the on hand task is interrupted.");
-
+                taskqueue.peek().addInterruptTime(time);
+//                double workTime = taskqueue.peek().workSchedule.get(taskqueue.peek().workSchedule.size() - 1)[0] - time;
+//                taskqueue.peek().setELStime(taskqueue.peek().getELSTime() + workTime);
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
             }
         }
@@ -143,6 +145,7 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek().equals(task)) {
             taskqueue.peek().setBeginTime(time);
+            taskqueue.peek().addBeginTime(time);
             finTime();
         }
 
@@ -170,9 +173,9 @@ public class Queue implements Comparable<Queue>{
             // Set the end time of the task being finished.
 
             taskqueue.peek().setEndTime(finTime);
+            taskqueue.peek().addInterruptTime(finTime);
             taskqueue.peek().setQueue(NumTask);
 //            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
-
             taskqueue.peek().printBasicInfo();
 
             // Remove the finished task from the queue and put it into record task list.
@@ -204,6 +207,7 @@ public class Queue implements Comparable<Queue>{
             // Set the beginTime of the Task in question to now, i.e. begin working on this task.
 
             taskqueue.peek().setBeginTime(time);
+            taskqueue.peek().addBeginTime(time);
             taskqueue.peek().setWaitTime(taskqueue.peek().getArrTime()-taskqueue.peek().getBeginTime());
 
         }
@@ -215,11 +219,6 @@ public class Queue implements Comparable<Queue>{
         // Generate a new numTask for the Queue.
 
         numtask();
-
-        System.out.println(toString());
-        System.out.println("The top task in my queue now is");
-        if(!taskqueue.isEmpty()) taskqueue.peek().printBasicInfo();
-
     }
 
 
@@ -272,23 +271,6 @@ public class Queue implements Comparable<Queue>{
         } else {
             isBusy = true;
         }
-    }
-
-    public void sortTaskQueueOnServTime(){
-
-        ArrayList<Task> tmpTaskQueue = new ArrayList<>();
-        PriorityQueue<Task> newQueue = new PriorityQueue<>();
-        for(Task t: this.taskqueue){
-            tmpTaskQueue.add(t);
-        }
-
-        Collections.sort(tmpTaskQueue,(o1, o2) -> Double.compare(o1.getSerTime(), o2.getSerTime()));
-
-        for(Task t: tmpTaskQueue){
-            newQueue.add(t);
-        }
-        this.taskqueue = newQueue;
-
     }
 
     private void setExpectedFinTime(Task task){
