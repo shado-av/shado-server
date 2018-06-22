@@ -342,7 +342,7 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Triangular(double min, double max, double mode){
+	private double Triangular(double min, double mode, double max){
 		double F = (mode - min)/(max - min);
 		double rand = Math.random();
 		if (rand < F) {

@@ -221,8 +221,8 @@ public class Replication {
      ****************************************************************************/
     private double getTriangularDistribution(int taskType, int Phase){
 
-        double c = vars.humanError[Phase][taskType][0]; //mode
-        double a = vars.humanError[Phase][taskType][1]; //min
+        double c = vars.humanError[Phase][taskType][1]; //mode
+        double a = vars.humanError[Phase][taskType][0]; //min
         double b = vars.humanError[Phase][taskType][2]; //max
 
         double F = (c - a)/(b - a);
@@ -254,7 +254,7 @@ public class Replication {
 
         double distValue = getTriangularDistribution(taskType, Phase);
 
-        double rangeMin = vars.humanError[Phase][taskType][1];
+        double rangeMin = vars.humanError[Phase][taskType][0];
         double rangeMax = vars.humanError[Phase][taskType][2];
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
