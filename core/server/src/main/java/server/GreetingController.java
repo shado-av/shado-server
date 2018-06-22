@@ -32,7 +32,7 @@ public class GreetingController {
     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss");
     Date date = new Date();
 
-    private String directory = "/home/rapiduser/shado-server/core/server/out/";
+    private String directory = "/home/rapiduser/out/";
 //    private String directory = "/Users/zhanglian1/Desktop/out/";
 
     @RequestMapping("/shado/hello")

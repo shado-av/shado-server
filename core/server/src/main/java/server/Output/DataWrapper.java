@@ -41,7 +41,7 @@ public class DataWrapper {
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
 //        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-        outPutDirectory = "/home/rapiduser/shado-server/core/server/out/";
+        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
