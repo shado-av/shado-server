@@ -36,7 +36,7 @@ public class Operator {
 	public String getName(){return this.name;}
 
 	@Override
-	public String toString() { return "This is operator " + name; }
+	public String toString() { return "This is " + name; }
 
 	/****************************************************************************
 	 *

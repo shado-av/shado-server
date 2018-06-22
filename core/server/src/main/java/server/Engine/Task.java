@@ -38,6 +38,7 @@ public class Task implements Comparable<Task> {
 	private double serTime;
 	private double expTime;
 	private double elapsedTime;
+	private ArrayList<Double[]> workSchedule;
 	private double waitTime;
 	private double beginTime;
 	private double endTime;
@@ -97,6 +98,11 @@ public class Task implements Comparable<Task> {
 		beginTime = time;
 	}
 
+	@Override
+	public String toString() {
+		return name + " arrive at "+ arrTime;
+	}
+
 	/****************************************************************************
 	 *
 	 *	Shado Object:	Task
@@ -118,6 +124,7 @@ public class Task implements Comparable<Task> {
 		waitTime = 0;
 		expired = false;
 		Priority = 0;
+		workSchedule = new ArrayList<>();
 
 		if(type >= 0){
 
@@ -166,32 +173,57 @@ public class Task implements Comparable<Task> {
 	 *
 	 *	Method:			compareTo
 	 *
-	 *	Purpose:		Compare two task based on their priority
+	 *	Purpose:		Compare two task based on operator's strategy
+	 *
+	 *  Notes:  		When using the priority queue: "this" is the new task;
+	 *  				"other" is the original top task. Return positive value
+	 *  				means put the new task behind the original top task.
 	 *
 	 ****************************************************************************/
 
 	@Override
 	public int compareTo(Task other){
 
-		if (this.Priority != other.Priority){
-			return other.Priority - this.Priority;
-		} else {
-			if(vars.opStrats[teamType] == "FIFO"){
-				if (this.arrTime > other.arrTime){ //this task arrives latter, other task should come first
-					return 1;
-				} else {
-					return -1;
-				}
-			}
-			else if(vars.opStrats[teamType] == "STF"){
-				if(other.getSerTime() < this.getSerTime()){ //this task needs more serve time, other task should come first
-					return 1;
-				} else {
-					return -1;
-				}
-			}
+		if(this.getType() < 0) return 1;
+
+		if(vars.interruptable[other.getType()] == 0 ||
+				vars.essential[other.getType()] == 1){ // If the old task cannot be interrupted
+			System.out.println("In task.compareTo, old task cannot be interrupted.");
+			return 1;
+		}
+
+		if(vars.essential[this.getType()] == 1){ // If the new task is essential task, which can interrupt any other task
+			System.out.println("In task.compareTo, the new task is essential.");
 			return -1;
 		}
+
+		if(vars.opStrats[teamType].equals("PRTY")){
+			if(other.Priority > this.Priority) return 1;
+			else if(other.Priority < this.Priority) return -1;
+			// If two tasks have same priority, use FIFO
+			if (this.arrTime > other.arrTime) return 1;
+			return -1;
+		}
+
+		else if(vars.opStrats[teamType].equals("FIFO")){
+			if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
+				return 1;
+			} else {
+				return -1;
+			}
+		}
+
+		else if(vars.opStrats[teamType].equals("STF")){
+			System.out.println("In task.compareTo, we are using STF now.");
+			if(other.getSerTime() < this.getSerTime() - this.getELSTime()){ //this task needs more serve time, other task should come first
+				return 1;
+			} else {
+				return -1;
+			}
+		}
+
+		return 1;
+
 	}
 
 	// The following are inspector functions.
@@ -454,7 +486,13 @@ public class Task implements Comparable<Task> {
 		}
 		return arrivalRate;
 	}
-
+//
+//	public void addBeginTime(double beginTime){
+//		double[] newSchedule = new double[2];
+//		newSchedule[0] = beginTime;
+//		newSchedule[1] = 0;
+//		workSchedule.add(newSchedule);
+//	}
 
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);

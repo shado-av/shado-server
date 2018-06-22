@@ -219,11 +219,11 @@ public class Replication {
      *	Purpose:	    generate a TriangularDistribution value for human error prediction
      *
      ****************************************************************************/
-    private double getTriangularDistribution(int teamType, int Phase){
+    private double getTriangularDistribution(int taskType, int Phase){
 
-        double c = vars.humanError[teamType][Phase][0]; //mode
-        double a = vars.humanError[teamType][Phase][1]; //min
-        double b = vars.humanError[teamType][Phase][2]; //max
+        double c = vars.humanError[Phase][taskType][0]; //mode
+        double a = vars.humanError[Phase][taskType][1]; //min
+        double b = vars.humanError[Phase][taskType][2]; //max
 
         double F = (c - a)/(b - a);
         double rand = Math.random();
@@ -247,13 +247,15 @@ public class Replication {
     private boolean failTask(Operator operator,Task task, int operatorID){
 
         //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
+        int taskType = Math.max(task.getType(), 0);
+
         int teamType = operatorID / 100;
         int Phase = task.getPhase();
 
-        double distValue = getTriangularDistribution(teamType, Phase);
+        double distValue = getTriangularDistribution(taskType, Phase);
 
-        double rangeMin = vars.humanError[teamType][Phase][1];
-        double rangeMax = vars.humanError[teamType][Phase][2];
+        double rangeMin = vars.humanError[Phase][taskType][1];
+        double rangeMax = vars.humanError[Phase][taskType][2];
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 
@@ -316,7 +318,7 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-
+            System.out.println("-------------------------------------------------------");
             System.out.print(op.toString() + ", ");
             System.out.println(op.getQueue().toString());
 

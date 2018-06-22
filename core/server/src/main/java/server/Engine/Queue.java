@@ -109,7 +109,9 @@ public class Queue implements Comparable<Queue>{
 
     @Override
     public String toString() {
-        return "My queue has " + getNumTask() + " tasks. The time is " + time + " now.";
+        System.out.println("My queue has " + getNumTask() + " tasks.");
+        if(!taskqueue.isEmpty()) System.out.println("The top task is " + taskqueue.peek().toString());
+        return "The time is " + time + " now.";
     }
 
     /****************************************************************************
@@ -128,16 +130,12 @@ public class Queue implements Comparable<Queue>{
         setExpectedFinTime(task);
 
         if(!taskqueue.isEmpty()){
-            if(taskqueue.peek().compareTo(task) > 0){ //the new task will go in front of the current top task
+            if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
+                System.out.println("In queue.add, the on hand task is interrupted.");
+
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
             }
         }
-
-//        if (!taskqueue.isEmpty()) {
-//            if (task.getPriority() > taskqueue.peek().getPriority()) {
-//                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
-//            }
-//        }
 
         taskqueue.add(task);
 
@@ -217,6 +215,10 @@ public class Queue implements Comparable<Queue>{
         // Generate a new numTask for the Queue.
 
         numtask();
+
+        System.out.println(toString());
+        System.out.println("The top task in my queue now is");
+        if(!taskqueue.isEmpty()) taskqueue.peek().printBasicInfo();
 
     }
 
