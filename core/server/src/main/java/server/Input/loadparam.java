@@ -44,7 +44,7 @@ public class loadparam {
     public int[][][] taskPrty; //phase * team * task
     public char[] teamComm;
     public double[][][] humanError;
-    public double[] ECC; //short for "Error Catching Chance"
+    public double[][] ECC; //short for "Error Catching Chance"
 
     //AIDA Variables
     public int[][] AIDAtype;

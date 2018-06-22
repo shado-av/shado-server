@@ -221,8 +221,8 @@ public class Replication {
      ****************************************************************************/
     private double getTriangularDistribution(int taskType, int Phase){
 
-        double c = vars.humanError[Phase][taskType][0]; //mode
-        double a = vars.humanError[Phase][taskType][1]; //min
+        double c = vars.humanError[Phase][taskType][1]; //mode
+        double a = vars.humanError[Phase][taskType][0]; //min
         double b = vars.humanError[Phase][taskType][2]; //max
 
         double F = (c - a)/(b - a);
@@ -254,7 +254,7 @@ public class Replication {
 
         double distValue = getTriangularDistribution(taskType, Phase);
 
-        double rangeMin = vars.humanError[Phase][taskType][1];
+        double rangeMin = vars.humanError[Phase][taskType][0];
         double rangeMax = vars.humanError[Phase][taskType][2];
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
@@ -266,7 +266,7 @@ public class Replication {
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
             //If there is team communication, it will be easier to catch error. Increase the ECC(Error Catch Chance)
-            if(Math.random() > vars.ECC[teamType] * (2 - getTeamComm(operator.dpID))){
+            if(Math.random() > vars.ECC[teamType][taskType] * (2 - getTeamComm(operator.dpID))){
                 //Task Failed but still processed by operator
                 task.setFail();
                 return false;
