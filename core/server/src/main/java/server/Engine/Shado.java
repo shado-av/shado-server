@@ -41,6 +41,7 @@ public class Shado{
         loadparam data = new loadparam();
         Parser parser = new Parser(inputJson);
         data = parser.parseJSON(data);
+
 //        loadparam txtData;
 //        try {
 //             txtData = new loadparam("../in/params.txt");
@@ -48,7 +49,6 @@ public class Shado{
 //        }catch (FileNotFoundException e){
 //            System.err.println("ERROR: Cannot find local txt file!");
 //        }
-//		SCHEN 11/10/17 Test for Reading Fleet Hetero
 
 //        printBasicInfo(data);
 
@@ -71,6 +71,7 @@ public class Shado{
 		//Zipping file and return for simple web service
 		zipOutput(rootDirectory + "repCSV");
 		zipOutput(rootDirectory + "Summary");
+		zipOutput(rootDirectory + "validation");
 
     }
 

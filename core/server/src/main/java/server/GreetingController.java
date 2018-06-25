@@ -32,8 +32,8 @@ public class GreetingController {
     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss");
     Date date = new Date();
 
-//    private String directory = "/home/rapiduser/out/";
-    private String directory = "/Users/zhanglian1/Desktop/out/";
+    private String directory = "/home/rapiduser/out/";
+//    private String directory = "/Users/zhanglian1/Desktop/out/";
 
     @RequestMapping("/shado/hello")
     public Greeting greeting(@RequestParam(value="name", defaultValue="This is Shado") String name) {
@@ -100,4 +100,20 @@ public class GreetingController {
             }
         };
     }
+
+    @RequestMapping(value = "/shado/validation", method = RequestMethod.GET)
+    public StreamingResponseBody getValidation(HttpServletResponse response) throws IOException{
+        response.setContentType("application/zip");
+        response.setHeader("Content-Disposition", "attachment; filename=\"validation.zip\"");
+        InputStream inputStream = new FileInputStream(new File(directory + "validation.zip"));
+        return outputStream -> {
+            int iRead;
+            byte[] data = new byte[1024];
+            while ((iRead = inputStream.read(data, 0, data.length)) != -1) {
+                System.out.println("Getting the validation results...");
+                outputStream.write(data, 0, iRead);
+            }
+        };
+    }
+
 }

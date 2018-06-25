@@ -40,8 +40,8 @@ public class DataWrapper {
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-//        outPutDirectory = "/home/rapiduser/out/";
+//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
+        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
@@ -248,6 +248,7 @@ public class DataWrapper {
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
 
+            double[][] utilization_for_Sammy = new double[vars.numReps][];
             double max = 0; //max average utilization across replications
             double min = 100; //min average utilization across replications
             double max10mins = 0; //max utiliazation in 10 mins across replications
@@ -316,6 +317,7 @@ public class DataWrapper {
                     }
                     System.out.print(timeSectionSum[time] + ",");
                 }
+                utilization_for_Sammy[i] = timeSectionSum;
 
                 // print the sum of timeSectionSum
                 System.out.print(timeSectionSum[numColumn] + ",");
@@ -349,6 +351,17 @@ public class DataWrapper {
             for(int time = 0; time < numColumn; time++){
                 for(int rep = 0; rep < vars.numReps; rep++){
                     System.out.print(utilizationSum[rep][time] + ",");
+                }
+                System.out.println(" ");
+            }
+
+
+            fileName = outPutDirectory + "validation/rep_vs_time:operator" + k + ".csv";
+            System.setOut(new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(fileName, false)), true));
+            for(int i = 0; i < vars.numReps; i++){
+                for(int j = 0; j < numColumn; j++){
+                    System.out.print(utilization_for_Sammy[i][j] + ",");
                 }
                 System.out.println(" ");
             }
