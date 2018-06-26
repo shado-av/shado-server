@@ -308,15 +308,6 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-//	private double Lognormal(double mean, double stddev){
-//
-//		Random rng = new Random();
-//		double normal = rng.nextGaussian();
-//		double l = Math.exp(mean + stddev * normal);
-//
-//		return l;
-//	}
-
 	private double Lognormal(double mean, double stddev){
 
 		double phi = Math.sqrt(stddev * stddev + mean * mean);
@@ -489,6 +480,12 @@ public class Task implements Comparable<Task> {
 
 	private double[] changeArrivalRate(double num){
 		double[] arrivalRate = new double[vars.arrPms[Phase][Type].length];
+
+		if(vars.arrDists[Phase][Type] == 'L'){
+			arrivalRate[0] = arrivalRate[0] * num;
+			return arrivalRate;
+		}
+
 		int count = 0;
 		for(double d : vars.arrPms[Phase][Type]){
 			arrivalRate[count] = d * num;

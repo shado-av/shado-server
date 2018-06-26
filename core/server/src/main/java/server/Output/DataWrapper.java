@@ -150,7 +150,7 @@ public class DataWrapper {
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
         builder.outputJSON();
 
-        printTaskRecord();
+//        printTaskRecord();
     }
 
     //Naixin 05/23/18

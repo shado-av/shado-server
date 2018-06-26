@@ -95,7 +95,7 @@ public class loadparam {
 
 	// Toggle Global Variables
     //If there is exogenous factor that add tasks to the queue
-	public static boolean TRAFFIC_ON = false;
+	public static boolean TRAFFIC_ON = true;
 	public static boolean FATIGUE_ON = true;
 	public static boolean DEBUG_ON = false;
 	public static boolean OUTPUT_ON = true;
