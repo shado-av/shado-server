@@ -44,7 +44,7 @@ public class Parser {
         System.out.println("failThreshold: " + Arrays.toString(in.ECC));
         System.out.println("OpStrats: "+ Arrays.toString(in.opStrats));
         System.out.println("OpNames: "+ in.opNames[0]);
-//        System.out.println("opTasks: : " + Arrays.toString(in.opTasks));
+        System.out.println("teamCoordAff: : " + Arrays.toString(in.teamCoordAff));
         System.out.println("teamComm: "+ Arrays.toString(in.teamComm));
         System.out.println("teamSize: "+ Arrays.toString(in.teamSize));
         System.out.println("fleetTypes: "+in.fleetTypes);

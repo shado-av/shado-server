@@ -140,7 +140,6 @@ public class Task implements Comparable<Task> {
 			expTime = genExpTime();
 			opNums = vars.opNums[Type];
 			name = vars.taskNames[Type];
-//		isLinked = vars.linked[Type] == 1;
 
 		}
 		else{
@@ -287,14 +286,17 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Exponential(double lambda){
+	private double Exponential(double beta){
 
-		if (lambda == 0){
+		if(beta <= 0){
+			System.out.println("Please offer a positive mean value for the Exponential distribution.");
 			return Double.POSITIVE_INFINITY;
 		}
-		double result = Math.log(1- Math.random())/(-lambda);
 
+		double lambda = 1 / beta;
+		double result = Math.log(1- Math.random()) / (- lambda);
 		return result;
+
 	}
 
 	/****************************************************************************
@@ -306,11 +308,24 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
+//	private double Lognormal(double mean, double stddev){
+//
+//		Random rng = new Random();
+//		double normal = rng.nextGaussian();
+//		double l = Math.exp(mean + stddev * normal);
+//
+//		return l;
+//	}
+
 	private double Lognormal(double mean, double stddev){
+
+		double phi = Math.sqrt(stddev * stddev + mean * mean);
+		double mu = Math.log(mean * mean / phi);
+		double sigma = Math.sqrt(Math.log((phi * phi) / (mean * mean)));
 
 		Random rng = new Random();
 		double normal = rng.nextGaussian();
-		double l = Math.exp(mean + stddev * normal);
+		double l = Math.exp(mu + sigma * normal);
 
 		return l;
 	}
@@ -392,7 +407,7 @@ public class Task implements Comparable<Task> {
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (loadparam.TRAFFIC_ON && vars.affByTraff[Type][Phase] == 1 ){
+		if (loadparam.TRAFFIC_ON && vars.affByTraff[Phase][Type] == 1 ){
 
 			double budget = TimeTaken;
 			double currTime = prevTime;
@@ -499,6 +514,7 @@ public class Task implements Comparable<Task> {
 		System.out.println("Arrival time : " + arrTime);
 		System.out.println("Begin Time : " + beginTime);
 		System.out.println("Service Time : " + serTime);
+		System.out.println("Expire Time : " + expTime);
 		System.out.println("ELS Time : " + elapsedTime);
 		System.out.println("Finish Time : " + endTime);
 		System.out.print("Here is my work schedule: ");

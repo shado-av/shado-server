@@ -40,8 +40,8 @@ public class DataWrapper {
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-        outPutDirectory = "/home/rapiduser/out/";
+        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
+//        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
@@ -150,7 +150,7 @@ public class DataWrapper {
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
         builder.outputJSON();
 
-//        printTaskRecord();
+        printTaskRecord();
     }
 
     //Naixin 05/23/18
@@ -167,7 +167,6 @@ public class DataWrapper {
                     double waitTime = t.getBeginTime() - t.getArrTime();
                     System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
                 }
-                System.setOut(stdout);
             }
         }
     }

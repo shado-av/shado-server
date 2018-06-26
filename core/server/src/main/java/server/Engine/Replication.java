@@ -109,7 +109,7 @@ public class Replication {
                 }
             }
         }
-        else if(task.getType() == -3){ // exogenous task can be handled by all the operator
+        else if(task.getType() == -3 || task.getType() > vars.numTaskTypes){ // exogenous task and followed tasks can be handled by all the operator
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
                 proc.add(remoteOps.getRemoteOp()[j].getQueue());
                 working.add(remoteOps.getRemoteOp()[j]);
@@ -126,6 +126,7 @@ public class Replication {
                 }
             }
         }
+
         if(working.size()==0)
             return;
 
@@ -161,7 +162,6 @@ public class Replication {
 
             //check team communication, change the serve time
             task.changeServTime(getTeamComm(optimal_op.dpID));
-
         }
 
         if (!failTask(optimal_op, task, optimal_op.dpID)) {
@@ -318,9 +318,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            System.out.println("-------------------------------------------------------");
-            System.out.print(op.toString() + ", ");
-            System.out.println(op.getQueue().toString());
+//            System.out.println("-------------------------------------------------------");
+//            System.out.print(op.toString() + ", ");
+//            System.out.println(op.getQueue().toString());
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) { //Naixin: change getExpectedFinTime to getfinTime
@@ -366,7 +366,7 @@ public class Replication {
             }
         }
 
-        //TODO: (Complete) generate team communication tasks and exogenous task
+        //Generate team communication tasks and exogenous task
         for(int i = 0; i < vars.numTeams; i++){
             if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
             if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
@@ -376,9 +376,9 @@ public class Replication {
         //Put all tasks in a timely order
         sortTask();
 
-        for(Task t : globalTasks){
-            System.out.println(t.getArrTime() + " : " + t.getName());
-        }
+//        for(Task t : globalTasks){
+//            System.out.println(t.getArrTime() + " : " + t.getName());
+//        }
 
         if(vars.replicationTracker == 0){
             vars.allTasks = globalTasks;
@@ -404,6 +404,7 @@ public class Replication {
     private double getTeamComm(int dpID){
         int type = dpID / 100;
         double teamComm = 1;
+        if(vars.teamCoordAff[type] == 0) return teamComm;
         if(vars.teamComm[type] == 'S') teamComm = 0.7;
         if(vars.teamComm[type] == 'F') teamComm = 0.3;
         return teamComm;

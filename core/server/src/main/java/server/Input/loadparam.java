@@ -71,11 +71,9 @@ public class loadparam {
     public char[][] expDists;
     public double[][][] expPms;
     public int[][] affByTraff;
+    public int[] teamCoordAff;
     public int[] interruptable;
     public int[] essential;
-
-
-
 
     // Other parameters
     public int numRemoteOp;
@@ -93,12 +91,6 @@ public class loadparam {
 	public int[][] opNums;
 	public int[][] trigger;
     public int[] ETteam; //which team has ET for this task type
-
-	//SCHEN 12/10/17 Added: whether the task is affected by team coordination
-	public int[] teamCoordAff;
-	// Adding isLinked
-
-//	public int[] linked;
 
 
 	// Toggle Global Variables
