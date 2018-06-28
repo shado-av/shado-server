@@ -68,6 +68,8 @@ public class DataWrapper {
         FileUtils.cleanDirectory(summaryDir);
         FileUtils.cleanDirectory(csvDir);
 
+        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
+
         // RemoteOp & Engineer timetables
         for (int i = 0; i < vars.numRemoteOp; i++) {
 
@@ -104,10 +106,15 @@ public class DataWrapper {
             System.out.println("expired: " + sim.getExpiredtask()[i]);
             System.out.println("completed: " + sim.getCompletedtaskcount()[i]);
         }
-        for(int i = 0; i < numSpecialTasks; i++){
-            System.out.println("Special Task" + i);
+        for(int i = 0; i < vars.leadTask.length; i++){
+            System.out.println("Task name: " + vars.taskNames_f[i]);
             System.out.println("expired: " + sim.getExpiredtask()[vars.numTaskTypes + i]);
             System.out.println("completed: " + sim.getCompletedtaskcount()[vars.numTaskTypes + i]);
+        }
+        for(int i = 0; i < numSpecialTasks; i++){
+            System.out.println("Task name: " + specialTaskName[i]);
+            System.out.println("expired: " + sim.getExpiredtask()[vars.numTaskTypes + vars.leadTask.length + i]);
+            System.out.println("completed: " + sim.getCompletedtaskcount()[vars.numTaskTypes + vars.leadTask.length + i]);
         }
         System.out.println("*** FAILED TASKS ***");
 //            System.out.println("Operator "+ p.getKey().getName()+" Failed: "+p.getValue().getName());
@@ -155,19 +162,25 @@ public class DataWrapper {
 
     //Naixin 05/23/18
     private void printTaskRecord() throws IOException{
+
         //print task information per task
-        Collections.sort(vars.allTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
+        System.out.println();
         for(int taskType = 0; taskType < vars.numTaskTypes; taskType++) {
             String fileName = outPutDirectory + "task_" + vars.taskNames[taskType] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
             System.out.println("arrTime, beginTime, waitTime, finTime, expireTime");
-            for(Task t : vars.allTasks){
-                if(t.getType() == taskType) {
-                    double waitTime = t.getBeginTime() - t.getArrTime();
-                    System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
+            for(int i = 0; i < vars.numReps; i++){
+                System.out.println("Replication " + i);
+                for(Task t : vars.allTasksPerRep.get(i)){
+                    if(t.getType() == taskType){
+                        double waitTime = t.getEndTime() - t.getArrTime() - t.getSerTime();
+                        System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
+
+                    }
                 }
             }
+            System.setOut(stdout);
         }
     }
 
@@ -277,18 +290,21 @@ public class DataWrapper {
                 System.out.println("Sum per task");
 
                 // one row per task
-                for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
+                for (int j = 0; j < vars.numTaskTypes + vars.leadTask.length + numSpecialTasks; j++) {
                     double taskSum = 0;
                     if(j < vars.numTaskTypes){
                         System.out.print(vars.taskNames[j] + ",");
                     }
-                    else if(j == vars.numTaskTypes){
+                    else if(j >= vars.numTaskTypes && j < vars.numTaskTypes + vars.leadTask.length){
+                        System.out.print(vars.taskNames_f[j - vars.numTaskTypes] + ",");
+                    }
+                    else if(j == vars.numTaskTypes + vars.leadTask.length){
                         System.out.print("Team Coordinate Task level some: ,");
                     }
-                    else if(j == vars.numTaskTypes + 1){
+                    else if(j == vars.numTaskTypes + vars.leadTask.length + 1){
                         System.out.print("Team Coordinate Task level full: ,");
                     }
-                    else if(j == vars.numTaskTypes + 2){
+                    else if(j == vars.numTaskTypes + vars.leadTask.length + 2){
                         System.out.print("Exogenous Task: ,");
                     }
 

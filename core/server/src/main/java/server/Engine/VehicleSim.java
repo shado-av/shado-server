@@ -98,6 +98,8 @@ public class VehicleSim  {
 
     public synchronized void taskgen() {
 
+        System.out.println("Generate task");
+
         // For each type of tasks:
         int fleetType = this.vehicleID/100;
 
@@ -113,9 +115,12 @@ public class VehicleSim  {
             Task newTask;
 
             int taskType = vars.fleetHetero[fleetType][i];
-            //DEBUG
+
             newTask = new Task(taskType, 0, vars, true);
             indlist.add(newTask);
+            if(!vars.followedTask.get(taskType).isEmpty()){
+                genLinkedTask(indlist, newTask);
+            }
 
                 // While the next task is within the time frame, generate.
 
@@ -124,6 +129,9 @@ public class VehicleSim  {
                 newTask = new Task(taskType, newTask.getArrTime(), vars, true);
                 newTask.setID(vehicleID);
                 indlist.add(newTask);
+                if(!vars.followedTask.get(taskType).isEmpty()){
+                    genLinkedTask(indlist, newTask);
+                }
             }
 
 
@@ -131,6 +139,21 @@ public class VehicleSim  {
 
             globalTasks.addAll(indlist);
             vars.repNumTasks[vars.replicationTracker]+= indlist.size();
+        }
+
+    }
+
+    private void genLinkedTask(ArrayList<Task> indlist, Task leadTask){
+
+        int leadTaskType = leadTask.getType();
+        double prevTime = leadTask.getArrTime();
+        ArrayList<Integer> followedTaskType = vars.followedTask.get(leadTaskType);
+
+        for(int i : followedTaskType){
+            int taskType = (leadTaskType + 1) * 100 + i;
+            Task newTask = new Task(taskType, prevTime, vars, true);
+            newTask.setID(vehicleID);
+            indlist.add(newTask);
         }
 
     }

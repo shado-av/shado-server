@@ -76,7 +76,9 @@ public class Parser {
                 System.out.println(Arrays.toString(in.arrPms[i][j]));
             }
         }
-        //System.out.println("arrpms: " + Arrays.toString(in.arrPms));
+
+        System.out.println("LeadTask: " + Arrays.toString(in.leadTask));
+        System.out.println("***** Parse End. *****");
     }
 
 }

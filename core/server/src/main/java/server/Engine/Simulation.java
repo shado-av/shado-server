@@ -90,8 +90,8 @@ public class Simulation {
             RemoteOpoutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
 
-        expiredtaskcount = new int[param.numTaskTypes + numSpecialTasks];
-        completedtaskcount = new int[param.numTaskTypes + numSpecialTasks];
+        expiredtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
+        completedtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
 
     }
 
@@ -138,7 +138,7 @@ public class Simulation {
 
             //Global Tracker for replication processed
             vars.currRepnum++;
-            for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
+            for (int j = 0; j < vars.numTaskTypes + vars.leadTask.length + numSpecialTasks; j++) {
                 expiredtaskcount[j] += process.getExpired()[j];
                 completedtaskcount[j] += process.getCompleted()[j];
             }
@@ -151,6 +151,7 @@ public class Simulation {
             each.avgdata();
         }
     }
+
 
     /*************************************************************************************
      *

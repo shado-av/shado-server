@@ -46,11 +46,17 @@ public class ProcRep {
 
     private Data[] repdisdata;
 
+    private Data[] repdisdata_s;
+
     private Data[] repopsdata;
 
     private int[] completed;
 
     private int[] expired;
+
+    private int[] completed_specical;
+
+    private int[] expired_special;
 
     private loadparam vars;
 
@@ -89,8 +95,10 @@ public class ProcRep {
         numtasktypes = rep.vars.numTaskTypes;
         hours = rep.vars.numHours;
         numSpecialTasks = SpecialTasks;
-        expired = new int[numtasktypes + numSpecialTasks];
-        completed = new int[numtasktypes + numSpecialTasks];
+        expired = new int[numtasktypes + vars.leadTask.length + numSpecialTasks];
+        completed = new int[numtasktypes + vars.leadTask.length + numSpecialTasks];
+        //     [ normal task | followed task | special task  ]
+
         this.vars = vars;
 //        totalRemoteOp = rep.vars.numRemoteOp;
         int totalRemoteOp = 0;
@@ -108,14 +116,14 @@ public class ProcRep {
 
         repdisdata = new Data[totalRemoteOp];
         for (int i = 0; i < totalRemoteOp; i++){
-            repdisdata[i] = new Data(numtasktypes + numSpecialTasks,(int) hours*6, 1);
+            repdisdata[i] = new Data(numtasktypes + vars.leadTask.length + numSpecialTasks,(int) hours*6, 1);
         }
 
         repopsdata = new Data[numoperator];
         for (int i = 0; i < numoperator; i++) {
             for (int j = 0; j < rep.vars.fleetTypes; j++) {
                 //TODO: it looks wried here, do you k is tha max length of all the vehicle types?
-                repopsdata[i] = new Data(numtasktypes + numSpecialTasks, (int) hours * 6, vehicles[j].length);
+                repopsdata[i] = new Data(numtasktypes + vars.leadTask.length + numSpecialTasks, (int) hours * 6, vehicles[j].length);
             }
         }
     }
@@ -138,10 +146,17 @@ public class ProcRep {
 
         for (Task each: records){
 
+            //[ normal task | followed task | special task  ]
+
             int taskType = each.getType();
-            if(taskType < 0){
-                taskType = vars.numTaskTypes - 1 - taskType;
+
+            if (taskType > vars.numTaskTypes){ // This is a followed task
+                taskType = vars.numTaskTypes + (taskType % 100);
             }
+            else if(taskType < 0){ // This is a special task
+                taskType = vars.numTaskTypes + vars.leadTask.length - taskType - 1;
+            }
+
 
             if (each.checkexpired()){
                 expired[taskType]++;
@@ -155,17 +170,6 @@ public class ProcRep {
                 double endscale = each.workSchedule.get(i)[1] / 10;
                 fill(beginscale, endscale, incremented, taskType);
             }
-
-//            double beginscale = each.getBeginTime() / 10;
-//            double endscale = each.getEndTime() / 10;
-//
-//            fill(beginscale, endscale, incremented, taskType);
-//
-//            if(each.getELSTime() != 0){
-//                beginscale = each.getArrTime() / 10;
-//                endscale = (each.getArrTime() + each.getELSTime()) / 10;
-//                fill(beginscale, endscale, incremented, taskType);
-//            }
         }
 
     }

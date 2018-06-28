@@ -177,7 +177,7 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
             taskqueue.peek().setQueue(NumTask);
 //            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
-//            taskqueue.peek().printBasicInfo();
+            taskqueue.peek().printBasicInfo();
 
             // Remove the finished task from the queue and put it into record task list.
             recordtasks.add(taskqueue.poll());
@@ -198,7 +198,7 @@ public class Queue implements Comparable<Queue>{
             // Add expired tasks to the record
 
             taskqueue.peek().setexpired();
-//            System.out.println("The task " + taskqueue.peek().getName() + " arrive at " + taskqueue.peek().getArrTime() + " is expired.");
+            System.out.println("The task " + taskqueue.peek().getName() + " arrive at " + taskqueue.peek().getArrTime() + " is expired.");
             vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 

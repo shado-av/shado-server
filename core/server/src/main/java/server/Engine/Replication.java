@@ -146,7 +146,8 @@ public class Replication {
             }
         }
 
-        if(task.getType() > 0) {
+        // TODO: apply AI on followed tasks
+        if(task.getType() > 0 && task.getType() < vars.numTaskTypes) {
 
             //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
             if (!optimal_op.getQueue().taskqueue.isEmpty()) {
@@ -166,7 +167,11 @@ public class Replication {
 
         if (!failTask(optimal_op, task, optimal_op.dpID)) {
 
-            if(task.getType() > 0){
+            if(task.getType() > vars.numTaskTypes){
+                task.setPriority(vars.taskPrty_f[task.getPhase()][optimal_op.dpID / 100][task.getType() % 100]);
+                task.setTeamType(optimal_op.dpID / 100);
+            }
+            else if(task.getType() > 0){
                 task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
                 task.setTeamType(optimal_op.dpID / 100);
             }
@@ -189,7 +194,6 @@ public class Replication {
         //TODO: not apply the fail task part
         task.setBeginTime(task.getArrTime());
         task.changeServTime(vars.ETServiceTime[team]);
-//        task.setELStime(task.getSerTime());
         task.setEndTime(task.getArrTime() + task.getSerTime());
         vars.AITasks.add(task);
     }
@@ -221,9 +225,18 @@ public class Replication {
      ****************************************************************************/
     private double getTriangularDistribution(int taskType, int Phase){
 
-        double c = vars.humanError[Phase][taskType][1]; //mode
-        double a = vars.humanError[Phase][taskType][0]; //min
-        double b = vars.humanError[Phase][taskType][2]; //max
+        double a, b, c;
+
+        if(taskType < vars.numTaskTypes){
+            c = vars.humanError[Phase][taskType][1]; //mode
+            a = vars.humanError[Phase][taskType][0]; //min
+            b = vars.humanError[Phase][taskType][2]; //max
+        }
+        else{
+            c = vars.humanError_f[Phase][taskType % 100][1]; //mode
+            a = vars.humanError_f[Phase][taskType % 100][0]; //min
+            b = vars.humanError_f[Phase][taskType % 100][2]; //max
+        }
 
         double F = (c - a)/(b - a);
         double rand = Math.random();
@@ -254,8 +267,25 @@ public class Replication {
 
         double distValue = getTriangularDistribution(taskType, Phase);
 
-        double rangeMin = vars.humanError[Phase][taskType][0];
-        double rangeMax = vars.humanError[Phase][taskType][2];
+        double rangeMin, rangeMax;
+        double errorCatching;
+
+        if(taskType < vars.numTaskTypes) {
+            rangeMin = vars.humanError[Phase][taskType][0];
+            rangeMax = vars.humanError[Phase][taskType][2];
+            errorCatching = vars.ECC[teamType][taskType];
+            if(vars.teamCoordAff[taskType] == 1){
+                errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
+            }
+        }
+        else {
+            rangeMin = vars.humanError_f[Phase][taskType % 100][0];
+            rangeMax = vars.humanError_f[Phase][taskType % 100][2];
+            errorCatching = vars.ECC_f[teamType][taskType % 100];
+            if(vars.teamCoordAff_f[taskType % 100] == 1){
+                errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
+            }
+        }
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 
@@ -266,7 +296,7 @@ public class Replication {
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
             //If there is team communication, it will be easier to catch error. Increase the ECC(Error Catch Chance)
-            if(Math.random() > vars.ECC[teamType][taskType] * (2 - getTeamComm(operator.dpID))){
+            if(Math.random() > errorCatching){
                 //Task Failed but still processed by operator
                 task.setFail();
                 return false;
@@ -318,9 +348,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-//            System.out.println("-------------------------------------------------------");
-//            System.out.print(op.toString() + ", ");
-//            System.out.println(op.getQueue().toString());
+            System.out.println("-------------------------------------------------------");
+            System.out.print(op.toString() + ", ");
+            System.out.println(op.getQueue().toString());
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) { //Naixin: change getExpectedFinTime to getfinTime
@@ -376,18 +406,11 @@ public class Replication {
         //Put all tasks in a timely order
         sortTask();
 
-//        for(Task t : globalTasks){
-//            System.out.println(t.getArrTime() + " : " + t.getName());
-//        }
+        for(Task t : globalTasks){
+            System.out.println(t.getArrTime() + " : " + t.getName());
+        }
 
-        if(vars.replicationTracker == 0){
-            vars.allTasks = globalTasks;
-        }
-        else{
-            for(Task a : globalTasks){
-                vars.allTasks.add(a);
-            }
-        }
+        vars.allTasksPerRep.add(globalTasks);
 
         for (Task task : globalTasks) {
             workingUntilNewTaskArrive(remoteOps,task);

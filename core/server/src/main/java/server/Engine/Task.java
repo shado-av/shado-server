@@ -134,12 +134,18 @@ public class Task implements Comparable<Task> {
 				arrTime = PrevTime;
 			}
 
-			//SCHEN 12/10/17 Fleet Autonomy, Team Coord and Exogenous factor added
-			serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
-
 			expTime = genExpTime();
-			opNums = vars.opNums[Type];
-			name = vars.taskNames[Type];
+
+			if(type < vars.numTaskTypes){
+				serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
+				opNums = vars.opNums[Type];
+				name = vars.taskNames[Type];
+			}
+			else{
+				int followedType = type % 100;
+				serTime = GenTime(vars.serDists_f[Phase][followedType], vars.serPms_f[Phase][followedType]);
+				name = vars.taskNames_f[followedType];
+			}
 
 		}
 		else{
@@ -185,14 +191,40 @@ public class Task implements Comparable<Task> {
 
 		if(this.getType() < 0) return 1;
 
-		if(vars.interruptable[other.getType()] == 0 ||
-				vars.essential[other.getType()] == 1){ // If the old task cannot be interrupted
-			return 1;
+		if(this.getType() > vars.numTaskTypes){
+			int leadType = this.Type / 100 - 1;
+			if(other.getType() == leadType){
+				if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
+					return 1;
+				} else {
+					return -1;
+				}
+			}
 		}
 
-		if(vars.essential[this.getType()] == 1){ // If the new task is essential task, which can interrupt any other task
-			return -1;
+		int oldInterruptable, newEssential, oldEssential;
+
+		if(other.getType() > vars.numTaskTypes){
+			oldEssential = vars.essential_f[other.getType() % 100];
+			oldInterruptable = vars.interruptable_f[other.getType() % 100];
 		}
+		else{
+			oldEssential = vars.essential[other.getType()];
+			oldInterruptable = vars.interruptable[other.getType()];
+		}
+
+		if(this.getType() > vars.numTaskTypes){
+			newEssential = vars.essential_f[this.getType() % 100];
+		}
+		else{
+			newEssential = vars.essential[this.getType()];
+		}
+
+		// If the old task cannot be interrupted
+		if(oldInterruptable == 0 || oldEssential == 1) return 1;
+
+		// If the new task is essential task, which can interrupt any other task
+		if(newEssential == 1) return -1;
 
 		if(vars.opStrats[teamType].equals("PRTY")){
 			if(other.Priority > this.Priority) return 1;
@@ -387,18 +419,29 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 
 	private double genArrTime(double PrevTime, int taskType){
-		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
+
 		int fleet = vehicleID / 100;
 		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
-		double TimeTaken = GenTime(vars.arrDists[Phase][taskType], arrivalRate);
+		double TimeTaken;
+		int trafficAff;
 
+		if(taskType < vars.numTaskTypes){
+			TimeTaken = GenTime(vars.arrDists[Phase][taskType], arrivalRate);
+			trafficAff = vars.affByTraff[Phase][Type];
+		}
+		else{ //This is a followed task
+			TimeTaken = GenTime(vars.arrDists_f[Phase][taskType % 100], arrivalRate);
+			trafficAff = vars.affByTraff_f[Phase][taskType % 100];
+		}
 		if (TimeTaken == Double.POSITIVE_INFINITY){
 			return Double.POSITIVE_INFINITY;
 		}
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (loadparam.TRAFFIC_ON && vars.affByTraff[Phase][Type] == 1 ){
+
+		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
+		if (loadparam.TRAFFIC_ON && trafficAff == 1 ){
 
 			double budget = TimeTaken;
 			double currTime = prevTime;
@@ -440,7 +483,13 @@ public class Task implements Comparable<Task> {
 
 	private double genExpTime(){
 
-		double expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
+		double expiration;
+		if(Type < vars.numTaskTypes){
+			expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
+		}
+		else{
+			expiration = GenTime(vars.expDists_f[Phase][Type % 100], vars.expPms_f[Phase][Type % 100]);
+		}
 		return arrTime + 2 * serTime + expiration;
 
 	}
@@ -479,18 +528,37 @@ public class Task implements Comparable<Task> {
 	}
 
 	private double[] changeArrivalRate(double num){
-		double[] arrivalRate = new double[vars.arrPms[Phase][Type].length];
 
-		if(vars.arrDists[Phase][Type] == 'L'){
-			arrivalRate[0] = arrivalRate[0] * num;
-			return arrivalRate;
+		double[] arrivalRate;
+
+		if(Type < vars.numTaskTypes){
+			arrivalRate = new double[vars.arrPms[Phase][Type].length];
+			if(vars.arrDists[Phase][Type] == 'L'){
+				arrivalRate[0] = arrivalRate[0] * num;
+				return arrivalRate;
+			}
+
+			int count = 0;
+			for(double d : vars.arrPms[Phase][Type]){
+				arrivalRate[count] = d * num;
+				count++;
+			}
+		}
+		else{
+			int type = Type % 100;
+			arrivalRate = new double[vars.arrPms_f[Phase][type].length];
+			if(vars.arrDists_f[Phase][type] == 'L'){
+				arrivalRate[0] = arrivalRate[0] * num;
+				return arrivalRate;
+			}
+
+			int count = 0;
+			for(double d : vars.arrPms_f[Phase][type]){
+				arrivalRate[count] = d * num;
+				count++;
+			}
 		}
 
-		int count = 0;
-		for(double d : vars.arrPms[Phase][Type]){
-			arrivalRate[count] = d * num;
-			count++;
-		}
 		return arrivalRate;
 	}
 

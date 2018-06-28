@@ -30,14 +30,21 @@ public class Utilization {
         }
 
         //get tasks' name
-        taskName = new String[vars.numTaskTypes];
+        taskName = new String[vars.numTaskTypes + vars.leadTask.length + 3];
         for(int i = 0; i < vars.numTaskTypes; i++){
             taskName[i] = vars.taskNames[i];
         }
+        for(int i = 0; i < vars.leadTask.length; i++){
+            taskName[vars.numTaskTypes + i] = vars.taskNames_f[i];
+        }
+        int totalTasks = vars.numTaskTypes + vars.leadTask.length;
+        taskName[totalTasks] = "TC task (some)";
+        taskName[totalTasks + 1] = "TC task (full)";
+        taskName[totalTasks + 2] = "Exogenous task";
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.numTaskTypes + 3][numColumn];
+        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.numTaskTypes + vars.leadTask.length + 3][numColumn];
         averageUtilization = new Double[vars.numRemoteOp][vars.numReps];
 
     }
