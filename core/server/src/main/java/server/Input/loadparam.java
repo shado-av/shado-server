@@ -244,19 +244,11 @@ public class loadparam {
      *
      ****************************************************************************/
     private void checkFollowedTask(){
-        for(int i = 0; i < leadTask.length; i++){
-//            System.out.println(i + " : The parent task is " + leadTask[i]);
-            followedTask.get(leadTask[i]).add(i);
+        if (leadTask.length > 0){
+            for(int i = 0; i < leadTask.length; i++){
+                followedTask.get(leadTask[i]).add(i);
+            }
         }
-
-//        for(int k = 0; k < followedTask.size(); k++){
-//            System.out.print("task " + k + " has followed task: ");
-//            for(int i : followedTask.get(k)){
-//                System.out.print(i + " ");
-//            }
-//            System.out.println(" ");
-//        }
-
     }
 
 //

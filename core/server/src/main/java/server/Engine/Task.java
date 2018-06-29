@@ -112,6 +112,8 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
+	public Task(){}
+
 	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
 
 		Type = type;
@@ -132,6 +134,15 @@ public class Task implements Comparable<Task> {
 				arrTime = genArrTime(PrevTime, Type);
 			} else {
 				arrTime = PrevTime;
+			}
+
+
+
+			Phase = getPhase(arrTime);
+
+			if (Phase == vars.numPhases) {
+				arrTime = -1;
+				return;
 			}
 
 			expTime = genExpTime();
@@ -286,9 +297,12 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 
 	public int getPhase(double time){
+		if (time > vars.numHours * 60) {
+			return vars.numPhases;
+		}
 		int currentPhase = 0;
-		for(int i = 0; i < vars.numPhases; i++){
-			if(vars.phaseBegin[i] <= time){
+		for (int i = 0; i < vars.numPhases; i++) {
+			if (vars.phaseBegin[i] < time) {
 				currentPhase = i;
 			}
 			else break;
@@ -305,7 +319,6 @@ public class Task implements Comparable<Task> {
      ****************************************************************************/
 
     public int getShiftTime(double time){
-//        System.out.println("at shift period: "+(int)time/60);
         return (int)time/60;
     }
 
@@ -418,60 +431,104 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double genArrTime(double PrevTime, int taskType){
+	private double genArrTime(double PrevTime, int type){
 
 		int fleet = vehicleID / 100;
-		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
+		double[] arrivalRate;
 		double TimeTaken;
-		int trafficAff;
+		int[][] trafficAff;
+		int taskType;
 
-		if(taskType < vars.numTaskTypes){
-			TimeTaken = GenTime(vars.arrDists[Phase][taskType], arrivalRate);
-			trafficAff = vars.affByTraff[Phase][Type];
+		char[][] arrDist;
+		double[][][] arrPms;
+
+		//Set the parameters according the type of the task (lead task / followed task)
+		if (type < vars.numTaskTypes) {
+			arrDist = vars.arrDists;
+			arrPms = vars.arrPms;
+			trafficAff = vars.affByTraff;
+			taskType = type;
 		}
-		else{ //This is a followed task
-			TimeTaken = GenTime(vars.arrDists_f[Phase][taskType % 100], arrivalRate);
-			trafficAff = vars.affByTraff_f[Phase][taskType % 100];
+		else {
+			arrDist = vars.arrDists_f;
+			arrPms = vars.arrPms_f;
+			taskType = type % 100;
+			trafficAff = vars.affByTraff_f;
 		}
-		if (TimeTaken == Double.POSITIVE_INFINITY){
+
+		//Skip the front phases who have a negative distribution parameter
+		while (Phase < vars.numPhases && arrPms[Phase][taskType][0] < 0) {
+			Phase++;
+			PrevTime = vars.phaseBegin[Phase];
+		}
+		if (Phase == vars.numPhases) { //Finish checking all the phases
+			return -1;				   //Return -1 will discard this task
+		}
+
+		arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
+		TimeTaken = GenTime(arrDist[Phase][taskType], arrivalRate);
+
+		// check if this task stays in the same phase with the last one
+		int newPhase = getPhase(PrevTime + TimeTaken);
+		if (newPhase > Phase) { //come to a new phase
+
+			// skip the phases who have a negative distribution parameter
+			while (newPhase < vars.numPhases && arrPms[newPhase][taskType][0] < 0) {
+				newPhase++;
+			}
+			if (newPhase == vars.numPhases) {
+				return -1;
+			}
+			else {
+				PrevTime = vars.phaseBegin[newPhase];
+				Phase = newPhase;
+				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
+				TimeTaken = GenTime(arrDist[Phase][taskType], arrivalRate);
+			}
+
+		}
+
+		if (TimeTaken == Double.POSITIVE_INFINITY) {
 			return Double.POSITIVE_INFINITY;
 		}
 
 		double newArrTime = TimeTaken + PrevTime;
 
-
-		//SCHEN 12/16/17 Add fleet autonomy function by decreasing the arrival rate
-		if (loadparam.TRAFFIC_ON && trafficAff == 1 ){
-
-			double budget = TimeTaken;
-			double currTime = prevTime;
-			int currHour = (int) currTime/60;
-			double traffLevel = vars.traffic[currHour];
-			double TimeToAdj = (currHour+1)*60 - currTime;
-			double adjTime = TimeToAdj * traffLevel;
-
-			while (budget > adjTime){
-
-				budget -= adjTime;
-				currTime += TimeToAdj;
-				currHour ++;
-
-				if (currHour >= vars.traffic.length){
-					return Double.POSITIVE_INFINITY;
-				}
-
-				traffLevel = vars.traffic[currHour];
-				TimeToAdj = (currHour + 1)*60 - currTime;
-				adjTime = TimeToAdj * traffLevel;
-
-			}
-
-			newArrTime = currTime + budget/traffLevel;
+		if (loadparam.TRAFFIC_ON && trafficAff[Phase][taskType] == 1 ){
+			newArrTime = applyTraffic(TimeTaken);
 		}
 
 		return newArrTime;
 	}
 
+	//SCHEN 12/16/17 Add changing the arrival rate based on the traffic level
+	private double applyTraffic(double TimeTaken){
+		double budget = TimeTaken;
+		double currTime = prevTime;
+		int currHour = (int) currTime/60;
+		double traffLevel = vars.traffic[currHour];
+		double TimeToAdj = (currHour+1)*60 - currTime;
+		double adjTime = TimeToAdj * traffLevel;
+
+		while (budget > adjTime) {
+
+			budget -= adjTime;
+			currTime += TimeToAdj;
+			currHour ++;
+
+			if (currHour >= vars.traffic.length) {
+				return Double.POSITIVE_INFINITY;
+			}
+
+			traffLevel = vars.traffic[currHour];
+			TimeToAdj = (currHour + 1)*60 - currTime;
+			adjTime = TimeToAdj * traffLevel;
+
+		}
+
+		return currTime + budget/traffLevel;
+
+	}
 
 	/****************************************************************************
 	 *

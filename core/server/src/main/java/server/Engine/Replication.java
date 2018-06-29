@@ -348,9 +348,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            System.out.println("-------------------------------------------------------");
-            System.out.print(op.toString() + ", ");
-            System.out.println(op.getQueue().toString());
+//            System.out.println("-------------------------------------------------------");
+//            System.out.print(op.toString() + ", ");
+//            System.out.println(op.getQueue().toString());
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) { //Naixin: change getExpectedFinTime to getfinTime
@@ -406,9 +406,9 @@ public class Replication {
         //Put all tasks in a timely order
         sortTask();
 
-        for(Task t : globalTasks){
-            System.out.println(t.getArrTime() + " : " + t.getName());
-        }
+//        for(Task t : globalTasks){
+//            System.out.println(t.getArrTime() + " : " + t.getName());
+//        }
 
         vars.allTasksPerRep.add(globalTasks);
 
@@ -425,12 +425,14 @@ public class Replication {
     }
 
     private double getTeamComm(int dpID){
+
         int type = dpID / 100;
         double teamComm = 1;
         if(vars.teamCoordAff[type] == 0) return teamComm;
         if(vars.teamComm[type] == 'S') teamComm = 0.7;
         if(vars.teamComm[type] == 'F') teamComm = 0.3;
         return teamComm;
+
     }
 
     private double getIndividualAssistantLevel(int dpId){
@@ -449,6 +451,7 @@ public class Replication {
 
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true);
+        if (newTask.getArrTime() < 0) return;
         newTask.setTeamType(team);
         newTask.opNums[0] = team;
         indlist.add(newTask);
@@ -457,6 +460,7 @@ public class Replication {
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
             newTask.setTeamType(team);
             newTask.opNums[0] = team;
+            if (newTask.getArrTime() < 0) break;
             indlist.add(newTask);
         }
 
@@ -468,10 +472,12 @@ public class Replication {
         int taskType = -3;
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true);
+        if(newTask.getArrTime() < 0) return;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            if(newTask.getArrTime() < 0) break;
             indlist.add(newTask);
         }
 

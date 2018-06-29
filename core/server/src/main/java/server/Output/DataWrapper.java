@@ -157,7 +157,7 @@ public class DataWrapper {
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
         builder.outputJSON();
 
-//        printTaskRecord();
+        printTaskRecord();
     }
 
     //Naixin 05/23/18
@@ -175,6 +175,7 @@ public class DataWrapper {
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
                         double waitTime = t.getEndTime() - t.getArrTime() - t.getSerTime();
+                        waitTime = round(waitTime, 2);
                         System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
 
                     }
@@ -310,7 +311,9 @@ public class DataWrapper {
 
                     for (int time = 0; time < numColumn; time++) {
                         double u = taskUtilization.dataget(j, time, 0);
-                        utilization.utilization[k][i][j][time] = u;
+
+                        utilization.utilization[k][i][j][time] = round(u,2);
+
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
                         utilizationSum[i][time] += u;
@@ -336,7 +339,7 @@ public class DataWrapper {
 
                 // print the sum of timeSectionSum
                 System.out.print(timeSectionSum[numColumn] + ",");
-                utilization.averageUtilization[k][i] = timeSectionSum[numColumn] / numColumn;
+                utilization.averageUtilization[k][i] = timeSectionSum[numColumn];
 
                 // find the max and min average utilization
                 if(timeSectionSum[numColumn] > max){
@@ -385,6 +388,14 @@ public class DataWrapper {
         System.setOut(stdout);
 
         return utilization;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 
 }

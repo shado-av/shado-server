@@ -115,21 +115,30 @@ public class VehicleSim  {
             Task newTask;
 
             int taskType = vars.fleetHetero[fleetType][i];
+//            System.out.println("Generating task type " + taskType + "****************");
+
 
             newTask = new Task(taskType, 0, vars, true);
+            if (newTask.getArrTime() < 0) {
+                continue;
+            }
             indlist.add(newTask);
-            if(!vars.followedTask.get(taskType).isEmpty()){
+//            System.out.println("Task added!");
+            if (!vars.followedTask.get(taskType).isEmpty()) {
+//                System.out.println("Generating followed task");
                 genLinkedTask(indlist, newTask);
             }
 
                 // While the next task is within the time frame, generate.
 
-            int cnt = 0;
             while (newTask.getArrTime() < vars.numHours * 60) {
                 newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+                if(newTask.getArrTime() < 0) break;
                 newTask.setID(vehicleID);
                 indlist.add(newTask);
+//                System.out.println("Task added!");
                 if(!vars.followedTask.get(taskType).isEmpty()){
+//                    System.out.println("Generating followed task");
                     genLinkedTask(indlist, newTask);
                 }
             }
@@ -152,6 +161,7 @@ public class VehicleSim  {
         for(int i : followedTaskType){
             int taskType = (leadTaskType + 1) * 100 + i;
             Task newTask = new Task(taskType, prevTime, vars, true);
+            if(newTask.getArrTime() < 0) continue;
             newTask.setID(vehicleID);
             indlist.add(newTask);
         }

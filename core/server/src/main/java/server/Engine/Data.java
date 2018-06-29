@@ -40,6 +40,14 @@ public class Data {
         avg = new double[i][j];
         std = new double[i][j];
 
+        for (int ii = 0; ii < i; ii++) {
+            for (int jj = 0; jj < j; jj++) {
+                for (int kk = 0; kk < k; kk++) {
+                    data[ii][jj][kk] = 0;
+                }
+            }
+        }
+
     }
 
     // INSPECTORS
