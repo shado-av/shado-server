@@ -40,8 +40,8 @@ public class DataWrapper {
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-//        outPutDirectory = "/home/rapiduser/out/";
+//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
+        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
@@ -157,7 +157,7 @@ public class DataWrapper {
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
         builder.outputJSON();
 
-        printTaskRecord();
+//        printTaskRecord();
     }
 
     //Naixin 05/23/18
