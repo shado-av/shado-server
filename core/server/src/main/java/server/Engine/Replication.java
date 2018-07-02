@@ -147,6 +147,7 @@ public class Replication {
         }
 
         // TODO: apply AI on followed tasks
+        double errorChangeRate = 1;
         if(task.getType() > 0 && task.getType() < vars.numTaskTypes) {
 
             //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
@@ -159,14 +160,15 @@ public class Replication {
             }
 
             //AI feature: Individual Assistant AIDA
-            applyIndividualAssistant(optimal_op, task);
+            errorChangeRate = applyIndividualAssistant(optimal_op, task);
 
-            //check team communication, change the serve time
+            //check team communication, change the serve time and error rate
             task.changeServTime(getTeamComm(optimal_op.dpID));
+            errorChangeRate *= getTeamComm(optimal_op.dpID);
         }
 
         // check if the task is failed
-        failTask(optimal_op, task, optimal_op.dpID);
+        failTask(optimal_op, task, errorChangeRate);
 
         if(task.getType() > vars.numTaskTypes){
             task.setPriority(vars.taskPrty_f[task.getPhase()][optimal_op.dpID / 100][task.getType() % 100]);
@@ -208,12 +210,14 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private void applyIndividualAssistant(Operator op, Task task){
+    private double applyIndividualAssistant(Operator op, Task task){
         if (vars.AIDAtype[op.dpID / 100][1] == 1 &&
                 IntStream.of(vars.IAtasks[op.dpID / 100]).anyMatch(x -> x == task.getType())) {
             double changeRate = getIndividualAssistantLevel(op.dpID);
             task.changeServTime(changeRate);
+            return changeRate;
         }
+        return 1;
     }
 
     /****************************************************************************
@@ -223,20 +227,11 @@ public class Replication {
      *	Purpose:	    generate a TriangularDistribution value for human error prediction
      *
      ****************************************************************************/
-    private double getTriangularDistribution(int taskType, int Phase){
+    private double getTriangularDistribution(double[] humanError){
 
-        double a, b, c;
-
-        if(taskType < vars.numTaskTypes){
-            c = vars.humanError[Phase][taskType][1]; //mode
-            a = vars.humanError[Phase][taskType][0]; //min
-            b = vars.humanError[Phase][taskType][2]; //max
-        }
-        else{
-            c = vars.humanError_f[Phase][taskType % 100][1]; //mode
-            a = vars.humanError_f[Phase][taskType % 100][0]; //min
-            b = vars.humanError_f[Phase][taskType % 100][2]; //max
-        }
+        double c = humanError[1]; //mode
+        double a = humanError[0]; //min
+        double b = humanError[2]; //max
 
         double F = (c - a)/(b - a);
         double rand = Math.random();
@@ -257,35 +252,40 @@ public class Replication {
      *
      *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
-    private boolean failTask(Operator operator,Task task, int operatorID){
+    private boolean failTask(Operator operator,Task task, double changeRate){
 
         //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
         int taskType = Math.max(task.getType(), 0);
-
-        int teamType = operatorID / 100;
+        int teamType = operator.dpID / 100;
         int Phase = task.getPhase();
 
-        double distValue = getTriangularDistribution(taskType, Phase);
-
-        double rangeMin, rangeMax;
+        double[] humanErrorRate;
         double errorCatching;
 
         if(taskType < vars.numTaskTypes) {
-            rangeMin = vars.humanError[Phase][taskType][0];
-            rangeMax = vars.humanError[Phase][taskType][2];
+            humanErrorRate = vars.humanError[Phase][taskType];
             errorCatching = vars.ECC[Phase][teamType][taskType];
             if(vars.teamCoordAff[taskType] == 1){
                 errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
             }
         }
         else {
-            rangeMin = vars.humanError_f[Phase][taskType % 100][0];
-            rangeMax = vars.humanError_f[Phase][taskType % 100][2];
+            humanErrorRate = vars.humanError_f[Phase][taskType % 100];
             errorCatching = vars.ECC_f[Phase][teamType][taskType % 100];
             if(vars.teamCoordAff_f[taskType % 100] == 1){
                 errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
             }
         }
+
+        // Modify the human error rate according to the changeRate
+        for (int i = 0; i < humanErrorRate.length; i++) {
+            humanErrorRate[i] *= changeRate;
+        }
+
+        double distValue = getTriangularDistribution(humanErrorRate);
+        double rangeMin = humanErrorRate[0];
+        double rangeMax = humanErrorRate[2];
+
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 
@@ -439,7 +439,7 @@ public class Replication {
         int type = dpId / 100;
         double IAlvl = 1;
         if(vars.IALevel[type] == 'S') IAlvl = 0.7;
-        if(vars.IALevel[type] == 'N') IAlvl = 0.3;
+        if(vars.IALevel[type] == 'F') IAlvl = 0.3;
         return IAlvl;
     }
 
