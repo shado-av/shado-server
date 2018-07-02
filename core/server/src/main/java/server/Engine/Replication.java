@@ -165,19 +165,19 @@ public class Replication {
             task.changeServTime(getTeamComm(optimal_op.dpID));
         }
 
-        if (!failTask(optimal_op, task, optimal_op.dpID)) {
+        // check if the task is failed
+        failTask(optimal_op, task, optimal_op.dpID);
 
-            if(task.getType() > vars.numTaskTypes){
-                task.setPriority(vars.taskPrty_f[task.getPhase()][optimal_op.dpID / 100][task.getType() % 100]);
-                task.setTeamType(optimal_op.dpID / 100);
-            }
-            else if(task.getType() > 0){
-                task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
-                task.setTeamType(optimal_op.dpID / 100);
-            }
-
-            optimal_op.getQueue().add(task);
+        if(task.getType() > vars.numTaskTypes){
+            task.setPriority(vars.taskPrty_f[task.getPhase()][optimal_op.dpID / 100][task.getType() % 100]);
+            task.setTeamType(optimal_op.dpID / 100);
         }
+        else if(task.getType() > 0){
+            task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
+            task.setTeamType(optimal_op.dpID / 100);
+        }
+
+        optimal_op.getQueue().add(task);
 
     }
 
@@ -273,7 +273,7 @@ public class Replication {
         if(taskType < vars.numTaskTypes) {
             rangeMin = vars.humanError[Phase][taskType][0];
             rangeMax = vars.humanError[Phase][taskType][2];
-            errorCatching = vars.ECC[teamType][taskType];
+            errorCatching = vars.ECC[Phase][teamType][taskType];
             if(vars.teamCoordAff[taskType] == 1){
                 errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
             }
@@ -281,7 +281,7 @@ public class Replication {
         else {
             rangeMin = vars.humanError_f[Phase][taskType % 100][0];
             rangeMax = vars.humanError_f[Phase][taskType % 100][2];
-            errorCatching = vars.ECC_f[teamType][taskType % 100];
+            errorCatching = vars.ECC_f[Phase][teamType][taskType % 100];
             if(vars.teamCoordAff_f[taskType % 100] == 1){
                 errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
             }

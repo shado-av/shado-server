@@ -33,10 +33,7 @@ public class VehicleSim  {
     //Test: Multithread variable section
     private BlockingQueue<Task> globalWatingTasks;
 
-
-
     public int vehicleID;
-
 
     // This is an arraylist of ALL tasks in the order that they're arriving.
     public ArrayList<Task> globalTasks;
@@ -55,20 +52,6 @@ public class VehicleSim  {
     public void linktask(Task task) {
         globalTasks.add(task);
     }
-
-    /****************************************************************************
-     *
-     *	Side Object:	VehicleSim
-     *
-     *	Purpose:		Create a simulation for RemoteOper using the same logic
-     *
-     ****************************************************************************/
-
-//    public VehicleSim(loadparam param, Operator[] remoteOps, ArrayList<Task> list) {
-//        globalTasks = list;
-//        operators = remoteOps;
-//        vars = param;
-//    }
 
     /****************************************************************************
      *
@@ -115,37 +98,32 @@ public class VehicleSim  {
             Task newTask;
 
             int taskType = vars.fleetHetero[fleetType][i];
-//            System.out.println("Generating task type " + taskType + "****************");
-
 
             newTask = new Task(taskType, 0, vars, true);
             if (newTask.getArrTime() < 0) {
                 continue;
             }
             indlist.add(newTask);
-//            System.out.println("Task added!");
+
             if (!vars.followedTask.get(taskType).isEmpty()) {
-//                System.out.println("Generating followed task");
                 genLinkedTask(indlist, newTask);
             }
 
-                // While the next task is within the time frame, generate.
+            // While the next task is within the time frame, generate.
 
             while (newTask.getArrTime() < vars.numHours * 60) {
                 newTask = new Task(taskType, newTask.getArrTime(), vars, true);
-                if(newTask.getArrTime() < 0) break;
+                if (newTask.getArrTime() < 0) {
+                    break;
+                }
                 newTask.setID(vehicleID);
                 indlist.add(newTask);
-//                System.out.println("Task added!");
-                if(!vars.followedTask.get(taskType).isEmpty()){
-//                    System.out.println("Generating followed task");
+                if (!vars.followedTask.get(taskType).isEmpty()) {
                     genLinkedTask(indlist, newTask);
                 }
             }
 
-
-            // Put all task into the master tasklist.
-
+            // Put all task into the master task list.
             globalTasks.addAll(indlist);
             vars.repNumTasks[vars.replicationTracker]+= indlist.size();
         }
@@ -167,13 +145,6 @@ public class VehicleSim  {
         }
 
     }
-//
-//    public void sortTask() {
-//
-//        // Sort task by time.
-//
-//        Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
-//    }
 
     public void addTriggered() {
 

@@ -41,7 +41,6 @@ public class Parser {
         System.out.println("phaseBegin: " + Arrays.toString(in.phaseBegin));
         System.out.println("autolvl: " + Arrays.toString(in.autolvl));
         System.out.println("the exo: " + Arrays.toString(in.hasExogenous));
-        System.out.println("failThreshold: " + Arrays.toString(in.ECC));
         System.out.println("OpStrats: "+ Arrays.toString(in.opStrats));
         System.out.println("OpNames: "+ in.opNames[0]);
         System.out.println("teamCoordAff: : " + Arrays.toString(in.teamCoordAff));
@@ -78,7 +77,7 @@ public class Parser {
         }
 
         System.out.println("LeadTask: " + Arrays.toString(in.leadTask));
-        System.out.println("***** Parse End. *****");
+        System.out.println("******* Parse End. *******");
     }
 
 }

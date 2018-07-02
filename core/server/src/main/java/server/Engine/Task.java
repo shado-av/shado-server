@@ -66,7 +66,10 @@ public class Task implements Comparable<Task> {
 
 	public int getTeamType() { return teamType; }
 
-	public void setFail(){this.fail = true;}
+	public void setFail(){
+		System.out.println("The " + name + " arrived at " + arrTime + " is failed.");
+		this.fail = true;
+	}
 
 	public void setPriority(int Priority){ this.Priority = Priority; }
 
@@ -459,6 +462,9 @@ public class Task implements Comparable<Task> {
 		//Skip the front phases who have a negative distribution parameter
 		while (Phase < vars.numPhases && arrPms[Phase][taskType][0] < 0) {
 			Phase++;
+			if (Phase == vars.numPhases) {
+				break;
+			}
 			PrevTime = vars.phaseBegin[Phase];
 		}
 		if (Phase == vars.numPhases) { //Finish checking all the phases
@@ -547,7 +553,7 @@ public class Task implements Comparable<Task> {
 		else{
 			expiration = GenTime(vars.expDists_f[Phase][Type % 100], vars.expPms_f[Phase][Type % 100]);
 		}
-		return arrTime + 2 * serTime + expiration;
+		return arrTime + serTime + expiration;
 
 	}
 
