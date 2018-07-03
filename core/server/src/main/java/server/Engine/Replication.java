@@ -131,7 +131,6 @@ public class Replication {
             return;
 
         //SCHEN 2/7 Fix: to get the shortest Queue of Operators
-
         Operator optimal_op = working.get(0);
         for(Operator op: working){
             if(op.getQueue().taskqueue.size() <= optimal_op.getQueue().taskqueue.size()){
@@ -172,13 +171,12 @@ public class Replication {
 
         if(task.getType() > vars.numTaskTypes){
             task.setPriority(vars.taskPrty_f[task.getPhase()][optimal_op.dpID / 100][task.getType() % 100]);
-            task.setTeamType(optimal_op.dpID / 100);
         }
         else if(task.getType() > 0){
             task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
-            task.setTeamType(optimal_op.dpID / 100);
         }
 
+        task.setTeamType(optimal_op.dpID / 100);
         optimal_op.getQueue().add(task);
 
     }
@@ -227,11 +225,11 @@ public class Replication {
      *	Purpose:	    generate a TriangularDistribution value for human error prediction
      *
      ****************************************************************************/
-    private double getTriangularDistribution(double[] humanError){
+    private double getTriangularDistribution(double[] triangularParams){
 
-        double c = humanError[1]; //mode
-        double a = humanError[0]; //min
-        double b = humanError[2]; //max
+        double c = triangularParams[1]; //mode
+        double a = triangularParams[0]; //min
+        double b = triangularParams[2]; //max
 
         double F = (c - a)/(b - a);
         double rand = Math.random();
@@ -252,7 +250,7 @@ public class Replication {
      *
      *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
-    private boolean failTask(Operator operator,Task task, double changeRate){
+    private void failTask(Operator operator,Task task, double changeRate){
 
         //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
         int taskType = Math.max(task.getType(), 0);
@@ -261,25 +259,27 @@ public class Replication {
 
         double[] humanErrorRate;
         double errorCatching;
+        int affByTeamCoord;
 
-        if(taskType < vars.numTaskTypes) {
+        if (taskType < vars.numTaskTypes) {
             humanErrorRate = vars.humanError[Phase][taskType];
             errorCatching = vars.ECC[Phase][teamType][taskType];
-            if(vars.teamCoordAff[taskType] == 1){
-                errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
-            }
+            affByTeamCoord = vars.teamCoordAff[taskType];
         }
         else {
             humanErrorRate = vars.humanError_f[Phase][taskType % 100];
             errorCatching = vars.ECC_f[Phase][teamType][taskType % 100];
-            if(vars.teamCoordAff_f[taskType % 100] == 1){
-                errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
-            }
+            affByTeamCoord = vars.teamCoordAff_f[taskType % 100];
         }
 
         // Modify the human error rate according to the changeRate
         for (int i = 0; i < humanErrorRate.length; i++) {
             humanErrorRate[i] *= changeRate;
+        }
+
+        // Modify the error catching chance according to team coordination
+        if (affByTeamCoord == 1) {
+            errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
         }
 
         double distValue = getTriangularDistribution(humanErrorRate);
@@ -289,21 +289,41 @@ public class Replication {
         Random r = new Random();
         double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 
-        if(Math.abs(randomValue - distValue) <= 0.0001){
+        if(Math.random() < distValue){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
             int currCnt = failCnt.get(vars.replicationTracker);
             failCnt.put(vars.replicationTracker,++currCnt);
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
-            //If there is team communication, it will be easier to catch error. Increase the ECC(Error Catch Chance)
-            if(Math.random() > errorCatching){
-                //Task Failed but still processed by operator
+            if (Math.random() > errorCatching) {
+                //Task failed but wasn't caught
                 task.setFail();
-                return false;
+                return;
             }
-            return true;
+
+            System.out.println("The " + task.getName() + " arrived at " + task.getArrTime() + " is failed and caught.");
+
+            //Task failed and caught
+            task.setNeedReDo(true);
         }
-        return false;
+
+//
+//        if (Math.abs(randomValue - distValue) <= 0.0001) {
+//            HashMap<Integer,Integer> failCnt = vars.failTaskCount;
+//            int currCnt = failCnt.get(vars.replicationTracker);
+//            failCnt.put(vars.replicationTracker,++currCnt);
+//            this.failedTasks.add(new Pair <Operator,Task>(operator,task));
+//
+//            if (Math.random() > errorCatching) {
+//                //Task failed but wasn't caught
+//                task.setFail();
+//                return;
+//            }
+//
+//            //Task failed and caught
+//            task.setNeedReDo(true);
+//
+//        }
     }
 
 
@@ -406,9 +426,9 @@ public class Replication {
         //Put all tasks in a timely order
         sortTask();
 
-//        for(Task t : globalTasks){
-//            System.out.println(t.getArrTime() + " : " + t.getName());
-//        }
+        for(Task t : globalTasks){
+            System.out.println(t.getArrTime() + " : " + t.getName());
+        }
 
         vars.allTasksPerRep.add(globalTasks);
 

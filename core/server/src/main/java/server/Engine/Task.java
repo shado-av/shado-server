@@ -47,11 +47,7 @@ public class Task implements Comparable<Task> {
 	private int vehicleID;
 	private boolean expired;
 	private boolean fail; // Indicates fail but proceed
-
-
-	// This adds functionalities of the RemoteOper
-
-	private boolean isLinked;
+	private boolean needReDo = false; // Indicates fail but caught
 
 	// This adds the ability for task to track queue retroactively
 
@@ -66,10 +62,16 @@ public class Task implements Comparable<Task> {
 
 	public int getTeamType() { return teamType; }
 
+	public boolean getNeedReDo() { return needReDo; }
+
 	public void setFail(){
-		System.out.println("The " + name + " arrived at " + arrTime + " is failed.");
+		System.out.println("The " + name + " arrived at " + arrTime + " is failed but not caught.");
 		this.fail = true;
 	}
+
+	public void setNeedReDo(boolean b){ this.needReDo = b; }
+
+	public void setArrTime(double time) { this.arrTime = time; }
 
 	public void setPriority(int Priority){ this.Priority = Priority; }
 
@@ -115,7 +117,27 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	public Task(){}
+	public Task() { }
+
+	public Task(Task t){
+		Type = t.getType();
+		vars = t.vars;
+		Priority = t.Priority;
+		prevTime = t.getEndTime();
+		Phase = getPhase(prevTime);
+		shiftPeriod = getShiftTime(prevTime);
+		this.fail = false;
+		elapsedTime = 0;
+		waitTime = 0;
+		expired = false;
+		workSchedule = new ArrayList<>();
+
+		arrTime = prevTime;
+		serTime = t.serTime;
+		expTime = t.expTime;
+		name = t.name;
+		opNums = t.opNums;
+	}
 
 	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
 
@@ -130,6 +152,7 @@ public class Task implements Comparable<Task> {
 		expired = false;
 		Priority = 0;
 		workSchedule = new ArrayList<>();
+
 
 		if(type >= 0){
 
@@ -205,7 +228,7 @@ public class Task implements Comparable<Task> {
 
 		if(this.getType() < 0) return 1;
 
-		if(this.getType() > vars.numTaskTypes){
+		if(this.getType() > vars.numTaskTypes){ //the followed task should always behind the lead task
 			int leadType = this.Type / 100 - 1;
 			if(other.getType() == leadType){
 				if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
@@ -273,8 +296,6 @@ public class Task implements Comparable<Task> {
 	public String getName() {return this.name;}
 
 	public int getQueued() {return this.queued;}
-
-	public boolean linked() {return this.isLinked;}
 
 	public int getType() {return this.Type;}
 

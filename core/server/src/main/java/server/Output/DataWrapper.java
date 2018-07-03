@@ -36,6 +36,10 @@ public class DataWrapper {
 
     private int numSpecialTasks;
 
+    private int totalTaskNumber;
+
+    private String[] taskNames;
+
     PrintStream stdout;
 
     public DataWrapper(Simulation o, loadparam param) {
@@ -45,50 +49,72 @@ public class DataWrapper {
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
+        totalTaskNumber = vars.numTaskTypes + vars.leadTask.length + numSpecialTasks;
+        collectTaskNames();
+
+    }
+
+
+    private void collectTaskNames(){
+        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
+        taskNames = new String[totalTaskNumber];
+        for(int i = 0; i < totalTaskNumber; i++){
+            if(i < vars.numTaskTypes){
+                taskNames[i] = vars.taskNames[i];
+            }
+            else if (i < vars.numTaskTypes + vars.leadTask.length){
+                taskNames[i] = vars.taskNames_f[i - vars.numTaskTypes];
+            }
+            else {
+                taskNames[i] = specialTaskName[i - vars.numTaskTypes - vars.leadTask.length];
+            }
+        }
     }
 
 
 
     /****************************************************************************
      *
-     *	Method:     output
+     *	Method:     testOutput
      *
-     *	Purpose:    Generate csv files
+     *	Purpose:    Generate different reports
      *
      ****************************************************************************/
 
-    public void output() throws IOException {
+    public void testOutput() throws IOException {
 
-//        setFileHead();
-        //Clean previous Summary Dir every output
+        //Clean previous files in the output directory
 
+        cleanDirectory();
+
+
+        //Out put the report files
+
+        printSummaryReport();
+        printErrorReport();
+        printTaskRecord();
+
+
+        //Generate JSON files
+
+        Utilization u = printUtilization();
+
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
+        builder.outputJSON();
+    }
+
+    private void cleanDirectory() throws  IOException{
         File summaryDir = new File(outPutDirectory + "Summary");
         File csvDir = new File( outPutDirectory + "repCSV");
+        File validationDir = new File(outPutDirectory + "validation");
 
         FileUtils.cleanDirectory(summaryDir);
         FileUtils.cleanDirectory(csvDir);
+        FileUtils.cleanDirectory(validationDir);
+    }
 
-        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
 
-        // RemoteOp & Engineer timetables
-        for (int i = 0; i < vars.numRemoteOp; i++) {
-
-            String file_name = outPutDirectory + "RemoteOperator" + ".csv";
-
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(file_name, false)), true));
-            sim.getRemoteOpoutput(i).outputdata();
-        }
-// "a,b,c"
-        for (int j = 0; j < vars.numTeams; j++) {
-
-            String file_name = outPutDirectory + vars.opNames[j] + ".csv";
-
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(file_name, false)), true));
-            sim.getOperatoroutput(j).outputdata();
-
-        }
+    public void printSummaryReport() throws IOException {
 
         // Expired Tasks
 
@@ -97,25 +123,24 @@ public class DataWrapper {
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true));
         System.out.println("--- Simulation Summary---");
+
+        //print total number of tasks in each replication
+
         System.out.println("Tasks generated:");
         for (int i = 0; i < vars.numReps; i++) {
-            System.out.println("Rep_" + i + "," + vars.repNumTasks[i]);
+            System.out.println(", Rep_" + i + "," + vars.repNumTasks[i]);
         }
-        for (int i = 0; i < vars.numTaskTypes; i++) {
-            System.out.println("Task name: " + vars.taskNames[i]);
-            System.out.println("expired: " + sim.getExpiredtask()[i]);
-            System.out.println("completed: " + sim.getCompletedtaskcount()[i]);
+
+        //print summary for each task type
+
+        for(int i = 0; i < totalTaskNumber; i++){
+            System.out.println(",Task name: " + taskNames[i]);
+            System.out.println(",Expired: " + sim.getExpiredtask()[i]);
+            System.out.println(",Completed: " + sim.getCompletedtaskcount()[i]);
         }
-        for(int i = 0; i < vars.leadTask.length; i++){
-            System.out.println("Task name: " + vars.taskNames_f[i]);
-            System.out.println("expired: " + sim.getExpiredtask()[vars.numTaskTypes + i]);
-            System.out.println("completed: " + sim.getCompletedtaskcount()[vars.numTaskTypes + i]);
-        }
-        for(int i = 0; i < numSpecialTasks; i++){
-            System.out.println("Task name: " + specialTaskName[i]);
-            System.out.println("expired: " + sim.getExpiredtask()[vars.numTaskTypes + vars.leadTask.length + i]);
-            System.out.println("completed: " + sim.getCompletedtaskcount()[vars.numTaskTypes + vars.leadTask.length + i]);
-        }
+
+        //print failed task count
+
         System.out.println("*** FAILED TASKS ***");
 //            System.out.println("Operator "+ p.getKey().getName()+" Failed: "+p.getValue().getName());
         for (int i = 0; i < vars.numReps; i++) {
@@ -124,6 +149,9 @@ public class DataWrapper {
             System.out.println("In Replication " + i + ": " + "Number of Fail Tasks: " + currFailCnt);
         }
 
+    }
+
+    private void printErrorReport() throws IOException{
         for (int i = 0; i < vars.numReps; i++) {
 
             String summary_file_name = outPutDirectory + "Summary/Error_Summary_Rep_" + i + ".csv";
@@ -141,24 +169,9 @@ public class DataWrapper {
                 }
                 System.out.println();
             }
-
-
         }
-        //Variance
-
     }
 
-    public void testOutput() throws IOException {
-        output();
-//        printWorkloadSummary();
-
-        Utilization u = printUtilization();
-
-        JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
-        builder.outputJSON();
-
-//        printTaskRecord();
-    }
 
     //Naixin 05/23/18
     private void printTaskRecord() throws IOException{
@@ -169,14 +182,14 @@ public class DataWrapper {
             String fileName = outPutDirectory + "task_" + vars.taskNames[taskType] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
-            System.out.println("arrTime, beginTime, waitTime, finTime, expireTime");
+            System.out.println("arrTime, beginTime, serveTime, waitTime, finTime, expireTime");
             for(int i = 0; i < vars.numReps; i++){
                 System.out.println("Replication " + i);
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
                         double waitTime = t.getEndTime() - t.getArrTime() - t.getSerTime();
                         waitTime = round(waitTime, 2);
-                        System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
+                        System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + t.getSerTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
 
                     }
                 }
@@ -185,73 +198,6 @@ public class DataWrapper {
         }
     }
 
-    private void printWorkloadSummary() throws IOException{
-        //Cross-Replication Summary for workloads
-        String summary_file_name = outPutDirectory + "Workload_Summary.csv";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(summary_file_name, false)), true));
-
-        double[] workloads = new double[3];
-        double workloadSum = 0;
-        int columnCnt;
-        for (double[] x : vars.crossRepCount) {
-            columnCnt = 0;
-            for (double y : x) {
-                workloads[columnCnt++] += y;
-                workloadSum += y;
-            }
-            //System.out.println(Arrays.toString(vars.crossRepCount[i]));
-        }
-        //Display Utilization for each team
-        //repUtilOp:[numRep][Team][operator]
-        double[][] teamUtil = new double[vars.numReps][vars.numTeams];
-        int repPtr = 0;
-        for (double[][] rep_team_op : vars.repUtilOp) {
-            int teamPtr = 0;
-            for (double[] team : rep_team_op) {
-                double teamAvg = 0;
-                double teamSum = 0;
-                int teamCnt = 0;
-                for (double op : team) {
-                    teamSum += op;
-                    teamCnt++;
-                }
-                teamAvg = teamSum / teamCnt;
-                teamUtil[repPtr][teamPtr] = teamAvg;
-                teamPtr++;
-            }
-            repPtr++;
-        }
-        //Get mean across replications
-        double[] teamUtilCrossRep = new double[vars.numTeams];
-        double[] teamUtilVariance = new double[vars.numTeams];
-        for (int i = 0; i < vars.numTeams; i++) {
-            double teamSum = 0;
-            for (int j = 0; j < vars.numReps; j++) {
-                teamSum += teamUtil[j][i];
-            }
-            teamUtilCrossRep[i] = teamSum / vars.numReps;
-            //calculate Variance
-            for (int j = 0; j < vars.numReps; j++) {
-                teamUtilVariance[i] += (teamUtil[j][i] - teamUtilCrossRep[i]) * (teamUtil[j][i] - teamUtilCrossRep[i]);
-            }
-            teamUtilVariance[i] = teamUtilVariance[i] / vars.numReps;
-        }
-
-
-        double percentage_0 = (workloads[0] / workloadSum) * 100;
-        double percentage_30 = workloads[1] / workloadSum * 100;
-        double percentage_70 = workloads[2] / workloadSum * 100;
-        System.out.println("Workload Summary");
-        System.out.println("Percentage of utilization 0-30%,Percentage of utilization 30-70%,Percentage of utilization 70-100% ");
-        System.out.println(percentage_0 + "% ," + percentage_30 + "% ," + percentage_70 + "%,");
-        System.out.println("AVG Utilization For Each Team");
-        for (int i = 0; i < vars.numTeams; i++) {
-            double halfWidth = Math.sqrt(teamUtilVariance[i]) * 1.9842 / Math.sqrt(vars.numReps);
-            System.out.println("Team " + vars.opNames[i] + ", " + teamUtilCrossRep[i] + ",Variance," + teamUtilVariance[i] + ",Half Width," + halfWidth);
-        }
-        System.setOut(stdout);
-    }
 
     //Naixin 05/21/18
     private Utilization printUtilization() throws IOException {
@@ -388,6 +334,18 @@ public class DataWrapper {
         System.setOut(stdout);
 
         return utilization;
+    }
+
+    private void remoteOperatorTimeTable() throws IOException{
+        for (int i = 0; i < vars.numRemoteOp; i++) {
+
+            String file_name = outPutDirectory + "RemoteOperator" + i + ".csv";
+
+            System.setOut(new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(file_name, false)), true));
+
+            sim.getRemoteOpoutput(i).outputdata();
+        }
     }
 
     public static double round(double value, int places) {
