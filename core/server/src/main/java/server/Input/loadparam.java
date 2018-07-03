@@ -44,7 +44,7 @@ public class loadparam {
     public int[][][]    taskPrty; //phase * team * task
     public char[]       teamComm;
     public double[][][] humanError;
-    public double[][][]   ECC; //short for "Error Catching Chance"
+    public double[][][] ECC; //short for "Error Catching Chance"
 
     //AIDA Variables
     public int[][]      AIDAtype;
@@ -92,7 +92,7 @@ public class loadparam {
     public int[]        interruptable_f;
     public int[]        essential_f;
     public double[][][] humanError_f;
-    public double[][][]   ECC_f; //short for "Error Catching Chance"
+    public double[][][] ECC_f; //short for "Error Catching Chance"
 
     // Other parameters
     public int                          numRemoteOp;

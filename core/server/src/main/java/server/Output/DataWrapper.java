@@ -44,8 +44,8 @@ public class DataWrapper {
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-//        outPutDirectory = "/home/rapiduser/out/";
+//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
+        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
@@ -98,9 +98,11 @@ public class DataWrapper {
         //Generate JSON files
 
         Utilization u = printUtilization();
+        FailedTask f = printFailedTask();
 
-        JasonBuilder builder = new JasonBuilder(outPutDirectory, u);
-        builder.outputJSON();
+        JasonBuilder builderUtilization = new JasonBuilder(outPutDirectory, u, f);
+        builderUtilization.outputJSON();
+
     }
 
     private void cleanDirectory() throws  IOException{
@@ -202,7 +204,7 @@ public class DataWrapper {
     //Naixin 05/21/18
     private Utilization printUtilization() throws IOException {
 
-        Utilization utilization = new Utilization(vars);
+        Utilization utilization = new Utilization(vars, taskNames);
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
@@ -335,6 +337,14 @@ public class DataWrapper {
 
         return utilization;
     }
+
+    private FailedTask printFailedTask() throws IOException{
+        FailedTask f = new FailedTask(vars, taskNames);
+
+        return f;
+    }
+
+
 
     private void remoteOperatorTimeTable() throws IOException{
         for (int i = 0; i < vars.numRemoteOp; i++) {

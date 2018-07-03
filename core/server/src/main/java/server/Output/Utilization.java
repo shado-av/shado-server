@@ -22,25 +22,15 @@ public class Utilization {
      *
      ****************************************************************************/
 
-    public Utilization (loadparam vars){
+    public Utilization (loadparam vars, String[] taskname){
+
+        taskName = taskname;
+
         // get operators' name
         operatorName = new String[vars.numRemoteOp];
         for(int i = 0; i < vars.numRemoteOp; i++){
             operatorName[i] = vars.reps[0].getRemoteOp().getRemoteOp()[i].getName();
         }
-
-        //get tasks' name
-        taskName = new String[vars.numTaskTypes + vars.leadTask.length + 3];
-        for(int i = 0; i < vars.numTaskTypes; i++){
-            taskName[i] = vars.taskNames[i];
-        }
-        for(int i = 0; i < vars.leadTask.length; i++){
-            taskName[vars.numTaskTypes + i] = vars.taskNames_f[i];
-        }
-        int totalTasks = vars.numTaskTypes + vars.leadTask.length;
-        taskName[totalTasks] = "TC task (some)";
-        taskName[totalTasks + 1] = "TC task (full)";
-        taskName[totalTasks + 2] = "Exogenous task";
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);

@@ -12,20 +12,28 @@ public class JasonBuilder {
 
     String outputDirectory;
     Utilization utilization;
+    FailedTask failedTask;
 
-    public JasonBuilder(String output, Utilization u){
+    public JasonBuilder(String output, Utilization u, FailedTask f){
         outputDirectory = output;
         utilization = u;
+        failedTask = f;
     }
 
     public void outputJSON() throws IOException {
         PrintStream stdout = System.out;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
+
         String summary_file_name = outputDirectory + "Utilization.json";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
         System.out.println(gson.toJson(utilization));
+
+        summary_file_name = outputDirectory + "FailedTask.json";
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(summary_file_name, false)), true));
+        System.out.println(gson.toJson(failedTask));
         System.setOut(stdout);
     }
 }
