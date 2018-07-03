@@ -187,13 +187,13 @@ public class Queue implements Comparable<Queue>{
             // Renew the queue time.
             SetTime(finTime);
 
-            if(currentTask.getNeedReDo()){
-                Task redoTask = new Task(currentTask);
-                redoTask.setArrTime(finTime);
-                System.out.print("Add the task " + redoTask.getName() + "arrive at " + redoTask.getArrTime() + " back to queue to redo ");
-                System.out.println("task " + currentTask.getName() + "arrive at " + currentTask.getArrTime());
-                add(redoTask);
-            }
+//            if(currentTask.getNeedReDo()){
+//                Task redoTask = new Task(currentTask);
+//                redoTask.setArrTime(finTime);
+//                System.out.print("Add the task " + redoTask.getName() + "arrive at " + redoTask.getArrTime() + " back to queue to redo ");
+//                System.out.println("task " + currentTask.getName() + "arrive at " + currentTask.getArrTime());
+//                add(redoTask);
+//            }
 
         }
 

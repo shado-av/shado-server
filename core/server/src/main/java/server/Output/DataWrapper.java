@@ -261,6 +261,7 @@ public class DataWrapper {
                         double u = taskUtilization.dataget(j, time, 0);
 
                         utilization.utilization[k][i][j][time] = round(u,2);
+//                        utilization.utilization[k][i][j][time] = u;
 
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
@@ -287,7 +288,7 @@ public class DataWrapper {
 
                 // print the sum of timeSectionSum
                 System.out.print(timeSectionSum[numColumn] + ",");
-                utilization.averageUtilization[k][i] = timeSectionSum[numColumn];
+                utilization.averageUtilization[k][i] = round(timeSectionSum[numColumn],2);
 
                 // find the max and min average utilization
                 if(timeSectionSum[numColumn] > max){

@@ -426,9 +426,9 @@ public class Replication {
         //Put all tasks in a timely order
         sortTask();
 
-        for(Task t : globalTasks){
-            System.out.println(t.getArrTime() + " : " + t.getName());
-        }
+//        for(Task t : globalTasks){
+//            System.out.println(t.getArrTime() + " : " + t.getName());
+//        }
 
         vars.allTasksPerRep.add(globalTasks);
 
