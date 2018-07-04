@@ -23,7 +23,7 @@ import server.Engine.Shado;
 
 import javax.servlet.http.HttpServletResponse;
 
-@CrossOrigin(max age = 3600)
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class GreetingController {
 
