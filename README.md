@@ -4,7 +4,8 @@ SHADO-server web service is built on Java Spring Boot.
 Spring Boot Tutorial: https://spring.io/guides/gs/spring-boot/
 
 ### Build the project locally
-To Run the Simulation locally, Go to **DataWrapper.java, GreetingController.java** and comment out all remote server paths, uncommen local paths and change the local path to your current directory.
+To Run the Simulation locally, Go to **DataWrapper.java, GreetingController.java** and comment out all remote server paths, uncommen local paths and change the local path to your current directory. (The DataWrapper.java is under "shado-server/core/server/src/main/java/server/Output" folder. The GreetingController.java is under "shado-server/core/server/src/main/java/server" folder.)
+
 
 ```
    //String summary_file_name =   "/home/rapiduser/shado-server/core/server/out/Summary/" + "Workload_Summary.csv"; 
