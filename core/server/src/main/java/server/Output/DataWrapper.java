@@ -196,8 +196,6 @@ public class DataWrapper {
                     new FileOutputStream(fileName, false)), true));
 
             int numColumn = (int) Math.ceil(vars.numHours * 6);
-            double[][] utilizationSum = new double[vars.numReps][numColumn]; //the utilization for each operator per time interval per replication
-                                                                             //It is same thing with timeSectionSum. It's just we need another output.
 
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
@@ -218,31 +216,15 @@ public class DataWrapper {
                 // one row per task
                 for (int j = 0; j < vars.numTaskTypes + vars.leadTask.length + numSpecialTasks; j++) {
                     double taskSum = 0;
-                    if(j < vars.numTaskTypes){
-                        System.out.print(vars.taskNames[j] + ",");
-                    }
-                    else if(j >= vars.numTaskTypes && j < vars.numTaskTypes + vars.leadTask.length){
-                        System.out.print(vars.taskNames_f[j - vars.numTaskTypes] + ",");
-                    }
-                    else if(j == vars.numTaskTypes + vars.leadTask.length){
-                        System.out.print("Team Coordinate Task level some: ,");
-                    }
-                    else if(j == vars.numTaskTypes + vars.leadTask.length + 1){
-                        System.out.print("Team Coordinate Task level full: ,");
-                    }
-                    else if(j == vars.numTaskTypes + vars.leadTask.length + 2){
-                        System.out.print("Exogenous Task: ,");
-                    }
+                    System.out.print(vars.taskName_all[j] + ",");
 
                     for (int time = 0; time < numColumn; time++) {
                         double u = taskUtilization.dataget(j, time, 0);
 
                         utilization.utilization[k][i][j][time] = round(u,2);
-//                        utilization.utilization[k][i][j][time] = u;
 
                         taskSum = taskSum + u;
                         timeSectionSum[time] += u;
-                        utilizationSum[i][time] += u;
 
                         System.out.print(u + ",");
                     }
@@ -279,25 +261,11 @@ public class DataWrapper {
                 System.out.println(" ");
             }
 
+            averageAll(utilization.averageUtilization);
+
             System.out.println("The max average utilization cross replication is " + max);
             System.out.println("The min average utilization cross replication is " + min);
             System.out.println("The max utilization in 10 mins is " + max10mins);
-
-            fileName = outPutDirectory + "repCSV/Utilization_" + k + "_allTasks" + ".csv";
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, true)), true));
-
-            for(int i = 1; i <= vars.numReps; i++){
-                System.out.print(i + ",");
-            }
-            System.out.println(" ");
-
-            for(int time = 0; time < numColumn; time++){
-                for(int rep = 0; rep < vars.numReps; rep++){
-                    System.out.print(utilizationSum[rep][time] + ",");
-                }
-                System.out.println(" ");
-            }
 
 
             fileName = outPutDirectory + "validation/rep_vs_time:operator" + k + ".csv";
@@ -316,6 +284,20 @@ public class DataWrapper {
         return utilization;
     }
 
+    private void averageAll(Double[][] u){
+
+        int count = 0;
+        double sum = 0;
+        for (int i = 0; i < u.length; i++) {
+            for (int j = 0; j < u[0].length; j++) {
+                sum += u[i][j];
+                count++;
+            }
+        }
+        System.out.println("Average Utilization is " + sum / count);
+
+    }
+
     private void remoteOperatorTimeTable() throws IOException{
         for (int i = 0; i < vars.numRemoteOp; i++) {
 
@@ -323,7 +305,6 @@ public class DataWrapper {
 
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(file_name, false)), true));
-
             sim.getRemoteOpoutput(i).outputdata();
         }
     }

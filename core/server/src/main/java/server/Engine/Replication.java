@@ -237,6 +237,9 @@ public class Replication {
         }
 
         // Modify the human error rate according to the changeRate
+        for(int i = 0; i < task.getRepeatTimes(); i++){
+            changeRate *= 0.5;
+        }
         for (int i = 0; i < humanErrorRate.length; i++) {
             humanErrorRate[i] *= changeRate;
         }
@@ -249,6 +252,7 @@ public class Replication {
         // Fail tasks according to humaan error rate
 
         double distValue = getTriangularDistribution(humanErrorRate);
+        distValue = Math.max(distValue, 0.0001);
 
         if(Math.random() < distValue){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
@@ -313,9 +317,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            System.out.println("-------------------------------------------------------");
+//            System.out.println("-------------------------------------------------------");
 //            System.out.print(op.toString() + ", ");
-            System.out.println(op.getQueue().toString());
+//            System.out.println(op.getQueue().toString());
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) {

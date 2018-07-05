@@ -26,9 +26,6 @@ public class Task implements Comparable<Task> {
 	private double lvl_SOME = 0.7;
 	private double lvl_FULL = 0.3;
 	private double lvl_None = 1.0;
-	private double[] arrivalRate;
-
-
 
 	//Task specific variables.
 	private int Phase;
@@ -48,6 +45,7 @@ public class Task implements Comparable<Task> {
 	private boolean expired;
 	private boolean fail; // Indicates fail but proceed
 	private boolean needReDo = false; // Indicates fail but caught
+	private int repeatTimes;
 
 	// This adds the ability for task to track queue retroactively
 
@@ -63,6 +61,8 @@ public class Task implements Comparable<Task> {
 	public int getTeamType() { return teamType; }
 
 	public boolean getNeedReDo() { return needReDo; }
+
+	public int getRepeatTimes() { return repeatTimes; }
 
 	public void setFail(){
 		System.out.println("The " + name + " arrived at " + arrTime + " is failed but not caught.");
@@ -137,6 +137,7 @@ public class Task implements Comparable<Task> {
 		expTime = t.expTime;
 		name = t.name;
 		opNums = t.opNums;
+		repeatTimes = t.repeatTimes + 1;
 	}
 
 	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
@@ -152,6 +153,7 @@ public class Task implements Comparable<Task> {
 		expired = false;
 		Priority = 0;
 		workSchedule = new ArrayList<>();
+		repeatTimes = 0;
 
 
 		if(type >= 0){

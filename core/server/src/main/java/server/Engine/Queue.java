@@ -176,7 +176,7 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
 //            taskqueue.peek().setQueue(NumTask);
 
-            taskqueue.peek().printBasicInfo();
+//            taskqueue.peek().printBasicInfo();
 
             Task currentTask = taskqueue.peek();
 
@@ -189,12 +189,12 @@ public class Queue implements Comparable<Queue>{
             if(currentTask.getNeedReDo()){
                 Task redoTask = new Task(currentTask);
                 redoTask.setArrTime(finTime);
-                System.out.print("Add the task " + redoTask.getName() + " arrive at " + redoTask.getArrTime() + " back to queue to redo ");
-                System.out.println("task " + currentTask.getName() + " arrive at " + currentTask.getArrTime());
+//                System.out.print("Add the task " + redoTask.getName() + " arrive at " + redoTask.getArrTime() + " back to queue to redo ");
+//                System.out.println("task " + currentTask.getName() + " arrive at " + currentTask.getArrTime());
                 add(redoTask);
             }
 
-            System.out.println("Now " + toString());
+//            System.out.println("Now " + toString());
 
         }
 
