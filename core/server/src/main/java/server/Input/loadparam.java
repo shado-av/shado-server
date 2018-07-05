@@ -4,6 +4,7 @@ import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
 import javafx.util.Pair;
+import server.Output.FailedTask;
 
 import java.io.*;
 import java.util.*;
@@ -95,6 +96,8 @@ public class loadparam {
     public double[][][] ECC_f; //short for "Error Catching Chance"
 
     // Other parameters
+    public String[]                     taskName_all;
+    public int                          totalTaskType;
     public int                          numRemoteOp;
     public int[]                        ETteam; //which team has ET for this task type
     public boolean                      hasET = false;
@@ -105,6 +108,7 @@ public class loadparam {
     // Records
     public Replication[]                                reps;
     public HashMap<Integer,ArrayList>                   rep_failTask;
+    public FailedTask                                   failedTask;
     public HashMap<Integer,Integer>                     failTaskCount;
     public Data[][]                                     utilizationOutput;   //utilization[numRep][numOperator]
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
@@ -147,14 +151,18 @@ public class loadparam {
     * Set Global data after reading from JSON
     * */
     public void setGlobalData(){
+
+        getNumRemoteOp();
+        totalTaskType = numTaskTypes + leadTask.length + 3;
+        collectTaskNames();
         failTaskCount = new HashMap<>();
+        failedTask = new FailedTask(this, taskName_all);
         replicationTracker = 0;
         processedRepId = 0;
         debugCnt = 0;
         maxTeamSize = 0;
         metaSnapShot = 0;
         allTasksPerRep = new ArrayList<>();
-        getNumRemoteOp();
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
 		//Utilization for each type of operator across replications
@@ -206,6 +214,33 @@ public class loadparam {
         for(int i : teamSize){
             numRemoteOp += i;
         }
+    }
+
+    /****************************************************************************
+     *
+     *	Shado Object:	collectTaskNames
+     *
+     *	Purpose:		Put the task name, followed task name, TC task name and
+     *              	Exogenous task name into one matrix.
+     *
+     ****************************************************************************/
+
+    private void collectTaskNames(){
+
+        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
+        taskName_all = new String[totalTaskType];
+        for (int i = 0; i < totalTaskType; i++) {
+            if (i < numTaskTypes) {
+                taskName_all[i] = taskNames[i];
+            }
+            else if (i < numTaskTypes + leadTask.length) {
+                taskName_all[i] = taskNames_f[i - numTaskTypes];
+            }
+            else {
+                taskName_all[i] = specialTaskName[i - numTaskTypes - leadTask.length];
+            }
+        }
+
     }
 
     /****************************************************************************

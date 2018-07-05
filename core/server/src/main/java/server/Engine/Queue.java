@@ -109,9 +109,10 @@ public class Queue implements Comparable<Queue>{
 
     @Override
     public String toString() {
-        System.out.println("My queue has " + getNumTask() + " tasks.");
-        if(!taskqueue.isEmpty()) System.out.println("The top task is " + taskqueue.peek().toString());
-        return "The time is " + time + " now.";
+        System.out.println("My queue has " + getNumTask() + " tasks: ");
+        printQueue();
+//        if(!taskqueue.isEmpty()) System.out.println("The top task is " + taskqueue.peek().toString());
+        return "The time is " + time + " , the finTime is " + finTime;
     }
 
     /****************************************************************************
@@ -131,10 +132,8 @@ public class Queue implements Comparable<Queue>{
 
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
-//                System.out.println("In queue.add, the on hand task is interrupted.");
+                System.out.println("In queue.add, the on hand task is interrupted.");
                 taskqueue.peek().addInterruptTime(time);
-//                double workTime = taskqueue.peek().workSchedule.get(taskqueue.peek().workSchedule.size() - 1)[0] - time;
-//                taskqueue.peek().setELStime(taskqueue.peek().getELSTime() + workTime);
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
             }
         }
@@ -175,9 +174,9 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().setEndTime(finTime);
             taskqueue.peek().addInterruptTime(finTime);
             taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
-            taskqueue.peek().setQueue(NumTask);
-//            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
-//            taskqueue.peek().printBasicInfo();
+//            taskqueue.peek().setQueue(NumTask);
+
+            taskqueue.peek().printBasicInfo();
 
             Task currentTask = taskqueue.peek();
 
@@ -187,13 +186,15 @@ public class Queue implements Comparable<Queue>{
             // Renew the queue time.
             SetTime(finTime);
 
-//            if(currentTask.getNeedReDo()){
-//                Task redoTask = new Task(currentTask);
-//                redoTask.setArrTime(finTime);
-//                System.out.print("Add the task " + redoTask.getName() + "arrive at " + redoTask.getArrTime() + " back to queue to redo ");
-//                System.out.println("task " + currentTask.getName() + "arrive at " + currentTask.getArrTime());
-//                add(redoTask);
-//            }
+            if(currentTask.getNeedReDo()){
+                Task redoTask = new Task(currentTask);
+                redoTask.setArrTime(finTime);
+                System.out.print("Add the task " + redoTask.getName() + " arrive at " + redoTask.getArrTime() + " back to queue to redo ");
+                System.out.println("task " + currentTask.getName() + " arrive at " + currentTask.getArrTime());
+                add(redoTask);
+            }
+
+            System.out.println("Now " + toString());
 
         }
 
@@ -209,6 +210,16 @@ public class Queue implements Comparable<Queue>{
             // Add expired tasks to the record
             taskqueue.peek().setexpired();
 
+            int taskType = taskqueue.peek().getType();
+            if (taskType < 0) {
+                taskType = vars.numTaskTypes + vars.leadTask.length - taskType - 1;
+            }
+            else if (taskType > vars.numTaskTypes) {
+                taskType = taskType % 100 + vars.numTaskTypes;
+            }
+
+            vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
+
 //            System.out.println("The task " + taskqueue.peek().getName() + " arrive at " + taskqueue.peek().getArrTime() + " is expired.");
             vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
@@ -217,7 +228,7 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() != null) {
 
-            // Set the beginTime of the Task in question to now, i.e. begin working on this task.
+            // Set the beginTime of the Task in queue to now, i.e. begin working on this task.
 
             taskqueue.peek().setBeginTime(time);
             taskqueue.peek().addBeginTime(time);
@@ -301,5 +312,13 @@ public class Queue implements Comparable<Queue>{
         }
     }
 
+    private void printQueue(){
+        Iterator<Task> it = taskqueue.iterator();
+        while (it.hasNext()) {
+            Task t = it.next();
+            System.out.print(t.getName() + "(" + t.getArrTime() + ")--");
+        }
+        System.out.println(" ");
+    }
 
 }

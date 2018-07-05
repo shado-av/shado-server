@@ -166,6 +166,9 @@ public class ProcRep {
             }
 
             for(int i = 0; i < each.workSchedule.size(); i++){
+                if (each.workSchedule.get(i)[0] >= each.workSchedule.get(i)[1]) {
+                    continue;
+                }
                 double beginscale = each.workSchedule.get(i)[0] / 10;
                 double endscale = each.workSchedule.get(i)[1] / 10;
                 fill(beginscale, endscale, incremented, taskType);

@@ -5,7 +5,7 @@ public class FailedTask {
 
     String[] operatorName;
     String[] taskName;
-    double[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
+    int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
 
     /****************************************************************************
      *
@@ -33,14 +33,21 @@ public class FailedTask {
         // get operators' name
 
         operatorName = new String[vars.numRemoteOp];
-        for(int i = 0; i < vars.numRemoteOp; i++){
-            operatorName[i] = vars.reps[0].getRemoteOp().getRemoteOp()[i].getName();
+        int count = 0;
+        for (int i = 0; i < vars.opNames.length; i++) {
+            for (int j = 0; j < vars.teamSize[i]; j++) {
+                operatorName[count] = vars.opNames[i] + "_" + Integer.toString(j);
+                count++;
+            }
         }
 
         //create the matrix for failed task
 
-        numFailedTask = new double[vars.numReps][vars.numPhases][vars.numTeams][vars.numTaskTypes][4];
+        numFailedTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
 
     }
 
+    public int[][][][][] getNumFailedTask() {
+        return numFailedTask;
+    }
 }

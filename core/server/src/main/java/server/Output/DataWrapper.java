@@ -38,40 +38,17 @@ public class DataWrapper {
 
     private int totalTaskNumber;
 
-    private String[] taskNames;
-
     PrintStream stdout;
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-        outPutDirectory = "/home/rapiduser/out/";
+        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
+//        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
         numSpecialTasks = o.getNumSpecialTasks();
         totalTaskNumber = vars.numTaskTypes + vars.leadTask.length + numSpecialTasks;
-        collectTaskNames();
-
     }
-
-
-    private void collectTaskNames(){
-        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
-        taskNames = new String[totalTaskNumber];
-        for(int i = 0; i < totalTaskNumber; i++){
-            if(i < vars.numTaskTypes){
-                taskNames[i] = vars.taskNames[i];
-            }
-            else if (i < vars.numTaskTypes + vars.leadTask.length){
-                taskNames[i] = vars.taskNames_f[i - vars.numTaskTypes];
-            }
-            else {
-                taskNames[i] = specialTaskName[i - vars.numTaskTypes - vars.leadTask.length];
-            }
-        }
-    }
-
-
 
     /****************************************************************************
      *
@@ -98,7 +75,7 @@ public class DataWrapper {
         //Generate JSON files
 
         Utilization u = printUtilization();
-        FailedTask f = printFailedTask();
+        FailedTask f = vars.failedTask;
 
         JasonBuilder builderUtilization = new JasonBuilder(outPutDirectory, u, f);
         builderUtilization.outputJSON();
@@ -136,7 +113,7 @@ public class DataWrapper {
         //print summary for each task type
 
         for(int i = 0; i < totalTaskNumber; i++){
-            System.out.println(",Task name: " + taskNames[i]);
+            System.out.println(",Task name: " + vars.taskName_all[i]);
             System.out.println(",Expired: " + sim.getExpiredtask()[i]);
             System.out.println(",Completed: " + sim.getCompletedtaskcount()[i]);
         }
@@ -204,7 +181,7 @@ public class DataWrapper {
     //Naixin 05/21/18
     private Utilization printUtilization() throws IOException {
 
-        Utilization utilization = new Utilization(vars, taskNames);
+        Utilization utilization = new Utilization(vars);
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
@@ -338,14 +315,6 @@ public class DataWrapper {
 
         return utilization;
     }
-
-    private FailedTask printFailedTask() throws IOException{
-        FailedTask f = new FailedTask(vars, taskNames);
-
-        return f;
-    }
-
-
 
     private void remoteOperatorTimeTable() throws IOException{
         for (int i = 0; i < vars.numRemoteOp; i++) {

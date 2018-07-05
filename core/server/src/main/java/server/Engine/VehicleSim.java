@@ -38,20 +38,6 @@ public class VehicleSim  {
     // This is an arraylist of ALL tasks in the order that they're arriving.
     public ArrayList<Task> globalTasks;
 
-    // Inspectors
-    public int getvehicleID() {
-        return vehicleID;
-    }
-
-    public double getTotalTime() {
-        return vars.numHours * 60;
-    }
-
-    // Mutator
-
-    public void linktask(Task task) {
-        globalTasks.add(task);
-    }
 
     /****************************************************************************
      *
@@ -81,7 +67,7 @@ public class VehicleSim  {
 
     public synchronized void taskgen() {
 
-        System.out.println("Generate task");
+//        System.out.println("Generate task");
 
         // For each type of tasks:
         int fleetType = this.vehicleID/100;
@@ -159,37 +145,5 @@ public class VehicleSim  {
         }
     }
 
-    /****************************************************************************
-     *
-     *	Method:			genVehicleTask
-     *
-     *	Purpose:		Generate the base set of data in VehicleSim object.
-     *
-     ****************************************************************************/
 
-    public void genVehicleTask() {
-        taskgen();
-    }
-
-    /****************************************************************************
-     *
-     *	Shado Method:	run
-     *
-     *	Purpose:		run the simulation based on time order.
-     *
-     ****************************************************************************/
-
-    public void run() {
-
-
-        // Finish tasks if no new tasks comes in.
-        double totaltime = vars.numHours * 60;
-        for (Operator each : operators) {
-            if (each != null) {
-                while (each.getQueue().getfinTime() < totaltime) {
-                    each.getQueue().done(vars,each);
-                }
-            }
-        }
-    }
 }

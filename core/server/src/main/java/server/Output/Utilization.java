@@ -22,14 +22,18 @@ public class Utilization {
      *
      ****************************************************************************/
 
-    public Utilization (loadparam vars, String[] taskname){
+    public Utilization (loadparam vars){
 
-        taskName = taskname;
+        taskName = vars.taskName_all;
 
         // get operators' name
         operatorName = new String[vars.numRemoteOp];
-        for(int i = 0; i < vars.numRemoteOp; i++){
-            operatorName[i] = vars.reps[0].getRemoteOp().getRemoteOp()[i].getName();
+        int count = 0;
+        for (int i = 0; i < vars.opNames.length; i++) {
+            for (int j = 0; j < vars.teamSize[i]; j++) {
+                operatorName[count] = vars.opNames[i] + "_" + Integer.toString(j);
+                count++;
+            }
         }
 
         //create the utilization matrix and averageUtilization matrix

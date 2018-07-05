@@ -1,6 +1,7 @@
 package server.Engine;
 import server.Input.FileWizard;
 import server.Input.loadparam;
+import server.Output.FailedTask;
 import server.Output.ProcRep;
 import server.Input.loadparam;
 
@@ -26,6 +27,8 @@ public class Simulation {
 
 	private loadparam vars;
 
+	private FailedTask failedTask;
+
     private int[] expiredtaskcount;
 
     private int[] completedtaskcount;
@@ -37,6 +40,8 @@ public class Simulation {
     private int repnumber;
 
     private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
+
+    private String[] taskNames;
 
 
 
@@ -58,6 +63,10 @@ public class Simulation {
 
     public int getNumSpecialTasks(){ return numSpecialTasks; }
 
+    public FailedTask getFailedTask() { return failedTask; }
+
+    public String[] getTaskNames(){ return taskNames; }
+
 
     /****************************************************************************
      *
@@ -73,6 +82,7 @@ public class Simulation {
 
         vars = param;
         repnumber = param.numReps;
+
         System.out.println("Number of reputations: " + repnumber);
         // Generate overall data field
 
@@ -81,6 +91,7 @@ public class Simulation {
             changeArrivalRate(1.1);
         }
 
+        //TODO: add followed tasks to it
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
             operatoroutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
@@ -93,7 +104,10 @@ public class Simulation {
         expiredtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
         completedtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
 
+        failedTask = new FailedTask(vars, taskNames);
+
     }
+
 
     /****************************************************************************
      *
