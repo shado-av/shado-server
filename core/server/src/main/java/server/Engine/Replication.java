@@ -158,13 +158,7 @@ public class Replication {
         failTask(optimal_op, task, errorChangeRate);
 
         // assign task priority according to phase, team and task type
-        if(task.getType() > vars.numTaskTypes){
-            task.setPriority(vars.taskPrty_f[task.getPhase()][optimal_op.dpID / 100][task.getType() % 100]);
-        }
-        else if(task.getType() > 0){
-            task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
-        }
-
+        task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
         task.setTeamType(optimal_op.dpID / 100);
         optimal_op.getQueue().add(task);
 
@@ -223,18 +217,12 @@ public class Replication {
             affByTeamCoord = 0;
             taskType = vars.numTaskTypes + vars.leadTask.length - taskType - 1;
         }
-        else if (taskType < vars.numTaskTypes) {
+        else {
             humanErrorRate = vars.humanError[Phase][taskType];
             errorCatching = vars.ECC[Phase][teamType][taskType];
             affByTeamCoord = vars.teamCoordAff[taskType];
         }
-        else {
-            taskType = taskType % 100;
-            humanErrorRate = vars.humanError_f[Phase][taskType];
-            errorCatching = vars.ECC_f[Phase][teamType][taskType];
-            affByTeamCoord = vars.teamCoordAff_f[taskType];
-            taskType = vars.numTaskTypes + taskType;
-        }
+
 
         // Modify the human error rate according to the changeRate
         for(int i = 0; i < task.getRepeatTimes(); i++){
@@ -268,7 +256,7 @@ public class Replication {
             }
 
             //Task failed and caught
-            System.out.println("The " + task.getName() + " arrived at " + task.getArrTime() + " is failed and caught");
+//            System.out.println("The " + task.getName() + " arrived at " + task.getArrTime() + " is failed and caught");
             vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
             task.setNeedReDo(true);
         }
@@ -374,16 +362,11 @@ public class Replication {
         //Put all tasks in a timely order
         sortTask();
 
-//        for(Task t : globalTasks){
-//            System.out.println(t.getArrTime() + " : " + t.getName());
-//        }
-
         vars.allTasksPerRep.add(globalTasks);
 
         for (Task task : globalTasks) {
             workingUntilNewTaskArrive(remoteOps,task);
             puttask(task);
-            vars.metaSnapShot++;
         }
         // Finish all remaining tasks
         workingUntilNewTaskArrive(remoteOps,null);
@@ -485,13 +468,13 @@ public class Replication {
         Task newTask = new Task(taskType, 0, vars, true);
         if (newTask.getArrTime() < 0) return;
         newTask.setTeamType(team);
-        newTask.opNums[0] = team;
+//        newTask.opNums[0] = team;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
             newTask.setTeamType(team);
-            newTask.opNums[0] = team;
+//            newTask.opNums[0] = team;
             if (newTask.getArrTime() < 0) break;
             indlist.add(newTask);
         }

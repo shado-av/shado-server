@@ -26,9 +26,9 @@ public class FailedTask {
      *
      ****************************************************************************/
 
-    public FailedTask(loadparam vars, String[] taskname){
+    public FailedTask(loadparam vars){
 
-        taskName = taskname;
+        taskName = vars.taskName_all;
 
         // get operators' name
 

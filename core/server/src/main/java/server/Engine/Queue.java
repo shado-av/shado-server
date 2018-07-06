@@ -98,13 +98,14 @@ public class Queue implements Comparable<Queue>{
      ****************************************************************************/
 
     public Queue(Operator op) {
-//        taskqueue = new ArrayDeque<>();
+
         taskqueue = new PriorityQueue<>();
         time = 0;
         finTime = Double.POSITIVE_INFINITY;
         this.operator = op;
         expectedFinTime = 0;
         numtask();
+
     }
 
     @Override
@@ -174,7 +175,6 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().setEndTime(finTime);
             taskqueue.peek().addInterruptTime(finTime);
             taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
-//            taskqueue.peek().setQueue(NumTask);
 
 //            taskqueue.peek().printBasicInfo();
 
@@ -261,7 +261,6 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() == null) {
             finTime = Double.POSITIVE_INFINITY;
-//            finTime = 0;
         }
 
         // Otherwise grab the current task and return a finish time.
@@ -269,12 +268,6 @@ public class Queue implements Comparable<Queue>{
         else {
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
-//            finTime = time + onhand.getSerTime() - onhand.getELSTime();
-            // Error checker
-
-//            System.out.println(onhand.getArrTime() + "\t" + onhand.getName() + "\t" +
-//            onhand.getBeginTime() + "\t" + onhand.getEndTime());
-
         }
     }
 

@@ -27,8 +27,6 @@ public class Simulation {
 
 	private loadparam vars;
 
-	private FailedTask failedTask;
-
     private int[] expiredtaskcount;
 
     private int[] completedtaskcount;
@@ -41,10 +39,6 @@ public class Simulation {
 
     private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
 
-    private String[] taskNames;
-
-
-
     public int[] getExpiredtask() {
         return expiredtaskcount;
     }
@@ -53,19 +47,9 @@ public class Simulation {
         return completedtaskcount;
     }
 
-    public Data getOperatoroutput(int i) {
-        return operatoroutput[i];
-    }
-
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
     }
-
-    public int getNumSpecialTasks(){ return numSpecialTasks; }
-
-    public FailedTask getFailedTask() { return failedTask; }
-
-    public String[] getTaskNames(){ return taskNames; }
 
 
     /****************************************************************************
@@ -91,7 +75,6 @@ public class Simulation {
             changeArrivalRate(1.1);
         }
 
-        //TODO: add followed tasks to it
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
             operatoroutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
@@ -101,10 +84,8 @@ public class Simulation {
             RemoteOpoutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
 
-        expiredtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
-        completedtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
-
-        failedTask = new FailedTask(vars, taskNames);
+        expiredtaskcount = new int[param.numTaskTypes + numSpecialTasks];
+        completedtaskcount = new int[param.numTaskTypes + numSpecialTasks];
 
     }
 
@@ -147,12 +128,12 @@ public class Simulation {
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
             ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars,numSpecialTasks);
-            process.run(i);
+            process.run();
             vars.utilizationOutput[i] = process.getRepdisdata();
 
             //Global Tracker for replication processed
             vars.currRepnum++;
-            for (int j = 0; j < vars.numTaskTypes + vars.leadTask.length + numSpecialTasks; j++) {
+            for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
                 expiredtaskcount[j] += process.getExpired()[j];
                 completedtaskcount[j] += process.getCompleted()[j];
             }

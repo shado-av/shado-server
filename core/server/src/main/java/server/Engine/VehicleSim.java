@@ -122,12 +122,17 @@ public class VehicleSim  {
         double prevTime = leadTask.getArrTime();
         ArrayList<Integer> followedTaskType = vars.followedTask.get(leadTaskType);
 
-        for(int i : followedTaskType){
-            int taskType = (leadTaskType + 1) * 100 + i;
+        if (followedTaskType.isEmpty()) {
+            return;
+        }
+
+        for(int taskType : followedTaskType){
+
             Task newTask = new Task(taskType, prevTime, vars, true);
             if(newTask.getArrTime() < 0) continue;
             newTask.setID(vehicleID);
             indlist.add(newTask);
+
         }
 
     }

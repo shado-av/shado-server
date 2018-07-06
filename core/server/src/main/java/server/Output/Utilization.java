@@ -8,6 +8,9 @@ public class Utilization {
     Double[][][][] utilization; //[operator][replication][task][time];
     Double[][] averageUtilization; //[operator][replication];
 
+
+    public Double[][][][] getUtilization() { return utilization; }
+
     /****************************************************************************
      *
      *	Shado Object:	Utilization
@@ -38,7 +41,7 @@ public class Utilization {
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.numTaskTypes + vars.leadTask.length + 3][numColumn];
+        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
         averageUtilization = new Double[vars.numRemoteOp][vars.numReps];
 
     }

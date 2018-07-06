@@ -75,25 +75,9 @@ public class loadparam {
     public int[]        teamCoordAff;
     public int[]        interruptable;
     public int[]        essential;
+    public int[]        leadTask;
     public ArrayList<ArrayList<Integer>> followedTask;
 
-    //Followed Task Variables
-
-    public int[]        leadTask;
-    public String[]     taskNames_f;
-    public char[][]     arrDists_f;
-    public double[][][] arrPms_f;
-    public char[][]     serDists_f;
-    public double[][][] serPms_f;
-    public char[][]     expDists_f;
-    public double[][][] expPms_f;
-    public int[][]      affByTraff_f;
-    public int[]        teamCoordAff_f;
-    public int[][][]    taskPrty_f; //phase * team * task
-    public int[]        interruptable_f;
-    public int[]        essential_f;
-    public double[][][] humanError_f;
-    public double[][][] ECC_f; //short for "Error Catching Chance"
 
     // Other parameters
     public String[]                     taskName_all;
@@ -103,7 +87,7 @@ public class loadparam {
     public boolean                      hasET = false;
     public int[]                        RemoteOpTasks;
     public int                          replicationTracker;
-    public int currRepnum = 0;
+    public int                          currRepnum = 0;
 
     // Records
     public Replication[]                                reps;
@@ -118,7 +102,6 @@ public class loadparam {
 
     // Operator settings
     public double[][] crossRepCount;
-	public int[][] opNums;
 	public int[][] trigger;
 
 
@@ -135,7 +118,6 @@ public class loadparam {
 	public int processedRepId;
 	public int debugCnt;
 	public int maxTeamSize;
-	public int metaSnapShot;
 
 	
 	/****************************************************************************
@@ -153,15 +135,14 @@ public class loadparam {
     public void setGlobalData(){
 
         getNumRemoteOp();
-        totalTaskType = numTaskTypes + leadTask.length + 3;
+        totalTaskType = numTaskTypes + 3;
         collectTaskNames();
         failTaskCount = new HashMap<>();
-        failedTask = new FailedTask(this, taskName_all);
+        failedTask = new FailedTask(this);
         replicationTracker = 0;
         processedRepId = 0;
         debugCnt = 0;
         maxTeamSize = 0;
-        metaSnapShot = 0;
         allTasksPerRep = new ArrayList<>();
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
@@ -178,17 +159,7 @@ public class loadparam {
         for(int i = 0; i < numReps; i++){
             expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
         }
-        opNums = new int[numTaskTypes][];
 
-        for (int i = 0; i < numTaskTypes; i++){
-            ArrayList<Integer> wha = new ArrayList<Integer>();
-            for (int j = 0; j < numTeams; j++){
-                if (Arrays.asList(opTasks[j]).contains(i)){
-                    wha.add(j);
-                }
-            }
-            opNums[i] = wha.stream().mapToInt(Integer::intValue).toArray();
-        }
         for(int i = 0; i < teamSize.length; i++){
             if(teamSize[i] > maxTeamSize){
                 maxTeamSize = teamSize[i];
@@ -197,17 +168,19 @@ public class loadparam {
         utilizationOutput = new Data[numReps][numRemoteOp];
 
         // create the ET team matrix
-        ETteam = new int[numTaskTypes];
         checkET();
 
         // create the followed task matrx
-        followedTask = new ArrayList<>();
-        for(int i = 0; i < numTaskTypes; i++){
-            ArrayList<Integer> n = new ArrayList<>();
-            followedTask.add(n);
-        }
         checkFollowedTask();
     }
+
+    /****************************************************************************
+     *
+     *	Shado Object:	getNumRemoteOp
+     *
+     *	Purpose:		Compute the total number of operators in all the teams
+     *
+     ****************************************************************************/
 
     private void getNumRemoteOp(){
         numRemoteOp = 0;
@@ -233,11 +206,8 @@ public class loadparam {
             if (i < numTaskTypes) {
                 taskName_all[i] = taskNames[i];
             }
-            else if (i < numTaskTypes + leadTask.length) {
-                taskName_all[i] = taskNames_f[i - numTaskTypes];
-            }
             else {
-                taskName_all[i] = specialTaskName[i - numTaskTypes - leadTask.length];
+                taskName_all[i] = specialTaskName[i - numTaskTypes];
             }
         }
 
@@ -252,6 +222,8 @@ public class loadparam {
      *
      ****************************************************************************/
     private void checkET(){
+
+        ETteam = new int[numTaskTypes];
 
         //set hasET default to false
         for(int i = 0; i < numTaskTypes; i++){
@@ -279,11 +251,19 @@ public class loadparam {
      *
      ****************************************************************************/
     private void checkFollowedTask(){
-        if (leadTask.length > 0){
-            for(int i = 0; i < leadTask.length; i++){
+
+        followedTask = new ArrayList<>();
+        for(int i = 0; i < leadTask.length; i++){
+            ArrayList<Integer> n = new ArrayList<>();
+            followedTask.add(n);
+        }
+
+        for (int i = 0; i < leadTask.length; i++) {
+            if (leadTask[i] >= 0) {
                 followedTask.get(leadTask[i]).add(i);
             }
         }
+
     }
 
 //
