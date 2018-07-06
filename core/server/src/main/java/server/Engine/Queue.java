@@ -25,7 +25,6 @@ public class Queue implements Comparable<Queue>{
 
     public PriorityQueue<Task> taskqueue;
 
-//    public Deque<Task> taskqueue;
 
     // Operator ID.
 
@@ -64,24 +63,14 @@ public class Queue implements Comparable<Queue>{
         return finTime;
     }
 
-    public double getExpectedFinTime(){ return expectedFinTime; }
-
     public int getNumTask() {
         return NumTask;
-    }
-
-    public boolean getStatus() {
-        return isBusy;
     }
 
     // Mutator:
 
     public void SetTime(double Time) {
         this.time = Time;
-    }
-
-    public double getTime(){
-        return this.time;
     }
 
     @Override

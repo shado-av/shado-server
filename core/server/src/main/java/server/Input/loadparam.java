@@ -77,6 +77,7 @@ public class loadparam {
     public int[]        essential;
     public int[]        leadTask;
     public ArrayList<ArrayList<Integer>> followedTask;
+    public int[]        exoType2Aff;
 
 
     // Other parameters

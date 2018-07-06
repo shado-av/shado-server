@@ -468,13 +468,11 @@ public class Replication {
         Task newTask = new Task(taskType, 0, vars, true);
         if (newTask.getArrTime() < 0) return;
         newTask.setTeamType(team);
-//        newTask.opNums[0] = team;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
             newTask = new Task(taskType, newTask.getArrTime(), vars, true);
             newTask.setTeamType(team);
-//            newTask.opNums[0] = team;
             if (newTask.getArrTime() < 0) break;
             indlist.add(newTask);
         }

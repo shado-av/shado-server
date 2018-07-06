@@ -70,11 +70,6 @@ public class Simulation {
         System.out.println("Number of reputations: " + repnumber);
         // Generate overall data field
 
-        //check if it has type 2 exogenous factor (increasing arrival rate)
-        if(vars.hasExogenous[1] == 1){
-            changeArrivalRate(1.1);
-        }
-
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
             operatoroutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
@@ -144,25 +139,6 @@ public class Simulation {
         }
         for (Data each: operatoroutput){
             each.avgdata();
-        }
-    }
-
-
-    /*************************************************************************************
-     *
-     *	Method:			changeArrivalRate
-     *
-     *	Purpose:		Change the overall arrival rate
-     *
-     **************************************************************************************/
-
-    private void changeArrivalRate(Double changeRate){
-        for(int i = 0; i < vars.arrPms.length; i++){
-            for(int j = 0; j < vars.arrPms[0].length; j++){
-                for(int k = 0; k < vars.arrPms[0][0].length; k++){
-                    vars.arrPms[i][j][k] *= changeRate;
-                }
-            }
         }
     }
 

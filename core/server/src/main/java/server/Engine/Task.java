@@ -430,7 +430,7 @@ public class Task implements Comparable<Task> {
 	private double genArrTime(double PrevTime, int type){
 
 		int fleet = vehicleID / 100;
-		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
+		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
 		double TimeTaken;
 
 		//Skip the front phases who have a negative distribution parameter
@@ -461,7 +461,7 @@ public class Task implements Comparable<Task> {
 			else {
 				PrevTime = vars.phaseBegin[newPhase];
 				Phase = newPhase;
-				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
+				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
 				TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
 			}
 
@@ -559,9 +559,14 @@ public class Task implements Comparable<Task> {
 		return;
 	}
 
-	private double[] changeArrivalRate(double num){
+	private double[] changeArrivalRate(double num, int type){
 
 		double[] arrivalRate;
+
+		//check if it has type 2 exogenous factor (increasing arrival rate)
+		if(vars.hasExogenous[1] == 1 && vars.exoType2Aff[type] == 1){
+			num *= 1.1;
+		}
 
 		arrivalRate = new double[vars.arrPms[Phase][Type].length];
 		if(vars.arrDists[Phase][Type] == 'L'){
