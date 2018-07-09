@@ -135,6 +135,11 @@ public class loadparam {
     * */
     public void setGlobalData(){
 
+        // Add special tasks' setting
+
+        expandEssential();
+        expandInterruptable();
+
         getNumRemoteOp();
         totalTaskType = numTaskTypes + 3;
         collectTaskNames();
@@ -174,6 +179,38 @@ public class loadparam {
         // create the followed task matrx
         checkFollowedTask();
     }
+
+    private void expandEssential(){
+
+        int l = essential.length;
+        int[] fullEssential = new int[l + 3];
+        for (int i = 0; i < l; i++){
+            fullEssential[i] = essential[i];
+        }
+        fullEssential[l] = 0;       // team communication task (some)
+        fullEssential[l + 1] = 0;   // team communication task (full)
+        fullEssential[l + 2] = 1;   // exogenous task
+
+        essential = fullEssential;
+
+    }
+
+    private void expandInterruptable(){
+
+        int l = interruptable.length;
+        int[] fullInterruptable = new int[l + 3];
+        for (int i = 0; i < l; i++){
+            fullInterruptable[i] = interruptable[i];
+        }
+        fullInterruptable[l] = 1;       // team communication task (some)
+        fullInterruptable[l + 1] = 1;   // team communication task (full)
+        fullInterruptable[l + 2] = 0;   // exogenous task
+
+        interruptable = fullInterruptable;
+
+    }
+
+
 
     /****************************************************************************
      *

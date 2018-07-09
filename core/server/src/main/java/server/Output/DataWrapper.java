@@ -38,8 +38,8 @@ public class DataWrapper {
 
     public DataWrapper(Simulation o, loadparam param) {
         stdout = System.out;
-//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-        outPutDirectory = "/home/rapiduser/out/";
+        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
+//        outPutDirectory = "/home/rapiduser/out/";
         vars = param;
         sim = o;
     }
@@ -78,6 +78,7 @@ public class DataWrapper {
 
     }
 
+
     /****************************************************************************
      *
      *	Method:     cleanDirectory
@@ -108,6 +109,7 @@ public class DataWrapper {
             validationDir.mkdir();
         }
     }
+
 
     /****************************************************************************
      *
@@ -149,7 +151,6 @@ public class DataWrapper {
         //print failed task count
 
         System.out.println("*** FAILED TASKS ***");
-//            System.out.println("Operator "+ p.getKey().getName()+" Failed: "+p.getValue().getName());
         for (int i = 0; i < vars.numReps; i++) {
             HashMap<Integer, Integer> failCnt = vars.failTaskCount;
             int currFailCnt = failCnt.get(i);
@@ -157,6 +158,7 @@ public class DataWrapper {
         }
 
     }
+
 
     /****************************************************************************
      *
@@ -190,6 +192,7 @@ public class DataWrapper {
             }
         }
     }
+
 
     /****************************************************************************
      *
@@ -233,6 +236,7 @@ public class DataWrapper {
             System.setOut(stdout);
         }
     }
+
 
     /****************************************************************************
      *
@@ -338,32 +342,6 @@ public class DataWrapper {
         return utilization;
     }
 
-    /****************************************************************************
-     *
-     *	Method:     findMinMax
-     *
-     *	Purpose:    Find and print the max & min average utilization
-     *          	across replication
-     *
-     ****************************************************************************/
-
-    //Naixin Yu 07/06/2018
-    private void findMinMax (Double[][] averageUtilization) {
-
-        Double max = averageUtilization[0][0];
-        Double min = averageUtilization[0][0];
-
-        for (Double[] oneOperator : averageUtilization) {
-            for (Double u : oneOperator) {
-                if (u > max) max = u;
-                if (u < min) min = u;
-            }
-        }
-
-        System.out.println("The max average utilization cross replication is " + max);
-        System.out.println("The min average utilization cross replication is " + min);
-
-    }
 
     /****************************************************************************
      *
@@ -404,6 +382,35 @@ public class DataWrapper {
 
     }
 
+
+    /****************************************************************************
+     *
+     *	Method:     findMinMax
+     *
+     *	Purpose:    Find and print the max & min average utilization
+     *          	across replication
+     *
+     ****************************************************************************/
+
+    //Naixin Yu 07/06/2018
+    private void findMinMax (Double[][] averageUtilization) {
+
+        Double max = averageUtilization[0][0];
+        Double min = averageUtilization[0][0];
+
+        for (Double[] oneOperator : averageUtilization) {
+            for (Double u : oneOperator) {
+                if (u > max) max = u;
+                if (u < min) min = u;
+            }
+        }
+
+        System.out.println("The max average utilization cross replication is " + max);
+        System.out.println("The min average utilization cross replication is " + min);
+
+    }
+
+
     /****************************************************************************
      *
      *	Method:     averageAll
@@ -427,6 +434,7 @@ public class DataWrapper {
 
     }
 
+
     /****************************************************************************
      *
      *	Method:     round
@@ -442,6 +450,7 @@ public class DataWrapper {
         long tmp = Math.round(value);
         return (double) tmp / factor;
     }
+
 
 }
 

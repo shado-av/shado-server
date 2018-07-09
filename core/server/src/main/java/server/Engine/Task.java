@@ -8,9 +8,10 @@ import server.Input.loadparam;
  *
  * 	AUTHOR:			ROCKY LI
  *
- * 	LATEST EDIT:	2017/5/24
+ * 	LATEST EDIT:	07/09/2018
  *
- * 	VER: 			1.1
+ * 	VER: 			1.1		Rocky Li
+ * 					2.0		Naixin Yu
  *
  * 	Purpose: 		generate task objects.
  *
@@ -39,7 +40,6 @@ public class Task implements Comparable<Task> {
 	private double waitTime;
 	private double beginTime;
 	private double endTime;
-	public int[] opNums;
 	private String name;
 	private int vehicleID;
 	private boolean expired;
@@ -136,7 +136,6 @@ public class Task implements Comparable<Task> {
 		serTime = t.serTime;
 		expTime = t.expTime;
 		name = t.name;
-//		opNums = t.opNums;
 		repeatTimes = t.repeatTimes + 1;
 	}
 
@@ -154,9 +153,10 @@ public class Task implements Comparable<Task> {
 		Priority = 0;
 		workSchedule = new ArrayList<>();
 		repeatTimes = 0;
+		name = vars.taskName_all[type];
 
 
-		if(type >= 0){
+		if(type < vars.numTaskTypes){
 
 			if (fromPrev == true) {
 				arrTime = genArrTime(PrevTime, Type);
@@ -173,29 +173,28 @@ public class Task implements Comparable<Task> {
 
 			expTime = genExpTime();
 			serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
-//			opNums = vars.opNums[Type];
-			name = vars.taskNames[Type];
 
 		}
 		else{
 
-			if(type == -1){
-				arrTime = PrevTime + Exponential(0.1);
+			expTime = Double.POSITIVE_INFINITY;
+			Priority = 0;
+
+			if(type == vars.numTaskTypes){
+				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
-				name = "Team Coordination Task level some";
 			}
-			else if(type == -2){
-				arrTime = PrevTime + Exponential(0.2);
+			else if(type == vars.numTaskTypes + 1){
+				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
-				name = "Team Coordination Task level full";
 			}
-			else if(type == -3){
-				arrTime = PrevTime + Exponential(0.0021);
+			else if(type == vars.numTaskTypes + 2){
+				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
-				name = "Exogenous Task";
+				Priority = 7;
 			}
 
-			expTime = Double.POSITIVE_INFINITY;
+
 		}
 
 		beginTime = arrTime;
@@ -218,9 +217,8 @@ public class Task implements Comparable<Task> {
 	@Override
 	public int compareTo(Task other){
 
-		if(this.getType() < 0) return 1;
-
-		if(vars.leadTask[this.getType()] >= 0){ //the followed task should always behind the lead task
+		//the followed task should always behind the lead task
+		if(this.getType() < vars.numTaskTypes && vars.leadTask[this.getType()] >= 0){
 			int leadType = vars.leadTask[this.getType()];
 			if(other.getType() == leadType){
 				if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
@@ -232,10 +230,16 @@ public class Task implements Comparable<Task> {
 		}
 
 		// If the old task cannot be interrupted
-		if(vars.interruptable[other.getType()] == 0 || vars.essential[other.getType()] == 1) return 1;
+		if(vars.interruptable[other.getType()] == 0 || vars.essential[other.getType()] == 1)
+			return 1;
 
 		// If the new task is essential task, which can interrupt any other task
-		if(vars.essential[this.getType()] == 1) return -1;
+		if(vars.essential[this.getType()] == 1)
+			return -1;
+
+		// If the new task is one of the special tasks
+		if(this.getType() >= vars.numTaskTypes)
+			return 1;
 
 		if(vars.opStrats[teamType].equals("PRTY")){
 			if(other.Priority > this.Priority) return 1;
@@ -320,6 +324,31 @@ public class Task implements Comparable<Task> {
 
 	/****************************************************************************
 	 *
+	 *	Method:			genTime
+	 *
+	 *	Purpose:		Generate a new time with the specified type and vars.
+	 *
+	 ****************************************************************************/
+
+	private double GenTime (char type, double[] param){
+		switch (type){
+			case 'E':
+				return Exponential(param[0]);
+			case 'L':
+				return Lognormal(param[0], param[1]);
+			case 'U':
+				return Uniform(param[0], param[1]);
+			case 'T':
+				return Triangular(param[0], param[1], param[2]);
+			case 'C':
+				return param[0];
+			default:
+				throw new IllegalArgumentException("Wrong Letter");
+		}
+	}
+
+	/****************************************************************************
+	 *
 	 *	Method:			Exponential
 	 *
 	 *	Purpose:		Return an exponential distributed random number with input
@@ -394,30 +423,7 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
-	/****************************************************************************
-	 *
-	 *	Method:			genTime
-	 *
-	 *	Purpose:		Generate a new time with the specified type and vars.
-	 *
-	 ****************************************************************************/
 
-	private double GenTime (char type, double[] param){
-		switch (type){
-			case 'E':
-				return Exponential(param[0]);
-			case 'L':
-				return Lognormal(param[0], param[1]);
-			case 'U':
-				return Uniform(param[0], param[1]);
-			case 'T':
-				return Triangular(param[0], param[1], param[2]);
-			case 'C':
-				return param[0];
-			default:
-				throw new IllegalArgumentException("Wrong Letter");
-		}
-	}
 
 	/****************************************************************************
 	 *
@@ -501,7 +507,7 @@ public class Task implements Comparable<Task> {
 			}
 
 			traffLevel = vars.traffic[currHour];
-			TimeToAdj = (currHour + 1)*60 - currTime;
+			TimeToAdj = (currHour + 1) * 60 - currTime;
 			adjTime = TimeToAdj * traffLevel;
 
 		}
@@ -556,7 +562,6 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 	public void changeServTime(double num){
 		serTime *= num;
-		return;
 	}
 
 	private double[] changeArrivalRate(double num, int type){

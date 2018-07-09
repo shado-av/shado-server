@@ -86,7 +86,7 @@ public class Replication {
         ArrayList<Operator> working = new ArrayList<>(proc.size());
 
 
-        if(task.getType() == -1 || task.getType() == -2){  // team coordination task, which can only be handled within certain team
+        if(task.getType() == vars.numTaskTypes || task.getType() == vars.numTaskTypes + 1){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
                 task.changeServTime(0.5);
@@ -99,7 +99,7 @@ public class Replication {
                 }
             }
         }
-        else if(task.getType() == -3 || task.getType() > vars.numTaskTypes){ // exogenous task and followed tasks can be handled by all the operator
+        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task and followed tasks can be handled by all the operator
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
                 proc.add(remoteOps.getRemoteOp()[j].getQueue());
                 working.add(remoteOps.getRemoteOp()[j]);
@@ -135,7 +135,7 @@ public class Replication {
 
         // TODO: apply AI on followed tasks
         double errorChangeRate = 1;
-        if(task.getType() > 0 && task.getType() < vars.numTaskTypes) {
+        if(task.getType() < vars.numTaskTypes) {
 
             //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
             if (!optimal_op.getQueue().taskqueue.isEmpty()) {
@@ -152,13 +152,14 @@ public class Replication {
             //check team communication, change the serve time and error rate
             task.changeServTime(getTeamComm(optimal_op.dpID));
             errorChangeRate *= getTeamComm(optimal_op.dpID);
+
+            // assign task priority according to phase, team and task type
+            task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
         }
 
         // check if the task is failed
         failTask(optimal_op, task, errorChangeRate);
 
-        // assign task priority according to phase, team and task type
-        task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
         task.setTeamType(optimal_op.dpID / 100);
         optimal_op.getQueue().add(task);
 
@@ -207,7 +208,7 @@ public class Replication {
         double errorCatching;
         int affByTeamCoord;
 
-        if (taskType < 0) {
+        if (taskType > vars.numTaskTypes) {
             //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
             humanErrorRate = new double[3];
             humanErrorRate[0] = 0.002;
@@ -215,7 +216,6 @@ public class Replication {
             humanErrorRate[2] = 0.004;
             errorCatching = 0.5;
             affByTeamCoord = 0;
-            taskType = vars.numTaskTypes + vars.leadTask.length - taskType - 1;
         }
         else {
             humanErrorRate = vars.humanError[Phase][taskType];
@@ -460,9 +460,9 @@ public class Replication {
 
     private void genTeamCommTask(char level, int team){
 
-        int taskType = -1;
-        if(level == 'S') taskType = -1;
-        if(level == 'F') taskType = -2;
+        int taskType = vars.numTaskTypes;
+        if(level == 'S') taskType = vars.numTaskTypes;
+        if(level == 'F') taskType = vars.numTaskTypes + 1;
 
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true);
@@ -492,7 +492,7 @@ public class Replication {
      ****************************************************************************/
 
     private void genExoTask(){
-        int taskType = -3;
+        int taskType = vars.numTaskTypes + 2;
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true);
         if(newTask.getArrTime() < 0) return;
