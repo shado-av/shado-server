@@ -23,6 +23,7 @@ import server.Engine.Shado;
 
 import javax.servlet.http.HttpServletResponse;
 
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class GreetingController {
 
@@ -40,8 +41,6 @@ public class GreetingController {
         return new Greeting(counter.incrementAndGet(),
                 String.format(template, name));
     }
-
-    @CrossOrigin
 
     @RequestMapping(value= "/shado/testpost",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{

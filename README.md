@@ -4,7 +4,7 @@ SHADO-server web service is built on Java Spring Boot.
 Spring Boot Tutorial: https://spring.io/guides/gs/spring-boot/
 
 ### Build the project locally
-To Run the Simulation locally, Go to **DataWrapper.java, ProcRep.Java, GreetingController.java** and comment out all remote server path and uncommen local path.
+To Run the Simulation locally, Go to **DataWrapper.java, GreetingController.java** and comment out all remote server paths, uncommen local paths and change the local path to your current directory.
 
 ```
    //String summary_file_name =   "/home/rapiduser/shado-server/core/server/out/Summary/" + "Workload_Summary.csv"; 
@@ -22,7 +22,7 @@ To Deploy the service in a server. You should use systemd to let the program run
 
 Use:
 ```
-mvn package
+./mvnw package
 ```
 to get a .jar runnable and clone/pull the repo in to the server.
 
@@ -33,7 +33,10 @@ sudo systemctl start shado_server.service
 ```
 ### Test the SHADO-server
 
-There is simple webapp that can test basic posting function in the backend. http://apps.hal.pratt.duke.edu/shado-web-simple/index.html
+There is a website that can be used to interact with this server running backend. Here is the link: https://shado-av.github.io/shado-webdev/
+
+If you prefer to use your own JSON file as input, please go to this website: http://apps.hal.pratt.duke.edu/shado-webdev/sim-test.html. In this website, you can use the "Choose File" button to upload your own JSON input, then hit the "Run Simulation" button to run the server. A few result download options will appear after the simulation success. 
+If you want a more compact utilization report, please use this link to download it: http://apps.hal.pratt.duke.edu:8080/shado/validation
 
 If you are more comfortable with command line:
 Try:
@@ -43,6 +46,7 @@ curl -H POST http://localhost:8080/shado/testpost -d @shadovar.json \
 ```
 (Remember to substitue the **"localhost** to your server's URL) 
 To post and you can see the message and session number returned by the server.
+
 
 ### Project Structure
 
