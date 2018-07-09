@@ -25,6 +25,7 @@ public class Queue implements Comparable<Queue>{
 
     public PriorityQueue<Task> taskqueue;
 
+
     // Operator ID.
 
     public Operator operator;
@@ -62,24 +63,14 @@ public class Queue implements Comparable<Queue>{
         return finTime;
     }
 
-    public double getExpectedFinTime(){ return expectedFinTime; }
-
     public int getNumTask() {
         return NumTask;
-    }
-
-    public boolean getStatus() {
-        return isBusy;
     }
 
     // Mutator:
 
     public void SetTime(double Time) {
         this.time = Time;
-    }
-
-    public double getTime(){
-        return this.time;
     }
 
     @Override
@@ -96,11 +87,22 @@ public class Queue implements Comparable<Queue>{
      ****************************************************************************/
 
     public Queue(Operator op) {
-        taskqueue = new PriorityQueue<Task>();
+
+        taskqueue = new PriorityQueue<>();
         time = 0;
         finTime = Double.POSITIVE_INFINITY;
         this.operator = op;
         expectedFinTime = 0;
+        numtask();
+
+    }
+
+    @Override
+    public String toString() {
+        System.out.println("My queue has " + getNumTask() + " tasks: ");
+        printQueue();
+//        if(!taskqueue.isEmpty()) System.out.println("The top task is " + taskqueue.peek().toString());
+        return "The time is " + time + " , the finTime is " + finTime;
     }
 
     /****************************************************************************
@@ -117,17 +119,22 @@ public class Queue implements Comparable<Queue>{
 
         SetTime(task.getArrTime());
         setExpectedFinTime(task);
-        if (!taskqueue.isEmpty()) {
-            if (task.getPriority() > taskqueue.peek().getPriority()) {
+
+        if(!taskqueue.isEmpty()){
+            if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
+//                System.out.println("In queue.add, the on hand task is interrupted.");
+                taskqueue.peek().addInterruptTime(time);
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
             }
         }
+
         taskqueue.add(task);
 
         // If the task is processed as first priority, i.e. began immediately, then:
 
         if (taskqueue.peek().equals(task)) {
             taskqueue.peek().setBeginTime(time);
+            taskqueue.peek().addBeginTime(time);
             finTime();
         }
 
@@ -135,6 +142,7 @@ public class Queue implements Comparable<Queue>{
         // except numTask.
         numtask();
     }
+
 
     /****************************************************************************
      *
@@ -147,14 +155,6 @@ public class Queue implements Comparable<Queue>{
 
     public void done(loadparam vars,Operator op) {
 
-
-        //NEW FEATURE OPERATOR STRATEGIES
-        if(vars.opStrats.equals("STF")){
-            //TODO[COMPLETED]: STF and Wait time
-            //Sort the current queue under STF
-            sortTaskQueueOnServTime();
-        }
-
         // This if statement avoids error when calling done on an empty queue.
 
         if (taskqueue.peek() != null) {
@@ -162,17 +162,34 @@ public class Queue implements Comparable<Queue>{
             // Set the end time of the task being finished.
 
             taskqueue.peek().setEndTime(finTime);
-            taskqueue.peek().setQueue(NumTask);
-            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
+            taskqueue.peek().addInterruptTime(finTime);
+            taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
+
+//            taskqueue.peek().printBasicInfo();
+
+            Task currentTask = taskqueue.peek();
 
             // Remove the finished task from the queue and put it into record task list.
             recordtasks.add(taskqueue.poll());
+
             // Renew the queue time.
             SetTime(finTime);
+
+            if(currentTask.getNeedReDo()){
+                Task redoTask = new Task(currentTask);
+                redoTask.setArrTime(finTime);
+//                System.out.print("Add the task " + redoTask.getName() + " arrive at " + redoTask.getArrTime() + " back to queue to redo ");
+//                System.out.println("task " + currentTask.getName() + " arrive at " + currentTask.getArrTime());
+                add(redoTask);
+            }
+
+//            System.out.println("Now " + toString());
+
         }
 
         // If there are ANOTHER task in the queue following the completion of this one:
 
+        //Remove all the expired tasks
         while (taskqueue.peek() != null) {
 
             if (taskqueue.peek().getExpTime() > time) {
@@ -180,8 +197,19 @@ public class Queue implements Comparable<Queue>{
             }
 
             // Add expired tasks to the record
-
             taskqueue.peek().setexpired();
+
+            int taskType = taskqueue.peek().getType();
+            if (taskType < 0) {
+                taskType = vars.numTaskTypes + vars.leadTask.length - taskType - 1;
+            }
+            else if (taskType > vars.numTaskTypes) {
+                taskType = taskType % 100 + vars.numTaskTypes;
+            }
+
+            vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
+
+//            System.out.println("The task " + taskqueue.peek().getName() + " arrive at " + taskqueue.peek().getArrTime() + " is expired.");
             vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 
@@ -189,10 +217,11 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() != null) {
 
-            // Set the beginTime of the Task in question to now, i.e. begin working on this task.
+            // Set the beginTime of the Task in queue to now, i.e. begin working on this task.
 
             taskqueue.peek().setBeginTime(time);
-            taskqueue.peek().setWaitTime(taskqueue.peek().getArrTime()-taskqueue.peek().getBeginTime());
+            taskqueue.peek().addBeginTime(time);
+//            taskqueue.peek().setWaitTime(taskqueue.peek().getArrTime()-taskqueue.peek().getBeginTime());
 
         }
 
@@ -203,7 +232,6 @@ public class Queue implements Comparable<Queue>{
         // Generate a new numTask for the Queue.
 
         numtask();
-
     }
 
 
@@ -222,7 +250,6 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() == null) {
             finTime = Double.POSITIVE_INFINITY;
-//            finTime = 0;
         }
 
         // Otherwise grab the current task and return a finish time.
@@ -230,11 +257,6 @@ public class Queue implements Comparable<Queue>{
         else {
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
-            // Error checker
-
-//            System.out.println(onhand.getArrTime() + "\t" + onhand.getName() + "\t" +
-//            onhand.getBeginTime() + "\t" + onhand.getEndTime());
-
         }
     }
 
@@ -257,23 +279,6 @@ public class Queue implements Comparable<Queue>{
         }
     }
 
-    private void sortTaskQueueOnServTime(){
-
-        ArrayList<Task> tmpTaskQueue = new ArrayList<>();
-        PriorityQueue<Task> newQueue = new PriorityQueue<>();
-        for(Task t: this.taskqueue){
-            tmpTaskQueue.add(t);
-        }
-
-        Collections.sort(tmpTaskQueue,(o1, o2) -> Double.compare(o1.getSerTime(), o2.getSerTime()));
-
-        for(Task t: tmpTaskQueue){
-            newQueue.add(t);
-        }
-        this.taskqueue = newQueue;
-
-    }
-
     private void setExpectedFinTime(Task task){
         if(taskqueue.isEmpty()){
             expectedFinTime = task.getArrTime()+task.getSerTime();
@@ -289,5 +294,13 @@ public class Queue implements Comparable<Queue>{
         }
     }
 
+    private void printQueue(){
+        Iterator<Task> it = taskqueue.iterator();
+        while (it.hasNext()) {
+            Task t = it.next();
+            System.out.print(t.getName() + "(" + t.getArrTime() + ")--");
+        }
+        System.out.println(" ");
+    }
 
 }

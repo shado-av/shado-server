@@ -1,26 +1,25 @@
 package server.Engine;
 
-import org.apache.tomcat.util.http.fileupload.FileUtils;
+
 import server.Input.FileWizard;
 import server.Input.loadparam;
 import server.Output.*;
-//import Output.OutputTest;
+
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.zip.ZipOutputStream;
 
 
 /***************************************************************************
  * 	FILE: 			Shado.java
  *
- * 	AUTHOR: 		ROCKY LI
- * 	LATEST_EDIT:	2017/9/12
+ * 	AUTHOR: 		ROCKY LI, Naixin Yu
+ * 	LATEST_EDIT:	07/06/2018
  *
- * 	VER: 			1.2
+ * 	VER: 			2.0
  * 	Purpose: 		Entry point.
  **************************************************************************/
 
@@ -41,6 +40,7 @@ public class Shado{
         loadparam data = new loadparam();
         Parser parser = new Parser(inputJson);
         data = parser.parseJSON(data);
+
 //        loadparam txtData;
 //        try {
 //             txtData = new loadparam("../in/params.txt");
@@ -48,7 +48,6 @@ public class Shado{
 //        }catch (FileNotFoundException e){
 //            System.err.println("ERROR: Cannot find local txt file!");
 //        }
-//		SCHEN 11/10/17 Test for Reading Fleet Hetero
 
 //        printBasicInfo(data);
 
@@ -56,22 +55,17 @@ public class Shado{
 		// Runs simulation
 		Simulation sim = new Simulation(data);
 
-		String directoryName = rootDirectory + "repCSV/";
-
-        File directory = new File(directoryName);
-        FileUtils.cleanDirectory(directory);
-
 		sim.run();
 		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
 		// Generate Output
 		DataWrapper analyze = new DataWrapper(sim, data);
-		analyze.testOutput();
+		analyze.outputReports();
 
 		//Zipping file and return for simple web service
 		zipOutput(rootDirectory + "repCSV");
 		zipOutput(rootDirectory + "Summary");
-//        System.out.println("SIMULATION DONE");
+		zipOutput(rootDirectory + "validation");
 
     }
 
@@ -90,19 +84,5 @@ public class Shado{
             System.err.println("I/O Error: " + ex);
         }
     }
-
-	private static void printBasicInfo(loadparam data){
-		System.out.println("FleetHetero: "+ Arrays.deepToString(data.fleetHetero));
-		System.out.println("Fleet Types: "+ data.fleetTypes);
-		System.out.println("numvehicles: "+ Arrays.toString(data.numvehicles));
-		System.out.println("autoLevel: "+ data.autolvl);
-		System.out.println("team Communication: "+ Arrays.toString(data.teamComm));
-		System.out.println("hasExo: "+ Arrays.toString(data.hasExogenous));
-		System.out.println("exNames: "+ Arrays.toString(data.exNames));
-		System.out.println("exTypes: "+ Arrays.toString(data.exTypes));
-		System.out.println("Total Number of Remote Ops: "+ data.teamSizeTotal);
-		System.out.println("Remote Ops taskType"+ Arrays.deepToString(data.opTasks));
-		System.out.println("Human Error Input: "+ Arrays.deepToString(data.humanError));
-	}
 
 }

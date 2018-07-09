@@ -8,6 +8,9 @@ public class Utilization {
     Double[][][][] utilization; //[operator][replication][task][time];
     Double[][] averageUtilization; //[operator][replication];
 
+
+    public Double[][][][] getUtilization() { return utilization; }
+
     /****************************************************************************
      *
      *	Shado Object:	Utilization
@@ -23,21 +26,22 @@ public class Utilization {
      ****************************************************************************/
 
     public Utilization (loadparam vars){
+
+        taskName = vars.taskName_all;
+
         // get operators' name
         operatorName = new String[vars.numRemoteOp];
-        for(int i = 0; i < vars.numRemoteOp; i++){
-            operatorName[i] = vars.reps[0].getRemoteOp().getRemoteOp()[i].getName();
-        }
-
-        //get tasks' name
-        taskName = new String[vars.numTaskTypes];
-        for(int i = 0; i < vars.numTaskTypes; i++){
-            taskName[i] = vars.taskNames[i];
+        int count = 0;
+        for (int i = 0; i < vars.opNames.length; i++) {
+            for (int j = 0; j < vars.teamSize[i]; j++) {
+                operatorName[count] = vars.opNames[i] + "_" + Integer.toString(j);
+                count++;
+            }
         }
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.numTaskTypes][numColumn];
+        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
         averageUtilization = new Double[vars.numRemoteOp][vars.numReps];
 
     }

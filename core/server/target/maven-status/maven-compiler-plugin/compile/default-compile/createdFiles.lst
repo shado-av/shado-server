@@ -11,6 +11,7 @@ server/Output/JasonBuilder.class
 server/Input/FileWizard.class
 server/shadoParam.class
 server/Input/loadparam.class
+server/Output/FailedTask.class
 server/Output/Utilization.class
 server/Engine/Replication.class
 server/Engine/Shado.class

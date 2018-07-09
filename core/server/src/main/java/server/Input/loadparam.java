@@ -4,6 +4,7 @@ import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
 import javafx.util.Pair;
+import server.Output.FailedTask;
 
 import java.io.*;
 import java.util.*;
@@ -27,75 +28,85 @@ import java.util.*;
 
 public class loadparam {
 	
-	// General input variables
-	public String outputPath;
-	public double numHours;
-    public double[] traffic;
-    public int numReps;
-    public int[] numvehicles;
+	// Global input variables
+	public double       numHours;
+    public double[]     traffic;
+    public int          numReps;
+    public int          numPhases;
+    public double[]     phaseBegin;
+    public int []       hasExogenous;
 
-    public int numRemoteOp;
-    public Replication[] reps;
-    public int[] RemoteOpTasks;
-    public HashMap<Integer,ArrayList> rep_failTask;
-    public HashMap<Integer,Integer> failTaskCount;
-    public int replicationTracker;
+    // Team Variables
+    public int          numTeams;
+    public int[]        teamSize;
+    public String[]     opNames;
+    public String[]     opStrats;
+    public int[][]      opTasks;
+    public int[][][]    taskPrty; //phase * team * task
+    public char[]       teamComm;
+    public double[][][] humanError;
+    public double[][][] ECC; //short for "Error Catching Chance"
 
-    //SCHEN 12/4/17 Fleet Autonomy level param
-	// None-> default,
-	// Some ->70%
-	// Full-> 30%
+    //AIDA Variables
+    public int[][]      AIDAtype;
+    public double[]     ETServiceTime;
+    public double[]     ETErrorRate;
+    public double[]     ETFailThreshold;
+    public int[][]      IAtasks;
+    public char[]       IALevel;
+    public char[]       TCALevel;
 
-	public int autolvl;
-	public int [] hasExogenous;
-	public String opStrats;
-	public double failThreshold;
+    // Fleet Variables
+    public int          fleetTypes;
+    public int[]        numvehicles;
+    public char[]       autolvl;
+    public int[][]      fleetHetero;
 
-	// SCHEN 11/10/17 Fleet heterogeneity
-	public int fleetTypes;
-	public int[][] fleetHetero;
-	public int[] fleetAuto;
+    // Task Variables
+    public int          numTaskTypes;
+    public String[]     taskNames;
+    public char[][]     arrDists;
+    public double[][][] arrPms;
+    public char[][]     serDists;
+    public double[][][] serPms;
+    public char[][]     expDists;
+    public double[][][] expPms;
+    public int[][]      affByTraff;
+    public int[]        teamCoordAff;
+    public int[]        interruptable;
+    public int[]        essential;
+    public int[]        leadTask;
+    public ArrayList<ArrayList<Integer>> followedTask;
+    public int[]        exoType2Aff;
 
-	//SCHEN 12/10/17 Team Corrdination
-	public String[] exNames;
-	public String[] exTypes;
+
+    // Other parameters
+    public String[]                     taskName_all;
+    public int                          totalTaskType;
+    public int                          numRemoteOp;
+    public int[]                        ETteam; //which team has ET for this task type
+    public boolean                      hasET = false;
+    public int[]                        RemoteOpTasks;
+    public int                          replicationTracker;
+    public int                          currRepnum = 0;
+
+    // Records
+    public Replication[]                                reps;
+    public HashMap<Integer,ArrayList>                   rep_failTask;
+    public FailedTask                                   failedTask;
+    public HashMap<Integer,Integer>                     failTaskCount;
+    public Data[][]                                     utilizationOutput;   //utilization[numRep][numOperator]
+    public ArrayList<ArrayList<Task>>                   allTasksPerRep;
+    public ArrayList<Task>                              AITasks;
+    public ArrayList<ArrayList<Pair<Operator,Task>>>    expiredTasks;
 
 
     // Operator settings
-	public int teamSizeTotal;
-	public String[] opNames;
-	public int[][] opTasks;
-
-    public int numTeams;
-    public char[] teamComm;
-    public int[] teamSize;
     public double[][] crossRepCount;
-
-	// Task Settings
-	public int numTaskTypes;
-    public String[] taskNames;
-    public int[][] taskPrty;
-    public char[] arrDists;
-    public double[][] arrPms;
-    public char[] serDists;
-    public double[][] serPms;
-    public char[] expDists;
-   	public double[][] expPmsLo;
-    public double[][] expPmsHi;
-	public int[][] affByTraff;
-	public int[][] opNums;
 	public int[][] trigger;
 
-	//SCHEN 12/10/17 Added: whether the task is affected by team coordination
-	public int[] teamCoordAff;
-	// Adding isLinked
-    public int numPhases;
-	public int[] linked;
-	public double[][] humanError;
 
 	// Toggle Global Variables
-    //If there is exogenous factor that add tasks to the queue
-	public static boolean exAddTask = false;
 	public static boolean TRAFFIC_ON = true;
 	public static boolean FATIGUE_ON = true;
 	public static boolean DEBUG_ON = false;
@@ -103,19 +114,12 @@ public class loadparam {
 	public static boolean RAND_RUN_ON = true;
 
 	//SCHEN 11/15/17 test separated replication
-	public int currRepnum = 0;
-	public ArrayList<ArrayList<Pair<Operator,Task>>> expiredTasks;
 	public double[][][] repUtilOp;
 	public int[] repNumTasks;
 	public int processedRepId;
 	public int debugCnt;
 	public int maxTeamSize;
-	public int metaSnapShot;
 
-	//Naixin 05/21/18 to record the utilization
-    //utilization[numRep][numOperator]
-    public Data[][] utilizationOutput;
-    public ArrayList<Task> allTasks;
 	
 	/****************************************************************************
 	*																			
@@ -130,12 +134,22 @@ public class loadparam {
     * Set Global data after reading from JSON
     * */
     public void setGlobalData(){
+
+        // Add special tasks' setting
+
+        expandEssential();
+        expandInterruptable();
+
+        getNumRemoteOp();
+        totalTaskType = numTaskTypes + 3;
+        collectTaskNames();
         failTaskCount = new HashMap<>();
+        failedTask = new FailedTask(this);
         replicationTracker = 0;
         processedRepId = 0;
         debugCnt = 0;
         maxTeamSize = 0;
-        metaSnapShot = 0;
+        allTasksPerRep = new ArrayList<>();
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
 		//Utilization for each type of operator across replications
@@ -151,30 +165,145 @@ public class loadparam {
         for(int i = 0; i < numReps; i++){
             expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
         }
-        teamSizeTotal = numRemoteOp;
-        opNums = new int[numTaskTypes][];
 
-        //Has exo-factors
-        int numExos = hasExogenous[1];
-        if(numExos == 2){
-            exAddTask = true;
-        }
-        for (int i = 0; i < numTaskTypes; i++){
-            ArrayList<Integer> wha = new ArrayList<Integer>();
-            for (int j = 0; j < numTeams; j++){
-                if (Arrays.asList(opTasks[j]).contains(i)){
-                    wha.add(j);
-                }
-            }
-            opNums[i] = wha.stream().mapToInt(Integer::intValue).toArray();
-        }
         for(int i = 0; i < teamSize.length; i++){
             if(teamSize[i] > maxTeamSize){
                 maxTeamSize = teamSize[i];
             }
         }
         utilizationOutput = new Data[numReps][numRemoteOp];
+
+        // create the ET team matrix
+        checkET();
+
+        // create the followed task matrx
+        checkFollowedTask();
     }
+
+    private void expandEssential(){
+
+        int l = essential.length;
+        int[] fullEssential = new int[l + 3];
+        for (int i = 0; i < l; i++){
+            fullEssential[i] = essential[i];
+        }
+        fullEssential[l] = 0;       // team communication task (some)
+        fullEssential[l + 1] = 0;   // team communication task (full)
+        fullEssential[l + 2] = 1;   // exogenous task
+
+        essential = fullEssential;
+
+    }
+
+    private void expandInterruptable(){
+
+        int l = interruptable.length;
+        int[] fullInterruptable = new int[l + 3];
+        for (int i = 0; i < l; i++){
+            fullInterruptable[i] = interruptable[i];
+        }
+        fullInterruptable[l] = 1;       // team communication task (some)
+        fullInterruptable[l + 1] = 1;   // team communication task (full)
+        fullInterruptable[l + 2] = 0;   // exogenous task
+
+        interruptable = fullInterruptable;
+
+    }
+
+
+
+    /****************************************************************************
+     *
+     *	Shado Object:	getNumRemoteOp
+     *
+     *	Purpose:		Compute the total number of operators in all the teams
+     *
+     ****************************************************************************/
+
+    private void getNumRemoteOp(){
+        numRemoteOp = 0;
+        for(int i : teamSize){
+            numRemoteOp += i;
+        }
+    }
+
+    /****************************************************************************
+     *
+     *	Shado Object:	collectTaskNames
+     *
+     *	Purpose:		Put the task name, followed task name, TC task name and
+     *              	Exogenous task name into one matrix.
+     *
+     ****************************************************************************/
+
+    private void collectTaskNames(){
+
+        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
+        taskName_all = new String[totalTaskType];
+        for (int i = 0; i < totalTaskType; i++) {
+            if (i < numTaskTypes) {
+                taskName_all[i] = taskNames[i];
+            }
+            else {
+                taskName_all[i] = specialTaskName[i - numTaskTypes];
+            }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Shado Object:	checkET
+     *
+     *	Purpose:		Build the checkET matrix to record the Equal Teammate AIDA
+     *                  for each task.
+     *
+     ****************************************************************************/
+    private void checkET(){
+
+        ETteam = new int[numTaskTypes];
+
+        //set hasET default to false
+        for(int i = 0; i < numTaskTypes; i++){
+            ETteam[i] = -1;
+        }
+
+        for(int team = 0; team < numTeams; team++){
+            //if this team has equal teammate AIDA
+            if(AIDAtype[team][0] == 1){
+                hasET = true;
+                for(int i : opTasks[team]) {
+                    ETteam[i] = team;
+                }
+            }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Shado Object:	checkFollowedTask
+     *
+     *	Purpose:		Build the followedTask matrix to record the followed tasks'
+     *                  type for each task.
+     *
+     ****************************************************************************/
+    private void checkFollowedTask(){
+
+        followedTask = new ArrayList<>();
+        for(int i = 0; i < leadTask.length; i++){
+            ArrayList<Integer> n = new ArrayList<>();
+            followedTask.add(n);
+        }
+
+        for (int i = 0; i < leadTask.length; i++) {
+            if (leadTask[i] >= 0) {
+                followedTask.get(leadTask[i]).add(i);
+            }
+        }
+
+    }
+
 //
 //	public loadparam(String file) throws FileNotFoundException{
 //

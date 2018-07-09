@@ -19,8 +19,6 @@ import server.Input.loadparam;
 
 public class Operator {
 
-	public int opId;
-
 	public int dpID;
 
 	public String name;
@@ -28,8 +26,6 @@ public class Operator {
 	public int[] taskType;
 
 	private Queue myQueue;
-
-	private loadparam vars;
 
 	// Inspector
 
@@ -39,7 +35,8 @@ public class Operator {
 
 	public String getName(){return this.name;}
 
-
+	@Override
+	public String toString() { return "This is " + name; }
 
 	/****************************************************************************
 	 *
@@ -52,9 +49,10 @@ public class Operator {
 	public Operator(int dpid, String name,int[] task) {
 
 		taskType = task;
-		this.name =  name +" " + Integer.toString(dpid%10);
+		this.name =  name +" " + Integer.toString(dpid%100);
 		dpID = dpid;
 		myQueue = new Queue(this);
 
 	}
+
 }
