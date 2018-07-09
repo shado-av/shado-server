@@ -200,12 +200,6 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().setexpired();
 
             int taskType = taskqueue.peek().getType();
-            if (taskType < 0) {
-                taskType = vars.numTaskTypes + vars.leadTask.length - taskType - 1;
-            }
-            else if (taskType > vars.numTaskTypes) {
-                taskType = taskType % 100 + vars.numTaskTypes;
-            }
 
             vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
 
@@ -221,7 +215,6 @@ public class Queue implements Comparable<Queue>{
 
             taskqueue.peek().setBeginTime(time);
             taskqueue.peek().addBeginTime(time);
-//            taskqueue.peek().setWaitTime(taskqueue.peek().getArrTime()-taskqueue.peek().getBeginTime());
 
         }
 

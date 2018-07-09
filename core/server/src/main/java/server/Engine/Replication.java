@@ -208,7 +208,7 @@ public class Replication {
         double errorCatching;
         int affByTeamCoord;
 
-        if (taskType > vars.numTaskTypes) {
+        if (taskType >= vars.numTaskTypes) {
             //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
             humanErrorRate = new double[3];
             humanErrorRate[0] = 0.002;
