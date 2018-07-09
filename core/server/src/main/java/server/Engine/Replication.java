@@ -117,8 +117,11 @@ public class Replication {
             }
         }
 
-        if(working.size()==0)
+        if (working.size()==0) {
+            task.setexpired();
+//            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][op][task.getType()][0]++;
             return;
+        }
 
         //SCHEN 2/7 Fix: to get the shortest Queue of Operators
         Operator optimal_op = working.get(0);

@@ -50,4 +50,13 @@ public class FailedTask {
     public int[][][][][] getNumFailedTask() {
         return numFailedTask;
     }
+
+    @Override
+    public String toString() {
+        System.out.println("1. # replications: " + numFailedTask.length);
+        System.out.println("2. # phases: " + numFailedTask[0].length);
+        System.out.println("3. # team: " + numFailedTask[0][0].length);
+        System.out.println("4. # task: " + numFailedTask[0][0][0].length);
+        return " ";
+    }
 }

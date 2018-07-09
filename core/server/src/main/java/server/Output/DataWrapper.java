@@ -65,8 +65,8 @@ public class DataWrapper {
         Utilization u = printUtilization();
         FailedTask f = vars.failedTask;
 
-        JasonBuilder builderUtilization = new JasonBuilder(outPutDirectory, u, f);
-        builderUtilization.outputJSON();
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, f);
+        builder.outputJSON();
 
 
         //Out put the report files
@@ -76,6 +76,27 @@ public class DataWrapper {
         printTaskRecord();
         printValidationReport(u.getUtilization());
 
+        testHumanError();
+
+    }
+
+    private void testHumanError() throws IOException{
+
+        String file_name = outPutDirectory + "humanError" + ".csv";
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(file_name, false)), true));
+
+        System.out.println("ErrorRate");
+
+        HashMap<Integer, Integer> failCnt = vars.failTaskCount;
+
+        for (int i = 0; i < vars.numReps; i++) {
+            double failedTasks = failCnt.get(i);
+            double generatedTasks = vars.repNumTasks[i];
+            System.out.println(failedTasks / generatedTasks);
+        }
+
+        System.setOut(stdout);
     }
 
 
@@ -157,6 +178,7 @@ public class DataWrapper {
             System.out.println("In Replication " + i + ": " + "Number of Fail Tasks: " + currFailCnt);
         }
 
+        System.setOut(stdout);
     }
 
 
@@ -191,6 +213,8 @@ public class DataWrapper {
                 System.out.println();
             }
         }
+
+        System.setOut(stdout);
     }
 
 

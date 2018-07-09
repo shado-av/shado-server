@@ -194,6 +194,12 @@ public class Task implements Comparable<Task> {
 				Priority = 7;
 			}
 
+			Phase = getPhase(arrTime);
+			if (Phase == vars.numPhases) {
+				arrTime = -1;
+				return;
+			}
+
 
 		}
 
