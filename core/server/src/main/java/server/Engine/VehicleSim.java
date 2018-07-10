@@ -11,9 +11,10 @@ import javafx.util.Pair;
  *
  * 	AUTHOR: 		ROCKY LI
  *
- * 	DATA:			2017/6/2
+ * 	DATA:			07/09/2018
  *
  * 	VER: 			1.0
+ * 	                2.0     Naixin Yu
  *
  * 	Purpose: 		Create and manage the simulation of a single vehicle.
  *
@@ -27,11 +28,6 @@ public class VehicleSim  {
     public loadparam vars;
 
     public Operator[] operators;
-
-    public Operator[] RemoteOpers;
-
-    //Test: Multithread variable section
-    private BlockingQueue<Task> globalWatingTasks;
 
     public int vehicleID;
 
@@ -47,10 +43,8 @@ public class VehicleSim  {
      *
      ****************************************************************************/
 
-    public VehicleSim(loadparam param, int vehicleid,  Operator[] remoteOps, ArrayList<Task> list, BlockingQueue<Task> globalWaitingTasks) {
+    public VehicleSim(loadparam param, int vehicleid,  Operator[] remoteOps, ArrayList<Task> list) {
 
-        //Test Concurrency
-        this.globalWatingTasks = globalWaitingTasks;
         globalTasks = list;
         operators = remoteOps;
         vars = param;
@@ -67,8 +61,6 @@ public class VehicleSim  {
 
     public synchronized void taskgen() {
 
-//        System.out.println("Generate task");
-
         // For each type of tasks:
         int fleetType = this.vehicleID/100;
 
@@ -76,36 +68,21 @@ public class VehicleSim  {
         for (int i = 0; i < vars.fleetHetero[fleetType].length; i++) {
 
             // Create a new empty list of Tasks
-
             ArrayList<Task> indlist = new ArrayList<Task>();
-
-            // Start a new task with PrevTime = 0
-
-            Task newTask;
-
             int taskType = vars.fleetHetero[fleetType][i];
 
-            newTask = new Task(taskType, 0, vars, true);
-            if (newTask.getArrTime() < 0) {
-                continue;
-            }
-            indlist.add(newTask);
+            // Start a new task with PrevTime = 0
+            Task newTask = genRegularTask(taskType, indlist, null);
 
-            if (!vars.followedTask.get(taskType).isEmpty()) {
-                genLinkedTask(indlist, newTask);
+            if (newTask == null) {
+                continue;
             }
 
             // While the next task is within the time frame, generate.
-
             while (newTask.getArrTime() < vars.numHours * 60) {
-                newTask = new Task(taskType, newTask.getArrTime(), vars, true);
-                if (newTask.getArrTime() < 0) {
+                newTask = genRegularTask(taskType, indlist, newTask);
+                if (newTask == null) {
                     break;
-                }
-                newTask.setID(vehicleID);
-                indlist.add(newTask);
-                if (!vars.followedTask.get(taskType).isEmpty()) {
-                    genLinkedTask(indlist, newTask);
                 }
             }
 
@@ -114,6 +91,30 @@ public class VehicleSim  {
             vars.repNumTasks[vars.replicationTracker]+= indlist.size();
         }
 
+    }
+
+    private Task genRegularTask(int taskType, ArrayList<Task> indlist, Task preTask){
+
+        Task newTask;
+
+        if (preTask == null) {
+            newTask = new Task(taskType, 0, vars, true);
+        }
+        else {
+            newTask = new Task(taskType, preTask.getArrTime(), vars, true);
+        }
+
+        if (newTask.getArrTime() < 0) {
+            return null;
+        }
+
+        indlist.add(newTask);
+
+        if (!vars.followedTask.get(taskType).isEmpty()) {
+            genLinkedTask(indlist, newTask);
+        }
+
+        return newTask;
     }
 
     private void genLinkedTask(ArrayList<Task> indlist, Task leadTask){
@@ -136,19 +137,5 @@ public class VehicleSim  {
         }
 
     }
-
-    public void addTriggered() {
-
-        for (Task each : globalTasks) {
-            int i = each.getType();
-
-            if (vars.trigger[i][0] != -1) {
-                for (Integer that : vars.trigger[i]) {
-                    globalTasks.add(new Task(that, each.getArrTime(), vars, false));
-                }
-            }
-        }
-    }
-
 
 }

@@ -35,9 +35,6 @@ public class Replication {
 
     private ArrayList<Task> globalTasks;
 
-    //TEST: Multithreaded producer with global timing
-    private BlockingQueue<Task> globalWatingTasks;
-
     private ArrayList<Pair <Operator,Task>> failedTasks;
 
     // Inspectors:
@@ -343,7 +340,7 @@ public class Replication {
                 }
             }
 
-            while (op.getQueue().getNumTask() > 0 &&
+            while (op.getQueue().taskqueue.size() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
             }
@@ -379,7 +376,7 @@ public class Replication {
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
 
-                vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks,globalWatingTasks);
+                vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
                 vehicles[i][j].taskgen();
 
             }
