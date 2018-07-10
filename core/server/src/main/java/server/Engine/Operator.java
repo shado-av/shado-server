@@ -1,5 +1,4 @@
 package server.Engine;
-import java.util.*;
 import server.Input.loadparam;
 
 /***************************************************************************
@@ -8,9 +7,10 @@ import server.Input.loadparam;
  *
  * 	AUTHOR: 		ROCKY LI
  *
- * 	LATEST EDIT:	2017/5/24
+ * 	LATEST EDIT:	07/09/2018
  *
  * 	VER: 			1.0
+ * 					2.0 Naixin Yu
  *
  * 	Purpose: 		generate operator that wraps Queue objects. This is where
  * 					the distinction between an operator and a RemoteOper is made.
@@ -26,6 +26,8 @@ public class Operator {
 	public int[] taskType;
 
 	private Queue myQueue;
+
+	public loadparam vars;
 
 	// Inspector
 
@@ -46,12 +48,39 @@ public class Operator {
 	 *
 	 ****************************************************************************/
 
-	public Operator(int dpid, String name,int[] task) {
+	public Operator(int dpid, String name,int[] task, loadparam param) {
 
+		vars = param;
 		taskType = task;
 		this.name =  name +" " + Integer.toString(dpid%100);
 		dpID = dpid;
 		myQueue = new Queue(this);
+
+	}
+
+	/****************************************************************************
+	 *
+	 *	Method:		checkPhase
+	 *
+	 *	Purpose:	Return the phase this operator currently in
+	 *
+	 ****************************************************************************/
+
+	public int checkPhase(){
+
+		double time = myQueue.getTime();
+
+		if (time > vars.numHours * 60) {
+			return vars.numPhases;
+		}
+
+		int phase = 0;
+		for (; phase < vars.numPhases; phase++) {
+			if (time <= vars.phaseBegin[phase]) {
+				break;
+			}
+		}
+		return phase - 1;
 
 	}
 

@@ -78,7 +78,7 @@ public class RemoteOp {
         for (int i = 0; i < vars.opTasks.length; i++) {
             //TODO[COMPLETE] generate Operator base on different types of remote Ops
             for (int j = 0; j < vars.teamSize[i]; j++) {
-                RemoteOpers[cnt++] = new Operator(i * 100 + j,vars.opNames[i], vars.opTasks[i]);
+                RemoteOpers[cnt++] = new Operator(i * 100 + j,vars.opNames[i], vars.opTasks[i], vars);
             }
         }
     }

@@ -85,58 +85,16 @@ public class Replication {
         ArrayList<Queue> proc = new ArrayList<Queue>();
         ArrayList<Operator> working = new ArrayList<>(proc.size());
 
-
-        if(task.getType() == vars.numTaskTypes || task.getType() == vars.numTaskTypes + 1){  // team coordination task, which can only be handled within certain team
-            int operatorType = task.getTeamType();
-            if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
-                task.changeServTime(0.5);
-            }
-            for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
-                if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
-                        //Put task in appropriate Queue
-                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                        working.add(remoteOps.getRemoteOp()[j]);
-                }
-            }
-        }
-        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task and followed tasks can be handled by all the operator
-            for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
-                proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                working.add(remoteOps.getRemoteOp()[j]);
-            }
-        }
-        else { // regular task. If the task can be operated by this operator, get his queue.
-            for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
-                if (remoteOps.getRemoteOp()[j] != null) {
-                    if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
-                        //Put task in appropriate Queue
-                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                        working.add(remoteOps.getRemoteOp()[j]);
-                    }
-                }
-            }
-        }
+        findAvaliableOperator(proc, working, task);
 
         if (working.size()==0) {
             task.setexpired();
-//            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][op][task.getType()][0]++;
             return;
         }
 
-        //SCHEN 2/7 Fix: to get the shortest Queue of Operators
-        Operator optimal_op = working.get(0);
-        for(Operator op: working){
-            if(op.getQueue().taskqueue.size() <= optimal_op.getQueue().taskqueue.size()){
-                if(op.getQueue().taskqueue.size() == optimal_op.getQueue().taskqueue.size()) {
-                    if (Math.random() > 0.5)
-                        optimal_op = op;
-                }
-                else
-                    optimal_op = op;
-            }
-        }
+        Operator optimal_op = findOptimalOperator(working);
 
-        // TODO: apply AI on followed tasks
+        // apply AIs
         double errorChangeRate = 1;
         if(task.getType() < vars.numTaskTypes) {
 
@@ -160,7 +118,13 @@ public class Replication {
             task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
         }
 
-        // check if the task is failed
+        if (task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) {
+            task.setexpired();
+            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
+            return;
+        }
+
+            // check if the task is failed
         failTask(optimal_op, task, errorChangeRate);
 
         task.setTeamType(optimal_op.dpID / 100);
@@ -168,6 +132,66 @@ public class Replication {
 
     }
 
+    private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task){
+
+        if(task.getType() == vars.numTaskTypes || task.getType() == vars.numTaskTypes + 1){  // team coordination task, which can only be handled within certain team
+            int operatorType = task.getTeamType();
+            if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
+                task.changeServTime(0.5);
+            }
+            for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
+                if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
+                    //Put task in appropriate Queue
+                    proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                    working.add(remoteOps.getRemoteOp()[j]);
+                }
+            }
+        }
+        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task and followed tasks can be handled by all the operator
+            for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
+                proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                working.add(remoteOps.getRemoteOp()[j]);
+            }
+        }
+        else { // regular task. If the task can be operated by this operator, get his queue.
+            for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
+                if (remoteOps.getRemoteOp()[j] != null) {
+                    if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
+                        //Put task in appropriate Queue
+                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                        working.add(remoteOps.getRemoteOp()[j]);
+                    }
+                }
+            }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    findOptimalOperator
+     *
+     *	Purpose:	    Return the operator who has the shortest queue in the
+     *                  working list
+     *
+     ****************************************************************************/
+    //SCHEN 2/7
+    private Operator findOptimalOperator(ArrayList<Operator> working){
+
+        Operator optimal_op = working.get(0);
+        for(Operator op: working){
+            if(op.getQueue().taskqueue.size() <= optimal_op.getQueue().taskqueue.size()){
+                if(op.getQueue().taskqueue.size() == optimal_op.getQueue().taskqueue.size()) {
+                    if (Math.random() > 0.5)
+                        optimal_op = op;
+                }
+                else
+                    optimal_op = op;
+            }
+        }
+        return optimal_op;
+
+    }
 
     /****************************************************************************
      *
@@ -212,7 +236,6 @@ public class Replication {
         int affByTeamCoord;
 
         if (taskType >= vars.numTaskTypes) {
-            //TODO: find the human error rate for team coordinate task, we are using the first task's fail rate to fail CT
             humanErrorRate = new double[3];
             humanErrorRate[0] = 0.002;
             humanErrorRate[1] = 0.003;
@@ -259,7 +282,6 @@ public class Replication {
             }
 
             //Task failed and caught
-//            System.out.println("The " + task.getName() + " arrived at " + task.getArrTime() + " is failed and caught");
             vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
             task.setNeedReDo(true);
         }
@@ -298,8 +320,11 @@ public class Replication {
             double totaltime = vars.numHours * 60;
             for (Operator each : remoteOp.getRemoteOp()) {
                 if (each != null) {
-                    while (each.getQueue().getfinTime() < totaltime) {
-                        each.getQueue().done(vars,each);
+//                    while (each.getQueue().getfinTime() < totaltime) {
+//                        each.getQueue().done(vars,each);
+//                    }
+                    while (each.getQueue().taskqueue.peek() != null) {
+                        each.getQueue().done(vars, each);
                     }
                 }
             }
@@ -308,9 +333,15 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-//            System.out.println("-------------------------------------------------------");
+            System.out.println("-------------------------------------------------------");
 //            System.out.print(op.toString() + ", ");
-//            System.out.println(op.getQueue().toString());
+            System.out.println(op.getQueue().toString());
+
+            if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
+                if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
+                    op.getQueue().clearTask(vars, op);
+                }
+            }
 
             while (op.getQueue().getNumTask() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) {
@@ -333,7 +364,6 @@ public class Replication {
 
         // Initialize control center.
 
-        //TODO 1.generate a global queue and can be modified
         globalTasks = new ArrayList<Task>();
 
         remoteOps = new RemoteOp(vars,globalTasks);

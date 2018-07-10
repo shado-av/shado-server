@@ -38,6 +38,8 @@ public class Queue implements Comparable<Queue>{
 
     private boolean isBusy;
 
+    private boolean blockLastSecondPhase = false;
+
     // Expected time to complete the current task in queue
 
     private double finTime;
@@ -67,11 +69,15 @@ public class Queue implements Comparable<Queue>{
         return NumTask;
     }
 
+    public double getTime() { return time; }
+
     // Mutator:
 
     public void SetTime(double Time) {
         this.time = Time;
     }
+
+    public boolean checkBlock() { return blockLastSecondPhase; }
 
     @Override
     public int compareTo(Queue other) {
@@ -202,8 +208,6 @@ public class Queue implements Comparable<Queue>{
             int taskType = taskqueue.peek().getType();
 
             vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
-
-//            System.out.println("The task " + taskqueue.peek().getName() + " arrive at " + taskqueue.peek().getArrTime() + " is expired.");
             vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 
@@ -227,6 +231,47 @@ public class Queue implements Comparable<Queue>{
         numtask();
     }
 
+
+    public void clearTask(loadparam vars, Operator op){
+
+        System.out.println("About to go into last Phase......");
+
+        blockLastSecondPhase = true;
+
+        if (taskqueue.peek() != null) {
+
+            Task onHandTask = taskqueue.peek();
+
+            if (onHandTask.getType() == vars.numTaskTypes + 2) {
+                done(vars, op);
+            }
+            else {
+                onHandTask.addInterruptTime(vars.phaseBegin[vars.numPhases - 1]);
+                onHandTask.setEndTime(vars.phaseBegin[vars.numPhases - 1]);
+                onHandTask.setWaitTime(vars.phaseBegin[vars.numPhases - 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
+                recordtasks.add(taskqueue.poll());
+            }
+
+        }
+
+        while (taskqueue.peek() != null) {
+
+            if (taskqueue.peek().getType() == vars.numTaskTypes + 2) {
+                done(vars, op);
+            }
+            else {
+                taskqueue.peek().setexpired();
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
+                recordtasks.add(taskqueue.poll());
+            }
+
+        }
+
+        SetTime(vars.phaseBegin[vars.numPhases - 1]);
+        finTime();
+        numtask();
+    }
 
     /****************************************************************************
      *
