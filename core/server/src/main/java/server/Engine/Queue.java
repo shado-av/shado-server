@@ -224,6 +224,9 @@ public class Queue implements Comparable<Queue>{
             }
 
         }
+        else {
+            return;
+        }
 
         while (taskqueue.peek() != null) {
 
@@ -237,6 +240,9 @@ public class Queue implements Comparable<Queue>{
             }
 
         }
+
+        System.out.println("PhaseBegin: " + Arrays.toString(vars.phaseBegin));
+        System.out.println("phase: " + onHandTask.getPhase());
 
         SetTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
         finTime();
