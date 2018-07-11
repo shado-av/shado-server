@@ -125,6 +125,10 @@ public class Task implements Comparable<Task> {
 		Priority = t.Priority;
 		prevTime = t.getEndTime();
 		Phase = getPhase(prevTime);
+		if (Phase == vars.numPhases) {
+			arrTime = -1;
+			return;
+		}
 		shiftPeriod = getShiftTime(prevTime);
 		this.fail = false;
 		elapsedTime = 0;
@@ -308,7 +312,7 @@ public class Task implements Comparable<Task> {
 		}
 		int currentPhase = 0;
 		for (int i = 0; i < vars.numPhases; i++) {
-			if (vars.phaseBegin[i] < time) {
+			if (vars.phaseBegin[i] <= time) {
 				currentPhase = i;
 			}
 			else break;
@@ -348,8 +352,10 @@ public class Task implements Comparable<Task> {
 				return Triangular(param[0], param[1], param[2]);
 			case 'C':
 				return param[0];
+			case 'N':
+				return Double.POSITIVE_INFINITY;
 			default:
-				throw new IllegalArgumentException("Wrong Letter");
+				throw new IllegalArgumentException("Wrong Letter for the distribution.");
 		}
 	}
 
@@ -442,21 +448,18 @@ public class Task implements Comparable<Task> {
 	private double genArrTime(double PrevTime, int type){
 
 		int fleet = vehicleID / 100;
-		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
 		double TimeTaken;
 
 		//Skip the front phases who have a negative distribution parameter
-		while (Phase < vars.numPhases && vars.arrPms[Phase][type][0] < 0) {
+		while (Phase < vars.numPhases && vars.arrDists[Phase][type] == 'N') {
 			Phase++;
-			if (Phase == vars.numPhases) {
-				break;
+			if (Phase == vars.numPhases) {//Finish checking all the phases
+				return -1;				   //Return -1 will discard this task
 			}
 			PrevTime = vars.phaseBegin[Phase];
 		}
-		if (Phase == vars.numPhases) { //Finish checking all the phases
-			return -1;				   //Return -1 will discard this task
-		}
 
+		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
 		TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
 
 		// check if this task stays in the same phase with the last one
@@ -464,7 +467,7 @@ public class Task implements Comparable<Task> {
 		if (newPhase > Phase) { //come to a new phase
 
 			// skip the phases who have a negative distribution parameter
-			while (newPhase < vars.numPhases && vars.arrPms[newPhase][type][0] < 0) {
+			while (newPhase < vars.numPhases && vars.arrDists[newPhase][type] == 'N') {
 				newPhase++;
 			}
 			if (newPhase == vars.numPhases) {

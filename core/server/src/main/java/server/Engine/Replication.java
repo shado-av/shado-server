@@ -115,10 +115,21 @@ public class Replication {
             task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
         }
 
+        // In the second last phase, the tasks which cannot be complete within this phase will be stopped
+        // and set to expired at the end of this phase
         if (task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) {
             task.setexpired();
             vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
             return;
+        }
+
+        // Only the essential task and interruptable tasks can enter the last phase
+        if (task.getPhase() == vars.numPhases - 1) {
+            if (vars.essential[task.getType()] == 0 && vars.interruptable[task.getType()] == 0) {
+                task.setexpired();
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
+                return;
+            }
         }
 
             // check if the task is failed
@@ -192,29 +203,6 @@ public class Replication {
 
     /****************************************************************************
      *
-     *	Method:		    getTriangularDistribution
-     *
-     *	Purpose:	    generate a TriangularDistribution value for human error prediction
-     *
-     ****************************************************************************/
-    private double getTriangularDistribution(double[] triangularParams){
-
-        double c = triangularParams[1]; //mode
-        double a = triangularParams[0]; //min
-        double b = triangularParams[2]; //max
-
-        double F = (c - a)/(b - a);
-        double rand = Math.random();
-        if (rand < F) {
-            return a + Math.sqrt(rand * (b - a) * (c - a));
-        } else {
-            return b - Math.sqrt((1 - rand) * (b - a) * (b - c));
-        }
-
-    }
-
-    /****************************************************************************
-     *
      *	Method:		    failTask
      *
      *	Purpose:	    determined whethere the task is failed based on the failed param
@@ -228,20 +216,15 @@ public class Replication {
         int teamType = operator.dpID / 100;
         int Phase = task.getPhase();
 
-        double[] humanErrorRate;
+        double humanErrorRate = vars.humanErrorRate[Phase][taskType];
         double errorCatching;
         int affByTeamCoord;
 
         if (taskType >= vars.numTaskTypes) {
-            humanErrorRate = new double[3];
-            humanErrorRate[0] = 0.002;
-            humanErrorRate[1] = 0.003;
-            humanErrorRate[2] = 0.004;
             errorCatching = 0.5;
             affByTeamCoord = 0;
         }
         else {
-            humanErrorRate = vars.humanError[Phase][taskType];
             errorCatching = vars.ECC[Phase][teamType][taskType];
             affByTeamCoord = vars.teamCoordAff[taskType];
         }
@@ -251,21 +234,15 @@ public class Replication {
         for(int i = 0; i < task.getRepeatTimes(); i++){
             changeRate *= 0.5;
         }
-        for (int i = 0; i < humanErrorRate.length; i++) {
-            humanErrorRate[i] *= changeRate;
-        }
+        humanErrorRate *= changeRate;
+        humanErrorRate = Math.max(humanErrorRate, 0.0001);
 
         // Modify the error catching chance according to team coordination
         if (affByTeamCoord == 1) {
             errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
         }
 
-        // Fail tasks according to humaan error rate
-
-        double distValue = getTriangularDistribution(humanErrorRate);
-        distValue = Math.max(distValue, 0.0001);
-
-        if(Math.random() < distValue){
+        if(Math.random() < humanErrorRate){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
             int currCnt = failCnt.get(vars.replicationTracker);
             failCnt.put(vars.replicationTracker,++currCnt);
@@ -316,12 +293,13 @@ public class Replication {
         if (task == null){
             double totaltime = vars.numHours * 60;
             for (Operator each : remoteOp.getRemoteOp()) {
-                if (each != null) {
-//                    while (each.getQueue().getfinTime() < totaltime) {
-//                        each.getQueue().done(vars,each);
-//                    }
-                    while (each.getQueue().taskqueue.peek() != null) {
+                while (each != null && each.getQueue().taskqueue.peek() != null) {
+
+                    if (each.getQueue().getfinTime() < totaltime) {
                         each.getQueue().done(vars, each);
+                    }
+                    else {
+                        each.getQueue().clearTask(vars, each);
                     }
                 }
             }
@@ -330,9 +308,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            System.out.println("-------------------------------------------------------");
+//            System.out.println("-------------------------------------------------------");
 //            System.out.print(op.toString() + ", ");
-            System.out.println(op.getQueue().toString());
+//            System.out.println(op.getQueue().toString());
 
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
                 if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {

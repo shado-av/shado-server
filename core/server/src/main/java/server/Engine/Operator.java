@@ -19,23 +19,15 @@ import server.Input.loadparam;
 
 public class Operator {
 
-	public int dpID;
-
-	public String name;
-
-	public int[] taskType;
-
-	private Queue myQueue;
-
-	public loadparam vars;
+	public 	int 		dpID;
+	public 	String 		name;
+	public 	int[] 		taskType;
+	private Queue 		myQueue;
+	public 	loadparam 	vars;
 
 	// Inspector
-
-	public Queue getQueue(){
-		return this.myQueue;
-	}
-
-	public String getName(){return this.name;}
+	public Queue 	getQueue()	{ return this.myQueue; }
+	public String 	getName()	{ return this.name; }
 
 	@Override
 	public String toString() { return "This is " + name; }
@@ -50,11 +42,11 @@ public class Operator {
 
 	public Operator(int dpid, String name,int[] task, loadparam param) {
 
-		vars = param;
-		taskType = task;
-		this.name =  name +" " + Integer.toString(dpid%100);
 		dpID = dpid;
+		this.name =  name +" " + Integer.toString(dpid%100);
+		taskType = task;
 		myQueue = new Queue(this);
+		vars = param;
 
 	}
 

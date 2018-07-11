@@ -89,6 +89,7 @@ public class loadparam {
     public int[]                        RemoteOpTasks;
     public int                          replicationTracker;
     public int                          currRepnum = 0;
+    public double[][]                   humanErrorRate;
 
     // Records
     public Replication[]                                reps;
@@ -139,6 +140,7 @@ public class loadparam {
 
         expandEssential();
         expandInterruptable();
+        expandPhaseBegin();
 
         getNumRemoteOp();
         totalTaskType = numTaskTypes + 3;
@@ -152,6 +154,7 @@ public class loadparam {
         allTasksPerRep = new ArrayList<>();
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
+		humanErrorRate = new double[numPhases][numTaskTypes + 3];
 		//Utilization for each type of operator across replications
 		repUtilOp = new double[numReps][numTeams][];
 		for(int i = 0; i < numReps;i++){
@@ -207,6 +210,17 @@ public class loadparam {
         fullInterruptable[l + 2] = 0;   // exogenous task
 
         interruptable = fullInterruptable;
+
+    }
+
+    private void expandPhaseBegin(){
+
+        double[] newPhaseBegin = new double[phaseBegin.length + 1];
+        for (int i = 0; i < phaseBegin.length; i++){
+            newPhaseBegin[i] = phaseBegin[i];
+        }
+        newPhaseBegin[phaseBegin.length] = numHours * 60;
+        phaseBegin = newPhaseBegin;
 
     }
 
@@ -300,6 +314,58 @@ public class loadparam {
             if (leadTask[i] >= 0) {
                 followedTask.get(leadTask[i]).add(i);
             }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    refreshHumanErrorRate
+     *
+     *	Purpose:	    generate a new human error rate for each replication
+     *
+     ****************************************************************************/
+
+    public void refreshHumanErrorRate(){
+
+        for(int phase = 0; phase < numPhases; phase++) {
+            for (int taskType = 0; taskType < numTaskTypes; taskType++) {
+                humanErrorRate[phase][taskType] = getTriangularDistribution(humanError[phase][taskType]);
+            }
+        }
+
+        double[] specialTaskHumanError = new double[3];
+        specialTaskHumanError[0] = 0.002;
+        specialTaskHumanError[1] = 0.003;
+        specialTaskHumanError[2] = 0.004;
+
+        for(int phase = 0; phase < numPhases; phase++) {
+            for(int i = 0; i < 3; i++) {
+                humanErrorRate[phase][numTaskTypes + i] = getTriangularDistribution(specialTaskHumanError);
+            }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    getTriangularDistribution
+     *
+     *	Purpose:	    generate a TriangularDistribution value for human error prediction
+     *
+     ****************************************************************************/
+    private double getTriangularDistribution(double[] triangularParams){
+
+        double c = triangularParams[1]; //mode
+        double a = triangularParams[0]; //min
+        double b = triangularParams[2]; //max
+
+        double F = (c - a)/(b - a);
+        double rand = Math.random();
+        if (rand < F) {
+            return a + Math.sqrt(rand * (b - a) * (c - a));
+        } else {
+            return b - Math.sqrt((1 - rand) * (b - a) * (b - c));
         }
 
     }

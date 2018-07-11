@@ -1,12 +1,9 @@
 package server.Engine;
-import server.Input.FileWizard;
-import server.Input.loadparam;
-import server.Output.FailedTask;
-import server.Output.ProcRep;
-import server.Input.loadparam;
 
+import server.Input.loadparam;
+import server.Output.ProcRep;
 import java.io.*;
-import java.util.ArrayList;
+
 
 /***************************************************************************
  *
@@ -111,6 +108,8 @@ public class Simulation {
     public void run() throws IOException {
 
         for (int i = 0; i < repnumber; i++) {
+
+            vars.refreshHumanErrorRate();
 
             //Run simulation
             processReplication(i);

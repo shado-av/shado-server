@@ -145,8 +145,14 @@ public class Queue implements Comparable<Queue>{
 
             if(currentTask.getNeedReDo()){
                 Task redoTask = new Task(currentTask);
-                redoTask.setArrTime(finTime);
-                add(redoTask);
+                if (redoTask.getArrTime() > 0) {
+                    redoTask.setArrTime(finTime);
+                    add(redoTask);
+                }
+                else {
+                    // This redo task cannot be complete within the shift hours, add it to expired task.
+                    vars.failedTask.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
+                }
             }
         }
 
@@ -189,31 +195,30 @@ public class Queue implements Comparable<Queue>{
      *
      *	Method:			clearTask
      *
-     *	Purpose:		Specially used for the second last phase. When it
-     *              	researches the end of the second last phase, we should
-     *                  stop the task the operator is working on and set all the
-     *                  tasks in the queue to expire (except for essential task)
-     *                  to get ready for the last phase.
+     *	Purpose:		When it reaches to the end of one phase, calling this
+     *              	method can clear any method in the queue, except for
+     *              	those essential ones.
      *
      ****************************************************************************/
 
     public void clearTask(loadparam vars, Operator op){
 
-        System.out.println("About to go into last Phase......");
+
 
         blockLastSecondPhase = true;
+        Task onHandTask = taskqueue.peek(); //last task in this phase that has been started, will be recorded as unfinished task
+                                            //other task will be set to missed and clear
+//        System.out.println("About to go into phase " + (onHandTask.getPhase() + 1) + "......");
 
         if (taskqueue.peek() != null) {
-
-            Task onHandTask = taskqueue.peek();
 
             if (vars.essential[onHandTask.getType()] == 1) {
                 done(vars, op);
             }
             else {
-                onHandTask.addInterruptTime(vars.phaseBegin[vars.numPhases - 1]);
-                onHandTask.setEndTime(vars.phaseBegin[vars.numPhases - 1]);
-                onHandTask.setWaitTime(vars.phaseBegin[vars.numPhases - 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
+                onHandTask.addInterruptTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
+                onHandTask.setEndTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
+                onHandTask.setWaitTime(vars.phaseBegin[onHandTask.getPhase() + 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
                 vars.failedTask.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
                 recordtasks.add(taskqueue.poll());
             }
@@ -233,7 +238,7 @@ public class Queue implements Comparable<Queue>{
 
         }
 
-        SetTime(vars.phaseBegin[vars.numPhases - 1]);
+        SetTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
         finTime();
 
     }
