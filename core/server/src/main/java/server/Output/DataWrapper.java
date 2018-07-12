@@ -36,10 +36,9 @@ public class DataWrapper {
 
     PrintStream stdout;
 
-    public DataWrapper(Simulation o, loadparam param) {
+    public DataWrapper(Simulation o, loadparam param, String directory) {
         stdout = System.out;
-//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-        outPutDirectory = "/home/rapiduser/out/";
+        outPutDirectory = directory;
         vars = param;
         sim = o;
     }
@@ -80,24 +79,7 @@ public class DataWrapper {
 
     }
 
-    private void testHumanError() throws IOException{
 
-        String file_name = outPutDirectory + "humanError" + ".csv";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(file_name, false)), true));
-
-        System.out.println("ErrorRate");
-
-        HashMap<Integer, Integer> failCnt = vars.failTaskCount;
-
-        for (int i = 0; i < vars.numReps; i++) {
-            double failedTasks = failCnt.get(i);
-            double generatedTasks = vars.repNumTasks[i];
-            System.out.println(failedTasks / generatedTasks);
-        }
-
-        System.setOut(stdout);
-    }
 
 
     /****************************************************************************
@@ -109,10 +91,16 @@ public class DataWrapper {
      *
      ****************************************************************************/
 
-    //Naixin 07/06/2018
+    //Naixin 07/12/2018
     private void cleanDirectory() throws  IOException{
 
+        System.out.println("We should make a folder: " + outPutDirectory);
+
         File mainDir = new File(outPutDirectory);
+        if (!mainDir.exists()) {
+            System.out.println("Create a folder: " + outPutDirectory);
+            mainDir.mkdir();
+        }
         FileUtils.cleanDirectory(mainDir);
 
         File summaryDir = new File(outPutDirectory + "Summary");
@@ -406,6 +394,32 @@ public class DataWrapper {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:     testHumanError
+     *
+     *	Purpose:    Print a vector of failed tasks percentage per replication.
+     *
+     ****************************************************************************/
+
+    private void testHumanError() throws IOException{
+
+        String file_name = outPutDirectory + "humanError" + ".csv";
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(file_name, false)), true));
+
+        System.out.println("ErrorRate");
+
+        HashMap<Integer, Integer> failCnt = vars.failTaskCount;
+
+        for (int i = 0; i < vars.numReps; i++) {
+            double failedTasks = failCnt.get(i);
+            double generatedTasks = vars.repNumTasks[i];
+            System.out.println(failedTasks / generatedTasks);
+        }
+
+        System.setOut(stdout);
+    }
 
     /****************************************************************************
      *

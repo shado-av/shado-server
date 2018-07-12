@@ -4,8 +4,6 @@ package server.Engine;
 import server.Input.FileWizard;
 import server.Input.loadparam;
 import server.Output.*;
-
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,14 +39,6 @@ public class Shado{
         Parser parser = new Parser(inputJson);
         data = parser.parseJSON(data);
 
-//        loadparam txtData;
-//        try {
-//             txtData = new loadparam("../in/params.txt");
-//             printBasicInfo(txtData);
-//        }catch (FileNotFoundException e){
-//            System.err.println("ERROR: Cannot find local txt file!");
-//        }
-
 //        printBasicInfo(data);
 
 
@@ -56,10 +46,9 @@ public class Shado{
 		Simulation sim = new Simulation(data);
 
 		sim.run();
-		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
 		// Generate Output
-		DataWrapper analyze = new DataWrapper(sim, data);
+		DataWrapper analyze = new DataWrapper(sim, data, rootDirectory);
 		analyze.outputReports();
 
 		//Zipping file and return for simple web service
