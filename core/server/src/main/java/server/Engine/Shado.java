@@ -1,26 +1,23 @@
 package server.Engine;
 
-import org.apache.tomcat.util.http.fileupload.FileUtils;
+
 import server.Input.FileWizard;
 import server.Input.loadparam;
 import server.Output.*;
-//import Output.OutputTest;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.zip.ZipOutputStream;
 
 
 /***************************************************************************
  * 	FILE: 			Shado.java
  *
- * 	AUTHOR: 		ROCKY LI
- * 	LATEST_EDIT:	2017/9/12
+ * 	AUTHOR: 		ROCKY LI, Naixin Yu
+ * 	LATEST_EDIT:	07/06/2018
  *
- * 	VER: 			1.2
+ * 	VER: 			2.0
  * 	Purpose: 		Entry point.
  **************************************************************************/
 
@@ -42,31 +39,17 @@ public class Shado{
         Parser parser = new Parser(inputJson);
         data = parser.parseJSON(data);
 
-//        loadparam txtData;
-//        try {
-//             txtData = new loadparam("../in/params.txt");
-//             printBasicInfo(txtData);
-//        }catch (FileNotFoundException e){
-//            System.err.println("ERROR: Cannot find local txt file!");
-//        }
-
 //        printBasicInfo(data);
 
 
 		// Runs simulation
 		Simulation sim = new Simulation(data);
 
-		String directoryName = rootDirectory + "repCSV/";
-
-        File directory = new File(directoryName);
-        FileUtils.cleanDirectory(directory);
-
 		sim.run();
-		System.out.println("Failed Tasks: "+ data.failTaskCount);
 
 		// Generate Output
-		DataWrapper analyze = new DataWrapper(sim, data);
-		analyze.testOutput();
+		DataWrapper analyze = new DataWrapper(sim, data, rootDirectory);
+		analyze.outputReports();
 
 		//Zipping file and return for simple web service
 		zipOutput(rootDirectory + "repCSV");

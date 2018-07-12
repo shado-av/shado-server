@@ -1,11 +1,9 @@
 package server.Engine;
-import server.Input.FileWizard;
+
 import server.Input.loadparam;
 import server.Output.ProcRep;
-import server.Input.loadparam;
-
 import java.io.*;
-import java.util.ArrayList;
+
 
 /***************************************************************************
  *
@@ -38,8 +36,6 @@ public class Simulation {
 
     private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
 
-
-
     public int[] getExpiredtask() {
         return expiredtaskcount;
     }
@@ -48,15 +44,9 @@ public class Simulation {
         return completedtaskcount;
     }
 
-    public Data getOperatoroutput(int i) {
-        return operatoroutput[i];
-    }
-
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
     }
-
-    public int getNumSpecialTasks(){ return numSpecialTasks; }
 
 
     /****************************************************************************
@@ -73,13 +63,9 @@ public class Simulation {
 
         vars = param;
         repnumber = param.numReps;
+
         System.out.println("Number of reputations: " + repnumber);
         // Generate overall data field
-
-        //check if it has type 2 exogenous factor (increasing arrival rate)
-        if(vars.hasExogenous[1] == 1){
-            changeArrivalRate(1.1);
-        }
 
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
@@ -90,10 +76,11 @@ public class Simulation {
             RemoteOpoutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
         }
 
-        expiredtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
-        completedtaskcount = new int[param.numTaskTypes + param.leadTask.length + numSpecialTasks];
+        expiredtaskcount = new int[param.numTaskTypes + numSpecialTasks];
+        completedtaskcount = new int[param.numTaskTypes + numSpecialTasks];
 
     }
+
 
     /****************************************************************************
      *
@@ -122,6 +109,8 @@ public class Simulation {
 
         for (int i = 0; i < repnumber; i++) {
 
+            vars.refreshHumanErrorRate();
+
             //Run simulation
             processReplication(i);
 
@@ -133,12 +122,12 @@ public class Simulation {
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
             ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars,numSpecialTasks);
-            process.run(i);
+            process.run();
             vars.utilizationOutput[i] = process.getRepdisdata();
 
             //Global Tracker for replication processed
             vars.currRepnum++;
-            for (int j = 0; j < vars.numTaskTypes + vars.leadTask.length + numSpecialTasks; j++) {
+            for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
                 expiredtaskcount[j] += process.getExpired()[j];
                 completedtaskcount[j] += process.getCompleted()[j];
             }
@@ -149,25 +138,6 @@ public class Simulation {
         }
         for (Data each: operatoroutput){
             each.avgdata();
-        }
-    }
-
-
-    /*************************************************************************************
-     *
-     *	Method:			changeArrivalRate
-     *
-     *	Purpose:		Change the overall arrival rate
-     *
-     **************************************************************************************/
-
-    private void changeArrivalRate(Double changeRate){
-        for(int i = 0; i < vars.arrPms.length; i++){
-            for(int j = 0; j < vars.arrPms[0].length; j++){
-                for(int k = 0; k < vars.arrPms[0][0].length; k++){
-                    vars.arrPms[i][j][k] *= changeRate;
-                }
-            }
         }
     }
 

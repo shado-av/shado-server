@@ -16,11 +16,11 @@ import javafx.util.Pair;
  *
  * 	FILE: 			DataWrapper.java
  *
- * 	AUTHOR: 		ROCKY LI
+ * 	CREATOR: 		ROCKY LI
  *
- * 	DATE:			2017/6/5
- *
- * 	VER: 			1.0
+ * 	VER: 			1.0                     Rocky Li
+ * 	                1.?                     Richard Chen
+ * 	                2.0     07/06/2018      Naixin Yu
  *
  * 	Purpose: 		Wrapping the data field for analysis.
  *
@@ -34,44 +34,14 @@ public class DataWrapper {
 
     private String outPutDirectory;
 
-    private int numSpecialTasks;
-
-    private int totalTaskNumber;
-
-    private String[] taskNames;
-
     PrintStream stdout;
 
-    public DataWrapper(Simulation o, loadparam param) {
+    public DataWrapper(Simulation o, loadparam param, String directory) {
         stdout = System.out;
-//        outPutDirectory = "/Users/zhanglian1/Desktop/out/";
-        outPutDirectory = "/home/rapiduser/out/";
+        outPutDirectory = directory;
         vars = param;
         sim = o;
-        numSpecialTasks = o.getNumSpecialTasks();
-        totalTaskNumber = vars.numTaskTypes + vars.leadTask.length + numSpecialTasks;
-        collectTaskNames();
-
     }
-
-
-    private void collectTaskNames(){
-        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
-        taskNames = new String[totalTaskNumber];
-        for(int i = 0; i < totalTaskNumber; i++){
-            if(i < vars.numTaskTypes){
-                taskNames[i] = vars.taskNames[i];
-            }
-            else if (i < vars.numTaskTypes + vars.leadTask.length){
-                taskNames[i] = vars.taskNames_f[i - vars.numTaskTypes];
-            }
-            else {
-                taskNames[i] = specialTaskName[i - vars.numTaskTypes - vars.leadTask.length];
-            }
-        }
-    }
-
-
 
     /****************************************************************************
      *
@@ -81,11 +51,21 @@ public class DataWrapper {
      *
      ****************************************************************************/
 
-    public void testOutput() throws IOException {
+    //Naixin 07/06/2018
+    public void outputReports() throws IOException {
 
         //Clean previous files in the output directory
 
         cleanDirectory();
+
+
+        //Generate JSON files
+
+        Utilization u = printUtilization();
+        FailedTask f = vars.failedTask;
+
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, f);
+        builder.outputJSON();
 
 
         //Out put the report files
@@ -93,28 +73,64 @@ public class DataWrapper {
         printSummaryReport();
         printErrorReport();
         printTaskRecord();
+        printValidationReport(u.getUtilization());
 
-
-        //Generate JSON files
-
-        Utilization u = printUtilization();
-        FailedTask f = printFailedTask();
-
-        JasonBuilder builderUtilization = new JasonBuilder(outPutDirectory, u, f);
-        builderUtilization.outputJSON();
+        testHumanError();
 
     }
 
+
+
+
+    /****************************************************************************
+     *
+     *	Method:     cleanDirectory
+     *
+     *	Purpose:    Remove the original files in the output directory and create
+     *              the needed directories under this folder
+     *
+     ****************************************************************************/
+
+    //Naixin 07/12/2018
     private void cleanDirectory() throws  IOException{
-        File summaryDir = new File(outPutDirectory + "Summary");
-        File csvDir = new File( outPutDirectory + "repCSV");
-        File validationDir = new File(outPutDirectory + "validation");
 
-        FileUtils.cleanDirectory(summaryDir);
-        FileUtils.cleanDirectory(csvDir);
-        FileUtils.cleanDirectory(validationDir);
+        System.out.println("We should make a folder: " + outPutDirectory);
+
+        File mainDir = new File(outPutDirectory);
+        if (!mainDir.exists()) {
+            System.out.println("Create a folder: " + outPutDirectory);
+            mainDir.mkdir();
+        }
+        FileUtils.cleanDirectory(mainDir);
+
+        File summaryDir = new File(outPutDirectory + "Summary");
+        if (!summaryDir.exists()) {
+            summaryDir.mkdir();
+        }
+
+        File csvDir = new File( outPutDirectory + "repCSV");
+        if (!csvDir.exists()) {
+            csvDir.mkdir();
+        }
+
+        File validationDir = new File(outPutDirectory + "validation");
+        if (!validationDir.exists()) {
+            validationDir.mkdir();
+        }
     }
 
+
+    /****************************************************************************
+     *
+     *	Method:     printSummaryReport
+     *
+     *	Purpose:    Output the summary report, including:
+     *
+     *              1. Total number of tasks generated in each replication
+     *              2. Number of expired and completed tasks for each task type
+     *              3. Number of failed tasks in each replication
+     *
+     ****************************************************************************/
 
     public void printSummaryReport() throws IOException {
 
@@ -135,8 +151,8 @@ public class DataWrapper {
 
         //print summary for each task type
 
-        for(int i = 0; i < totalTaskNumber; i++){
-            System.out.println(",Task name: " + taskNames[i]);
+        for(int i = 0; i < vars.totalTaskType; i++){
+            System.out.println("Task name: " + vars.taskName_all[i]);
             System.out.println(",Expired: " + sim.getExpiredtask()[i]);
             System.out.println(",Completed: " + sim.getCompletedtaskcount()[i]);
         }
@@ -144,14 +160,27 @@ public class DataWrapper {
         //print failed task count
 
         System.out.println("*** FAILED TASKS ***");
-//            System.out.println("Operator "+ p.getKey().getName()+" Failed: "+p.getValue().getName());
         for (int i = 0; i < vars.numReps; i++) {
             HashMap<Integer, Integer> failCnt = vars.failTaskCount;
             int currFailCnt = failCnt.get(i);
             System.out.println("In Replication " + i + ": " + "Number of Fail Tasks: " + currFailCnt);
         }
 
+        System.setOut(stdout);
     }
+
+
+    /****************************************************************************
+     *
+     *	Method:     printErrorReport
+     *
+     *	Purpose:    Output the error report for each replication, including:
+     *
+     *              1. Failed task name
+     *              2. Operators who failed the task
+     *              3. Whether this failed task was caught
+     *
+     ****************************************************************************/
 
     private void printErrorReport() throws IOException{
         for (int i = 0; i < vars.numReps; i++) {
@@ -172,7 +201,27 @@ public class DataWrapper {
                 System.out.println();
             }
         }
+
+        System.setOut(stdout);
     }
+
+
+    /****************************************************************************
+     *
+     *	Method:     printTaskRecord
+     *
+     *	Purpose:    Output the task record per replication for each task type.
+     *
+     *              Notes:
+     *
+     *              1. Contains regular task, followed task, team communication
+     *                 task and exogenous task.
+     *              2. Doesn't contain redo tasks, which are caused by catching
+     *                 the failed tasks.
+     *              3. For each task, recording: arrival time, begin time, serve
+     *                 time, wait time, finish time and expected expire time
+     *
+     ****************************************************************************/
 
 
     //Naixin 05/23/18
@@ -180,8 +229,8 @@ public class DataWrapper {
 
         //print task information per task
         System.out.println();
-        for(int taskType = 0; taskType < vars.numTaskTypes; taskType++) {
-            String fileName = outPutDirectory + "task_" + vars.taskNames[taskType] + ".csv";
+        for(int taskType = 0; taskType < vars.totalTaskType; taskType++) {
+            String fileName = outPutDirectory + "task_" + vars.taskName_all[taskType] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
             System.out.println("arrTime, beginTime, serveTime, waitTime, finTime, expireTime");
@@ -201,26 +250,45 @@ public class DataWrapper {
     }
 
 
+    /****************************************************************************
+     *
+     *	Method:     printUtilization
+     *
+     *	Purpose:    Output the utilization record.
+     *
+     *              Notes:
+     *
+     *              1. Create the Utilization object for JSON output.
+     *              2. Print a utilization spreadsheet for user reference, including:
+     *
+     *                  * utilization (percentage of busy time)
+     *                      per operator
+     *                      per replication
+     *                      per task
+     *                      per 10 mins time interval
+     *
+     *                  * max & min average utilization across replication
+     *
+     *                  * max 10 min interval utilization
+     *
+     *                  * overall average utilization
+     *
+     ****************************************************************************/
+
     //Naixin 05/21/18
     private Utilization printUtilization() throws IOException {
 
-        Utilization utilization = new Utilization(vars, taskNames);
+        Utilization utilization = new Utilization(vars);
+        int numColumn = (int) Math.ceil(vars.numHours * 6);
 
         // print utilization per operator
         for (int k = 0; k < vars.numRemoteOp; k++) {
 
-            double[][] utilization_for_Sammy = new double[vars.numReps][];
-            double max = 0; //max average utilization across replications
-            double min = 100; //min average utilization across replications
             double max10mins = 0; //max utiliazation in 10 mins across replications
 
             String fileName = outPutDirectory + "repCSV/Utilization_" + k + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
-
-            int numColumn = (int) Math.ceil(vars.numHours * 6);
-            double[][] utilizationSum = new double[vars.numReps][numColumn]; //the utilization for each operator per time interval per replication
-                                                                             //It is same thing with timeSectionSum. It's just we need another output.
 
             // print utilization per repulication
             for (int i = 0; i < vars.numReps; i++) {
@@ -239,125 +307,179 @@ public class DataWrapper {
                 System.out.println("Sum per task");
 
                 // one row per task
-                for (int j = 0; j < vars.numTaskTypes + vars.leadTask.length + numSpecialTasks; j++) {
+                for (int j = 0; j < vars.totalTaskType; j++) {
                     double taskSum = 0;
-                    if(j < vars.numTaskTypes){
-                        System.out.print(vars.taskNames[j] + ",");
-                    }
-                    else if(j >= vars.numTaskTypes && j < vars.numTaskTypes + vars.leadTask.length){
-                        System.out.print(vars.taskNames_f[j - vars.numTaskTypes] + ",");
-                    }
-                    else if(j == vars.numTaskTypes + vars.leadTask.length){
-                        System.out.print("Team Coordinate Task level some: ,");
-                    }
-                    else if(j == vars.numTaskTypes + vars.leadTask.length + 1){
-                        System.out.print("Team Coordinate Task level full: ,");
-                    }
-                    else if(j == vars.numTaskTypes + vars.leadTask.length + 2){
-                        System.out.print("Exogenous Task: ,");
-                    }
+                    System.out.print(vars.taskName_all[j] + ",");
 
                     for (int time = 0; time < numColumn; time++) {
                         double u = taskUtilization.dataget(j, time, 0);
-
                         utilization.utilization[k][i][j][time] = round(u,2);
-//                        utilization.utilization[k][i][j][time] = u;
-
-                        taskSum = taskSum + u;
+                        taskSum += u;
                         timeSectionSum[time] += u;
-                        utilizationSum[i][time] += u;
-
                         System.out.print(u + ",");
                     }
+
                     taskSum /= vars.numHours * 6;
                     timeSectionSum[numColumn] += taskSum;
-                    System.out.print(taskSum + ",");
-                    System.out.println(" ");
+                    System.out.println(taskSum + ",");
                 }
 
                 // print a line for timeSectionSum
                 System.out.print(",");
 
                 for (int time = 0; time < numColumn; time++) {
-                    if(timeSectionSum[time] > max10mins){
+                    if (timeSectionSum[time] > max10mins) {
                         max10mins = timeSectionSum[time];
                     }
                     System.out.print(timeSectionSum[time] + ",");
                 }
-                utilization_for_Sammy[i] = timeSectionSum;
 
                 // print the sum of timeSectionSum
                 System.out.print(timeSectionSum[numColumn] + ",");
-                utilization.averageUtilization[k][i] = round(timeSectionSum[numColumn],2);
-
-                // find the max and min average utilization
-                if(timeSectionSum[numColumn] > max){
-                    max = timeSectionSum[numColumn];
-                }
-                if(timeSectionSum[numColumn] < min){
-                    min = timeSectionSum[numColumn];
-                }
+                utilization.averageUtilization[k][i] = timeSectionSum[numColumn];
 
                 System.out.println(" ");
                 System.out.println(" ");
             }
 
-            System.out.println("The max average utilization cross replication is " + max);
-            System.out.println("The min average utilization cross replication is " + min);
             System.out.println("The max utilization in 10 mins is " + max10mins);
 
-            fileName = outPutDirectory + "repCSV/Utilization_" + k + "_allTasks" + ".csv";
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, true)), true));
-
-            for(int i = 1; i <= vars.numReps; i++){
-                System.out.print(i + ",");
-            }
-            System.out.println(" ");
-
-            for(int time = 0; time < numColumn; time++){
-                for(int rep = 0; rep < vars.numReps; rep++){
-                    System.out.print(utilizationSum[rep][time] + ",");
-                }
-                System.out.println(" ");
-            }
-
-
-            fileName = outPutDirectory + "validation/rep_vs_time:operator" + k + ".csv";
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, false)), true));
-            for(int i = 0; i < vars.numReps; i++){
-                for(int j = 0; j < numColumn; j++){
-                    System.out.print(utilization_for_Sammy[i][j] + ",");
-                }
-                System.out.println(" ");
-            }
         }
+
+        averageAll(utilization.averageUtilization);
+        findMinMax(utilization.averageUtilization);
 
         System.setOut(stdout);
 
         return utilization;
     }
 
-    private FailedTask printFailedTask() throws IOException{
-        FailedTask f = new FailedTask(vars, taskNames);
 
-        return f;
-    }
+    /****************************************************************************
+     *
+     *	Method:     printValidationReport
+     *
+     *	Purpose:    Find and print the max & min average utilization
+     *          	across replication
+     *
+     ****************************************************************************/
 
+    //Naixin 06/30/2018
+    private void printValidationReport(Double[][][][] utilization) throws IOException{
 
+        int numColumn = (int) Math.ceil(vars.numHours * 6);
 
-    private void remoteOperatorTimeTable() throws IOException{
-        for (int i = 0; i < vars.numRemoteOp; i++) {
+        for (int op = 0; op < vars.numRemoteOp; op++) {
 
-            String file_name = outPutDirectory + "RemoteOperator" + i + ".csv";
-
+            String fileName = outPutDirectory + "validation/rep_vs_time:operator" + op + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(file_name, false)), true));
+                    new FileOutputStream(fileName, false)), true));
 
-            sim.getRemoteOpoutput(i).outputdata();
+
+            for (int time = 0; time < numColumn; time++) {
+                for (int rep = 0; rep < vars.numReps; rep++) {
+
+                    Double utilization10min = 0.0;
+                    for (int taskType = 0; taskType < vars.totalTaskType; taskType++) {
+                         utilization10min += utilization[op][rep][taskType][time];
+                    }
+                    System.out.print(utilization10min + ",");
+                }
+                System.out.println(" ");
+            }
+
+
+            System.setOut(stdout);
         }
+
     }
+
+    /****************************************************************************
+     *
+     *	Method:     testHumanError
+     *
+     *	Purpose:    Print a vector of failed tasks percentage per replication.
+     *
+     ****************************************************************************/
+
+    private void testHumanError() throws IOException{
+
+        String file_name = outPutDirectory + "humanError" + ".csv";
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(file_name, false)), true));
+
+        System.out.println("ErrorRate");
+
+        HashMap<Integer, Integer> failCnt = vars.failTaskCount;
+
+        for (int i = 0; i < vars.numReps; i++) {
+            double failedTasks = failCnt.get(i);
+            double generatedTasks = vars.repNumTasks[i];
+            System.out.println(failedTasks / generatedTasks);
+        }
+
+        System.setOut(stdout);
+    }
+
+    /****************************************************************************
+     *
+     *	Method:     findMinMax
+     *
+     *	Purpose:    Find and print the max & min average utilization
+     *          	across replication
+     *
+     ****************************************************************************/
+
+    //Naixin Yu 07/06/2018
+    private void findMinMax (Double[][] averageUtilization) {
+
+        Double max = averageUtilization[0][0];
+        Double min = averageUtilization[0][0];
+
+        for (Double[] oneOperator : averageUtilization) {
+            for (Double u : oneOperator) {
+                if (u > max) max = u;
+                if (u < min) min = u;
+            }
+        }
+
+        System.out.println("The max average utilization cross replication is " + max);
+        System.out.println("The min average utilization cross replication is " + min);
+
+    }
+
+
+    /****************************************************************************
+     *
+     *	Method:     averageAll
+     *
+     *	Purpose:    Find and print the average utilization across replication
+     *
+     ****************************************************************************/
+
+    //Naixin 07/04/2018
+    private void averageAll(Double[][] u){
+
+        int count = 0;
+        double sum = 0;
+        for (int i = 0; i < u.length; i++) {
+            for (int j = 0; j < u[0].length; j++) {
+                sum += u[i][j];
+                count++;
+            }
+        }
+        System.out.println("Average Utilization is " + sum / count);
+
+    }
+
+
+    /****************************************************************************
+     *
+     *	Method:     round
+     *
+     *	Purpose:    Round double numbers
+     *
+     ****************************************************************************/
 
     public static double round(double value, int places) {
         if (places < 0) throw new IllegalArgumentException();
@@ -366,6 +488,7 @@ public class DataWrapper {
         long tmp = Math.round(value);
         return (double) tmp / factor;
     }
+
 
 }
 

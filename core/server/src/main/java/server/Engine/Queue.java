@@ -1,7 +1,7 @@
 package server.Engine;
+
 import server.Input.loadparam;
 import javafx.util.Pair;
-
 import java.util.*;
 
 /***************************************************************************
@@ -10,9 +10,10 @@ import java.util.*;
  *
  * 	AUTHOR: 		ROCKY LI
  *
- * 	DATE:			2017/6/5
+ * 	DATE:			07/09/2018
  *
  * 	VER: 			1.1
+ * 	                2.0 Naixin Yu
  *
  * 	Purpose: 		Queue up each of the workers, and order tasks according
  * 	                to their priority and arrival time.
@@ -21,72 +22,22 @@ import java.util.*;
 
 public class Queue implements Comparable<Queue>{
 
-    // The Queue is represented by a priority queue of task objects:
-
-    public PriorityQueue<Task> taskqueue;
-
-//    public Deque<Task> taskqueue;
-
-    // Operator ID.
-
-    public Operator operator;
-
-    // Set the time to move forward with general time. (Tracer variable)
-
-    private double time;
-
-    // See if the Queue is populated or not
-
-    private boolean isBusy;
-
-    // Expected time to complete the current task in queue
-
-    private double finTime;
-
-    // Number of tasks in the queue
-
-    private int NumTask;
-
-    //Expected Finish Time, used when adding a new taks
-    private double expectedFinTime;
-
-    // Record all done tasks for data analysis
-
-    private ArrayList<Task> recordtasks = new ArrayList<>();
+    public  PriorityQueue<Task> taskqueue;
+    public  Operator            operator;
+    private double              time;
+    private double              finTime;
+    private boolean             blockLastSecondPhase;
+    private ArrayList<Task>     recordtasks; // Record all done tasks for data analysis
 
     // inspectors:
-
-    public ArrayList<Task> records() {
-        return recordtasks;
-    }
-
-    public double getfinTime() {
-        return finTime;
-    }
-
-    public double getExpectedFinTime(){ return expectedFinTime; }
-
-    public int getNumTask() {
-        return NumTask;
-    }
-
-    public boolean getStatus() {
-        return isBusy;
-    }
+    public ArrayList<Task>  records()      { return recordtasks; }
+    public double           getfinTime()   { return finTime; }
+    public double           getTime()      { return time; }
+    public boolean          checkBlock()   { return blockLastSecondPhase; }
 
     // Mutator:
-
-    public void SetTime(double Time) {
+    public void             SetTime(double Time) {
         this.time = Time;
-    }
-
-    public double getTime(){
-        return this.time;
-    }
-
-    @Override
-    public int compareTo(Queue other) {
-        return this.NumTask - other.NumTask;
     }
 
     /****************************************************************************
@@ -98,20 +49,35 @@ public class Queue implements Comparable<Queue>{
      ****************************************************************************/
 
     public Queue(Operator op) {
-//        taskqueue = new ArrayDeque<>();
+
         taskqueue = new PriorityQueue<>();
+        operator = op;
         time = 0;
         finTime = Double.POSITIVE_INFINITY;
-        this.operator = op;
-        expectedFinTime = 0;
-        numtask();
+        blockLastSecondPhase = false;
+        recordtasks = new ArrayList<>();
+
+    }
+
+    @Override
+    public int compareTo(Queue other) {
+        return this.taskqueue.size() - other.taskqueue.size();
     }
 
     @Override
     public String toString() {
-        System.out.println("My queue has " + getNumTask() + " tasks.");
-        if(!taskqueue.isEmpty()) System.out.println("The top task is " + taskqueue.peek().toString());
-        return "The time is " + time + " now.";
+        System.out.println("My queue has " + taskqueue.size() + " tasks: ");
+        printQueue();
+        return "The time is " + time + " , the finTime is " + finTime;
+    }
+
+    private void printQueue(){
+        Iterator<Task> it = taskqueue.iterator();
+        while (it.hasNext()) {
+            Task t = it.next();
+            System.out.print(t.getName() + "(" + t.getArrTime() + ")--");
+        }
+        System.out.println(" ");
     }
 
     /****************************************************************************
@@ -127,14 +93,10 @@ public class Queue implements Comparable<Queue>{
         // Set the time of the queue to the arrival time of the task.
 
         SetTime(task.getArrTime());
-        setExpectedFinTime(task);
 
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
-//                System.out.println("In queue.add, the on hand task is interrupted.");
                 taskqueue.peek().addInterruptTime(time);
-//                double workTime = taskqueue.peek().workSchedule.get(taskqueue.peek().workSchedule.size() - 1)[0] - time;
-//                taskqueue.peek().setELStime(taskqueue.peek().getELSTime() + workTime);
                 taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
             }
         }
@@ -150,8 +112,7 @@ public class Queue implements Comparable<Queue>{
         }
 
         // Else since the task is put behind in the queue, no other queue attribute need to change
-        // except numTask.
-        numtask();
+
     }
 
 
@@ -170,31 +131,29 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() != null) {
 
-            // Set the end time of the task being finished.
-
             taskqueue.peek().setEndTime(finTime);
             taskqueue.peek().addInterruptTime(finTime);
             taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
-            taskqueue.peek().setQueue(NumTask);
-//            taskqueue.peek().setELStime(taskqueue.peek().getSerTime());
+
 //            taskqueue.peek().printBasicInfo();
 
             Task currentTask = taskqueue.peek();
 
-            // Remove the finished task from the queue and put it into record task list.
             recordtasks.add(taskqueue.poll());
 
-            // Renew the queue time.
             SetTime(finTime);
 
-//            if(currentTask.getNeedReDo()){
-//                Task redoTask = new Task(currentTask);
-//                redoTask.setArrTime(finTime);
-//                System.out.print("Add the task " + redoTask.getName() + "arrive at " + redoTask.getArrTime() + " back to queue to redo ");
-//                System.out.println("task " + currentTask.getName() + "arrive at " + currentTask.getArrTime());
-//                add(redoTask);
-//            }
-
+            if(currentTask.getNeedReDo()){
+                Task redoTask = new Task(currentTask);
+                if (redoTask.getArrTime() > 0) {
+                    redoTask.setArrTime(finTime);
+                    add(redoTask);
+                }
+                else {
+                    // This redo task cannot be complete within the shift hours, add it to expired task.
+                    vars.failedTask.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
+                }
+            }
         }
 
         // If there are ANOTHER task in the queue following the completion of this one:
@@ -209,7 +168,9 @@ public class Queue implements Comparable<Queue>{
             // Add expired tasks to the record
             taskqueue.peek().setexpired();
 
-//            System.out.println("The task " + taskqueue.peek().getName() + " arrive at " + taskqueue.peek().getArrTime() + " is expired.");
+            int taskType = taskqueue.peek().getType();
+
+            vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
             vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 
@@ -217,11 +178,10 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() != null) {
 
-            // Set the beginTime of the Task in question to now, i.e. begin working on this task.
+            // Set the beginTime of the Task in queue to now, i.e. begin working on this task.
 
             taskqueue.peek().setBeginTime(time);
             taskqueue.peek().addBeginTime(time);
-//            taskqueue.peek().setWaitTime(taskqueue.peek().getArrTime()-taskqueue.peek().getBeginTime());
 
         }
 
@@ -229,11 +189,65 @@ public class Queue implements Comparable<Queue>{
 
         finTime();
 
-        // Generate a new numTask for the Queue.
-
-        numtask();
     }
 
+    /****************************************************************************
+     *
+     *	Method:			clearTask
+     *
+     *	Purpose:		When it reaches to the end of one phase, calling this
+     *              	method can clear any method in the queue, except for
+     *              	those essential ones.
+     *
+     ****************************************************************************/
+
+    public void clearTask(loadparam vars, Operator op){
+
+
+
+        blockLastSecondPhase = true;
+        Task onHandTask = taskqueue.peek(); //last task in this phase that has been started, will be recorded as unfinished task
+                                            //other task will be set to missed and clear
+//        System.out.println("About to go into phase " + (onHandTask.getPhase() + 1) + "......");
+
+        if (taskqueue.peek() != null) {
+
+            if (vars.essential[onHandTask.getType()] == 1) {
+                done(vars, op);
+            }
+            else {
+                onHandTask.addInterruptTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
+                onHandTask.setEndTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
+                onHandTask.setWaitTime(vars.phaseBegin[onHandTask.getPhase() + 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
+                recordtasks.add(taskqueue.poll());
+            }
+
+        }
+        else {
+            return;
+        }
+
+        while (taskqueue.peek() != null) {
+
+            if (vars.essential[taskqueue.peek().getType()] == 1) {
+                done(vars, op);
+            }
+            else {
+                taskqueue.peek().setexpired();
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
+                recordtasks.add(taskqueue.poll());
+            }
+
+        }
+
+        System.out.println("PhaseBegin: " + Arrays.toString(vars.phaseBegin));
+        System.out.println("phase: " + onHandTask.getPhase());
+
+        SetTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
+        finTime();
+
+    }
 
     /****************************************************************************
      *
@@ -250,7 +264,6 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() == null) {
             finTime = Double.POSITIVE_INFINITY;
-//            finTime = 0;
         }
 
         // Otherwise grab the current task and return a finish time.
@@ -258,48 +271,7 @@ public class Queue implements Comparable<Queue>{
         else {
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
-//            finTime = time + onhand.getSerTime() - onhand.getELSTime();
-            // Error checker
-
-//            System.out.println(onhand.getArrTime() + "\t" + onhand.getName() + "\t" +
-//            onhand.getBeginTime() + "\t" + onhand.getEndTime());
-
         }
     }
-
-    /****************************************************************************
-     *
-     *	Method:			numtask
-     *
-     *	Purpose:		return the number of tasks in the queue and if there are no
-     *					task return state of the current queue as NOT BUSY.
-     *
-     ****************************************************************************/
-
-    private void numtask() {
-
-        NumTask = taskqueue.size();
-        if (NumTask == 0) {
-            isBusy = false;
-        } else {
-            isBusy = true;
-        }
-    }
-
-    private void setExpectedFinTime(Task task){
-        if(taskqueue.isEmpty()){
-            expectedFinTime = task.getArrTime()+task.getSerTime();
-        }
-        else{
-            if(task.getArrTime() < expectedFinTime){
-                expectedFinTime += task.getSerTime();
-            }else{
-                // task arrive after all task are done
-                expectedFinTime = task.getArrTime()+task.getSerTime();
-            }
-
-        }
-    }
-
 
 }

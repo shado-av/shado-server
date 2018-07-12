@@ -4,6 +4,7 @@ import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
 import javafx.util.Pair;
+import server.Output.FailedTask;
 
 import java.io.*;
 import java.util.*;
@@ -74,37 +75,26 @@ public class loadparam {
     public int[]        teamCoordAff;
     public int[]        interruptable;
     public int[]        essential;
-    public ArrayList<ArrayList<Integer>> followedTask;
-
-    //Followed Task Variables
-
     public int[]        leadTask;
-    public String[]     taskNames_f;
-    public char[][]     arrDists_f;
-    public double[][][] arrPms_f;
-    public char[][]     serDists_f;
-    public double[][][] serPms_f;
-    public char[][]     expDists_f;
-    public double[][][] expPms_f;
-    public int[][]      affByTraff_f;
-    public int[]        teamCoordAff_f;
-    public int[][][]    taskPrty_f; //phase * team * task
-    public int[]        interruptable_f;
-    public int[]        essential_f;
-    public double[][][] humanError_f;
-    public double[][][] ECC_f; //short for "Error Catching Chance"
+    public ArrayList<ArrayList<Integer>> followedTask;
+    public int[]        exoType2Aff;
+
 
     // Other parameters
+    public String[]                     taskName_all;
+    public int                          totalTaskType;
     public int                          numRemoteOp;
     public int[]                        ETteam; //which team has ET for this task type
     public boolean                      hasET = false;
     public int[]                        RemoteOpTasks;
     public int                          replicationTracker;
-    public int currRepnum = 0;
+    public int                          currRepnum = 0;
+    public double[][]                   humanErrorRate;
 
     // Records
     public Replication[]                                reps;
     public HashMap<Integer,ArrayList>                   rep_failTask;
+    public FailedTask                                   failedTask;
     public HashMap<Integer,Integer>                     failTaskCount;
     public Data[][]                                     utilizationOutput;   //utilization[numRep][numOperator]
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
@@ -114,7 +104,6 @@ public class loadparam {
 
     // Operator settings
     public double[][] crossRepCount;
-	public int[][] opNums;
 	public int[][] trigger;
 
 
@@ -131,7 +120,6 @@ public class loadparam {
 	public int processedRepId;
 	public int debugCnt;
 	public int maxTeamSize;
-	public int metaSnapShot;
 
 	
 	/****************************************************************************
@@ -147,16 +135,26 @@ public class loadparam {
     * Set Global data after reading from JSON
     * */
     public void setGlobalData(){
+
+        // Add special tasks' setting
+
+        expandEssential();
+        expandInterruptable();
+        expandPhaseBegin();
+
+        getNumRemoteOp();
+        totalTaskType = numTaskTypes + 3;
+        collectTaskNames();
         failTaskCount = new HashMap<>();
+        failedTask = new FailedTask(this);
         replicationTracker = 0;
         processedRepId = 0;
         debugCnt = 0;
         maxTeamSize = 0;
-        metaSnapShot = 0;
         allTasksPerRep = new ArrayList<>();
-        getNumRemoteOp();
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
+		humanErrorRate = new double[numPhases][numTaskTypes + 3];
 		//Utilization for each type of operator across replications
 		repUtilOp = new double[numReps][numTeams][];
 		for(int i = 0; i < numReps;i++){
@@ -170,17 +168,7 @@ public class loadparam {
         for(int i = 0; i < numReps; i++){
             expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
         }
-        opNums = new int[numTaskTypes][];
 
-        for (int i = 0; i < numTaskTypes; i++){
-            ArrayList<Integer> wha = new ArrayList<Integer>();
-            for (int j = 0; j < numTeams; j++){
-                if (Arrays.asList(opTasks[j]).contains(i)){
-                    wha.add(j);
-                }
-            }
-            opNums[i] = wha.stream().mapToInt(Integer::intValue).toArray();
-        }
         for(int i = 0; i < teamSize.length; i++){
             if(teamSize[i] > maxTeamSize){
                 maxTeamSize = teamSize[i];
@@ -189,23 +177,92 @@ public class loadparam {
         utilizationOutput = new Data[numReps][numRemoteOp];
 
         // create the ET team matrix
-        ETteam = new int[numTaskTypes];
         checkET();
 
         // create the followed task matrx
-        followedTask = new ArrayList<>();
-        for(int i = 0; i < numTaskTypes; i++){
-            ArrayList<Integer> n = new ArrayList<>();
-            followedTask.add(n);
-        }
         checkFollowedTask();
     }
+
+    private void expandEssential(){
+
+        int l = essential.length;
+        int[] fullEssential = new int[l + 3];
+        for (int i = 0; i < l; i++){
+            fullEssential[i] = essential[i];
+        }
+        fullEssential[l] = 0;       // team communication task (some)
+        fullEssential[l + 1] = 0;   // team communication task (full)
+        fullEssential[l + 2] = 1;   // exogenous task
+
+        essential = fullEssential;
+
+    }
+
+    private void expandInterruptable(){
+
+        int l = interruptable.length;
+        int[] fullInterruptable = new int[l + 3];
+        for (int i = 0; i < l; i++){
+            fullInterruptable[i] = interruptable[i];
+        }
+        fullInterruptable[l] = 1;       // team communication task (some)
+        fullInterruptable[l + 1] = 1;   // team communication task (full)
+        fullInterruptable[l + 2] = 0;   // exogenous task
+
+        interruptable = fullInterruptable;
+
+    }
+
+    private void expandPhaseBegin(){
+
+        double[] newPhaseBegin = new double[phaseBegin.length + 1];
+        for (int i = 0; i < phaseBegin.length; i++){
+            newPhaseBegin[i] = phaseBegin[i];
+        }
+        newPhaseBegin[phaseBegin.length] = numHours * 60;
+        phaseBegin = newPhaseBegin;
+
+    }
+
+
+
+    /****************************************************************************
+     *
+     *	Shado Object:	getNumRemoteOp
+     *
+     *	Purpose:		Compute the total number of operators in all the teams
+     *
+     ****************************************************************************/
 
     private void getNumRemoteOp(){
         numRemoteOp = 0;
         for(int i : teamSize){
             numRemoteOp += i;
         }
+    }
+
+    /****************************************************************************
+     *
+     *	Shado Object:	collectTaskNames
+     *
+     *	Purpose:		Put the task name, followed task name, TC task name and
+     *              	Exogenous task name into one matrix.
+     *
+     ****************************************************************************/
+
+    private void collectTaskNames(){
+
+        String[] specialTaskName = {"TC task (some)", "TC task (full)", "Exogenous task"};
+        taskName_all = new String[totalTaskType];
+        for (int i = 0; i < totalTaskType; i++) {
+            if (i < numTaskTypes) {
+                taskName_all[i] = taskNames[i];
+            }
+            else {
+                taskName_all[i] = specialTaskName[i - numTaskTypes];
+            }
+        }
+
     }
 
     /****************************************************************************
@@ -217,6 +274,8 @@ public class loadparam {
      *
      ****************************************************************************/
     private void checkET(){
+
+        ETteam = new int[numTaskTypes];
 
         //set hasET default to false
         for(int i = 0; i < numTaskTypes; i++){
@@ -244,11 +303,71 @@ public class loadparam {
      *
      ****************************************************************************/
     private void checkFollowedTask(){
-        if (leadTask.length > 0){
-            for(int i = 0; i < leadTask.length; i++){
+
+        followedTask = new ArrayList<>();
+        for(int i = 0; i < leadTask.length; i++){
+            ArrayList<Integer> n = new ArrayList<>();
+            followedTask.add(n);
+        }
+
+        for (int i = 0; i < leadTask.length; i++) {
+            if (leadTask[i] >= 0) {
                 followedTask.get(leadTask[i]).add(i);
             }
         }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    refreshHumanErrorRate
+     *
+     *	Purpose:	    generate a new human error rate for each replication
+     *
+     ****************************************************************************/
+
+    public void refreshHumanErrorRate(){
+
+        for(int phase = 0; phase < numPhases; phase++) {
+            for (int taskType = 0; taskType < numTaskTypes; taskType++) {
+                humanErrorRate[phase][taskType] = getTriangularDistribution(humanError[phase][taskType]);
+            }
+        }
+
+        double[] specialTaskHumanError = new double[3];
+        specialTaskHumanError[0] = 0.002;
+        specialTaskHumanError[1] = 0.003;
+        specialTaskHumanError[2] = 0.004;
+
+        for(int phase = 0; phase < numPhases; phase++) {
+            for(int i = 0; i < 3; i++) {
+                humanErrorRate[phase][numTaskTypes + i] = getTriangularDistribution(specialTaskHumanError);
+            }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    getTriangularDistribution
+     *
+     *	Purpose:	    generate a TriangularDistribution value for human error prediction
+     *
+     ****************************************************************************/
+    private double getTriangularDistribution(double[] triangularParams){
+
+        double c = triangularParams[1]; //mode
+        double a = triangularParams[0]; //min
+        double b = triangularParams[2]; //max
+
+        double F = (c - a)/(b - a);
+        double rand = Math.random();
+        if (rand < F) {
+            return a + Math.sqrt(rand * (b - a) * (c - a));
+        } else {
+            return b - Math.sqrt((1 - rand) * (b - a) * (b - c));
+        }
+
     }
 
 //

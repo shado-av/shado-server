@@ -8,9 +8,10 @@ import server.Input.loadparam;
  *
  * 	AUTHOR:			ROCKY LI
  *
- * 	LATEST EDIT:	2017/5/24
+ * 	LATEST EDIT:	07/09/2018
  *
- * 	VER: 			1.1
+ * 	VER: 			1.1		Rocky Li
+ * 					2.0		Naixin Yu
  *
  * 	Purpose: 		generate task objects.
  *
@@ -26,9 +27,6 @@ public class Task implements Comparable<Task> {
 	private double lvl_SOME = 0.7;
 	private double lvl_FULL = 0.3;
 	private double lvl_None = 1.0;
-	private double[] arrivalRate;
-
-
 
 	//Task specific variables.
 	private int Phase;
@@ -42,12 +40,12 @@ public class Task implements Comparable<Task> {
 	private double waitTime;
 	private double beginTime;
 	private double endTime;
-	public int[] opNums;
 	private String name;
 	private int vehicleID;
 	private boolean expired;
 	private boolean fail; // Indicates fail but proceed
 	private boolean needReDo = false; // Indicates fail but caught
+	private int repeatTimes;
 
 	// This adds the ability for task to track queue retroactively
 
@@ -64,8 +62,10 @@ public class Task implements Comparable<Task> {
 
 	public boolean getNeedReDo() { return needReDo; }
 
+	public int getRepeatTimes() { return repeatTimes; }
+
 	public void setFail(){
-		System.out.println("The " + name + " arrived at " + arrTime + " is failed but not caught.");
+//		System.out.println("The " + name + " arrived at " + arrTime + " is failed but not caught.");
 		this.fail = true;
 	}
 
@@ -125,6 +125,10 @@ public class Task implements Comparable<Task> {
 		Priority = t.Priority;
 		prevTime = t.getEndTime();
 		Phase = getPhase(prevTime);
+		if (Phase == vars.numPhases) {
+			arrTime = -1;
+			return;
+		}
 		shiftPeriod = getShiftTime(prevTime);
 		this.fail = false;
 		elapsedTime = 0;
@@ -136,7 +140,7 @@ public class Task implements Comparable<Task> {
 		serTime = t.serTime;
 		expTime = t.expTime;
 		name = t.name;
-		opNums = t.opNums;
+		repeatTimes = t.repeatTimes + 1;
 	}
 
 	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
@@ -152,17 +156,17 @@ public class Task implements Comparable<Task> {
 		expired = false;
 		Priority = 0;
 		workSchedule = new ArrayList<>();
+		repeatTimes = 0;
+		name = vars.taskName_all[type];
 
 
-		if(type >= 0){
+		if(type < vars.numTaskTypes){
 
 			if (fromPrev == true) {
 				arrTime = genArrTime(PrevTime, Type);
 			} else {
 				arrTime = PrevTime;
 			}
-
-
 
 			Phase = getPhase(arrTime);
 
@@ -172,38 +176,35 @@ public class Task implements Comparable<Task> {
 			}
 
 			expTime = genExpTime();
-
-			if(type < vars.numTaskTypes){
-				serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
-				opNums = vars.opNums[Type];
-				name = vars.taskNames[Type];
-			}
-			else{
-				int followedType = type % 100;
-				serTime = GenTime(vars.serDists_f[Phase][followedType], vars.serPms_f[Phase][followedType]);
-				name = vars.taskNames_f[followedType];
-			}
+			serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
 
 		}
 		else{
 
-			if(type == -1){
-				arrTime = PrevTime + Exponential(0.1);
+			expTime = Double.POSITIVE_INFINITY;
+			Priority = 0;
+
+			if(type == vars.numTaskTypes){
+				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
-				name = "Team Coordination Task level some";
 			}
-			else if(type == -2){
-				arrTime = PrevTime + Exponential(0.2);
+			else if(type == vars.numTaskTypes + 1){
+				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
-				name = "Team Coordination Task level full";
 			}
-			else if(type == -3){
-				arrTime = PrevTime + Exponential(0.0021);
+			else if(type == vars.numTaskTypes + 2){
+				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
-				name = "Exogenous Task";
+				Priority = 7;
 			}
 
-			expTime = Double.POSITIVE_INFINITY;
+			Phase = getPhase(arrTime);
+			if (Phase == vars.numPhases) {
+				arrTime = -1;
+				return;
+			}
+
+
 		}
 
 		beginTime = arrTime;
@@ -226,10 +227,9 @@ public class Task implements Comparable<Task> {
 	@Override
 	public int compareTo(Task other){
 
-		if(this.getType() < 0) return 1;
-
-		if(this.getType() > vars.numTaskTypes){ //the followed task should always behind the lead task
-			int leadType = this.Type / 100 - 1;
+		//the followed task should always behind the lead task
+		if(this.getType() < vars.numTaskTypes && vars.leadTask[this.getType()] >= 0){
+			int leadType = vars.leadTask[this.getType()];
 			if(other.getType() == leadType){
 				if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
 					return 1;
@@ -239,29 +239,17 @@ public class Task implements Comparable<Task> {
 			}
 		}
 
-		int oldInterruptable, newEssential, oldEssential;
-
-		if(other.getType() > vars.numTaskTypes){
-			oldEssential = vars.essential_f[other.getType() % 100];
-			oldInterruptable = vars.interruptable_f[other.getType() % 100];
-		}
-		else{
-			oldEssential = vars.essential[other.getType()];
-			oldInterruptable = vars.interruptable[other.getType()];
-		}
-
-		if(this.getType() > vars.numTaskTypes){
-			newEssential = vars.essential_f[this.getType() % 100];
-		}
-		else{
-			newEssential = vars.essential[this.getType()];
-		}
-
 		// If the old task cannot be interrupted
-		if(oldInterruptable == 0 || oldEssential == 1) return 1;
+		if(vars.interruptable[other.getType()] == 0 || vars.essential[other.getType()] == 1)
+			return 1;
 
 		// If the new task is essential task, which can interrupt any other task
-		if(newEssential == 1) return -1;
+		if(vars.essential[this.getType()] == 1)
+			return -1;
+
+		// If the new task is one of the special tasks
+		if(this.getType() >= vars.numTaskTypes)
+			return 1;
 
 		if(vars.opStrats[teamType].equals("PRTY")){
 			if(other.Priority > this.Priority) return 1;
@@ -295,8 +283,6 @@ public class Task implements Comparable<Task> {
 
 	public String getName() {return this.name;}
 
-	public int getQueued() {return this.queued;}
-
 	public int getType() {return this.Type;}
 
 	public double getArrTime(){return this.arrTime;}
@@ -326,7 +312,7 @@ public class Task implements Comparable<Task> {
 		}
 		int currentPhase = 0;
 		for (int i = 0; i < vars.numPhases; i++) {
-			if (vars.phaseBegin[i] < time) {
+			if (vars.phaseBegin[i] <= time) {
 				currentPhase = i;
 			}
 			else break;
@@ -345,6 +331,33 @@ public class Task implements Comparable<Task> {
     public int getShiftTime(double time){
         return (int)time/60;
     }
+
+	/****************************************************************************
+	 *
+	 *	Method:			genTime
+	 *
+	 *	Purpose:		Generate a new time with the specified type and vars.
+	 *
+	 ****************************************************************************/
+
+	private double GenTime (char type, double[] param){
+		switch (type){
+			case 'E':
+				return Exponential(param[0]);
+			case 'L':
+				return Lognormal(param[0], param[1]);
+			case 'U':
+				return Uniform(param[0], param[1]);
+			case 'T':
+				return Triangular(param[0], param[1], param[2]);
+			case 'C':
+				return param[0];
+			case 'N':
+				return Double.POSITIVE_INFINITY;
+			default:
+				throw new IllegalArgumentException("Wrong Letter for the distribution.");
+		}
+	}
 
 	/****************************************************************************
 	 *
@@ -422,30 +435,7 @@ public class Task implements Comparable<Task> {
 		}
 	}
 
-	/****************************************************************************
-	 *
-	 *	Method:			genTime
-	 *
-	 *	Purpose:		Generate a new time with the specified type and vars.
-	 *
-	 ****************************************************************************/
 
-	private double GenTime (char type, double[] param){
-		switch (type){
-			case 'E':
-				return Exponential(param[0]);
-			case 'L':
-				return Lognormal(param[0], param[1]);
-			case 'U':
-				return Uniform(param[0], param[1]);
-			case 'T':
-				return Triangular(param[0], param[1], param[2]);
-			case 'C':
-				return param[0];
-			default:
-				throw new IllegalArgumentException("Wrong Letter");
-		}
-	}
 
 	/****************************************************************************
 	 *
@@ -458,49 +448,26 @@ public class Task implements Comparable<Task> {
 	private double genArrTime(double PrevTime, int type){
 
 		int fleet = vehicleID / 100;
-		double[] arrivalRate;
 		double TimeTaken;
-		int[][] trafficAff;
-		int taskType;
-
-		char[][] arrDist;
-		double[][][] arrPms;
-
-		//Set the parameters according the type of the task (lead task / followed task)
-		if (type < vars.numTaskTypes) {
-			arrDist = vars.arrDists;
-			arrPms = vars.arrPms;
-			trafficAff = vars.affByTraff;
-			taskType = type;
-		}
-		else {
-			arrDist = vars.arrDists_f;
-			arrPms = vars.arrPms_f;
-			taskType = type % 100;
-			trafficAff = vars.affByTraff_f;
-		}
 
 		//Skip the front phases who have a negative distribution parameter
-		while (Phase < vars.numPhases && arrPms[Phase][taskType][0] < 0) {
+		while (Phase < vars.numPhases && vars.arrDists[Phase][type] == 'N') {
 			Phase++;
-			if (Phase == vars.numPhases) {
-				break;
+			if (Phase == vars.numPhases) {//Finish checking all the phases
+				return -1;				   //Return -1 will discard this task
 			}
 			PrevTime = vars.phaseBegin[Phase];
 		}
-		if (Phase == vars.numPhases) { //Finish checking all the phases
-			return -1;				   //Return -1 will discard this task
-		}
 
-		arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
-		TimeTaken = GenTime(arrDist[Phase][taskType], arrivalRate);
+		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
+		TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
 
 		// check if this task stays in the same phase with the last one
 		int newPhase = getPhase(PrevTime + TimeTaken);
 		if (newPhase > Phase) { //come to a new phase
 
 			// skip the phases who have a negative distribution parameter
-			while (newPhase < vars.numPhases && arrPms[newPhase][taskType][0] < 0) {
+			while (newPhase < vars.numPhases && vars.arrDists[newPhase][type] == 'N') {
 				newPhase++;
 			}
 			if (newPhase == vars.numPhases) {
@@ -509,8 +476,8 @@ public class Task implements Comparable<Task> {
 			else {
 				PrevTime = vars.phaseBegin[newPhase];
 				Phase = newPhase;
-				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet));
-				TimeTaken = GenTime(arrDist[Phase][taskType], arrivalRate);
+				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
+				TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
 			}
 
 		}
@@ -521,12 +488,13 @@ public class Task implements Comparable<Task> {
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (loadparam.TRAFFIC_ON && trafficAff[Phase][taskType] == 1 ){
+		if (loadparam.TRAFFIC_ON && vars.affByTraff[Phase][type] == 1 ){
 			newArrTime = applyTraffic(TimeTaken);
 		}
 
 		return newArrTime;
 	}
+
 
 	//SCHEN 12/16/17 Add changing the arrival rate based on the traffic level
 	private double applyTraffic(double TimeTaken){
@@ -548,7 +516,7 @@ public class Task implements Comparable<Task> {
 			}
 
 			traffLevel = vars.traffic[currHour];
-			TimeToAdj = (currHour + 1)*60 - currTime;
+			TimeToAdj = (currHour + 1) * 60 - currTime;
 			adjTime = TimeToAdj * traffLevel;
 
 		}
@@ -568,12 +536,7 @@ public class Task implements Comparable<Task> {
 	private double genExpTime(){
 
 		double expiration;
-		if(Type < vars.numTaskTypes){
-			expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
-		}
-		else{
-			expiration = GenTime(vars.expDists_f[Phase][Type % 100], vars.expPms_f[Phase][Type % 100]);
-		}
+		expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
 		return arrTime + serTime + expiration;
 
 	}
@@ -608,39 +571,27 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 	public void changeServTime(double num){
 		serTime *= num;
-		return;
 	}
 
-	private double[] changeArrivalRate(double num){
+	private double[] changeArrivalRate(double num, int type){
 
 		double[] arrivalRate;
 
-		if(Type < vars.numTaskTypes){
-			arrivalRate = new double[vars.arrPms[Phase][Type].length];
-			if(vars.arrDists[Phase][Type] == 'L'){
-				arrivalRate[0] = arrivalRate[0] * num;
-				return arrivalRate;
-			}
-
-			int count = 0;
-			for(double d : vars.arrPms[Phase][Type]){
-				arrivalRate[count] = d * num;
-				count++;
-			}
+		//check if it has type 2 exogenous factor (increasing arrival rate)
+		if(vars.hasExogenous[1] == 1 && vars.exoType2Aff[type] == 1){
+			num *= 1.1;
 		}
-		else{
-			int type = Type % 100;
-			arrivalRate = new double[vars.arrPms_f[Phase][type].length];
-			if(vars.arrDists_f[Phase][type] == 'L'){
-				arrivalRate[0] = arrivalRate[0] * num;
-				return arrivalRate;
-			}
 
-			int count = 0;
-			for(double d : vars.arrPms_f[Phase][type]){
-				arrivalRate[count] = d * num;
-				count++;
-			}
+		arrivalRate = new double[vars.arrPms[Phase][Type].length];
+		if(vars.arrDists[Phase][Type] == 'L'){
+			arrivalRate[0] = arrivalRate[0] * num;
+			return arrivalRate;
+		}
+
+		int count = 0;
+		for(double d : vars.arrPms[Phase][Type]){
+			arrivalRate[count] = d * num;
+			count++;
 		}
 
 		return arrivalRate;
@@ -660,12 +611,11 @@ public class Task implements Comparable<Task> {
 
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);
-//		System.out.println("Arrival time : " + arrTime);
-//		System.out.println("Begin Time : " + beginTime);
-//		System.out.println("Service Time : " + serTime);
-//		System.out.println("Expire Time : " + expTime);
-//		System.out.println("ELS Time : " + elapsedTime);
-//		System.out.println("Finish Time : " + endTime);
+		System.out.println("Arrival time : " + arrTime);
+		System.out.println("Begin Time : " + beginTime);
+		System.out.println("Service Time : " + serTime);
+		System.out.println("Expire Time : " + expTime);
+		System.out.println("Finish Time : " + endTime);
 		System.out.print("Here is my work schedule: ");
 		for(int i = 0; i < workSchedule.size(); i++){
 			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");
