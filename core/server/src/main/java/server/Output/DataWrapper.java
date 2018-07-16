@@ -20,7 +20,7 @@ import javafx.util.Pair;
  *
  * 	VER: 			1.0                     Rocky Li
  * 	                1.?                     Richard Chen
- * 	                2.0     07/06/2018      Naixin Yu
+ * 	                2.0     07/16/2018      Naixin Yu
  *
  * 	Purpose: 		Wrapping the data field for analysis.
  *
@@ -233,8 +233,8 @@ public class DataWrapper {
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
                         double waitTime = t.getEndTime() - t.getArrTime() - t.getSerTime();
-//                        waitTime = round(waitTime, 2);
-                        System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," + t.getSerTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
+                        System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," +
+                                t.getSerTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
 
                     }
                 }
@@ -269,11 +269,8 @@ public class DataWrapper {
      *
      ****************************************************************************/
 
-
     //Naixin 05/21/18
     private void printUtilization(Utilization u, int timeSize) throws Exception {
-
-        int numColumn = (int) Math.ceil((double)vars.numHours * 6 / timeSize);
 
         // print utilization per operator
         for (int op = 0; op < vars.numRemoteOp; op++) {
@@ -288,43 +285,11 @@ public class DataWrapper {
             for (int rep = 0; rep < vars.numReps; rep++) {
 
                 Double[][] utilization = u.timeSectionSum(vars, op, rep, timeSize);
-                Double[] timeSectionSum = new Double[numColumn];
-                for (int i = 0; i < numColumn; i++) {
-                    timeSectionSum[i] = 0.0;
-                }
-
-                //print the labels
-                System.out.print("Replication" + rep + ",");
-                for(int col = 0; col < numColumn; col++){
-                    System.out.print(String.valueOf(col * 10 * timeSize) + "~" + String.valueOf((col + 1) * 10 * timeSize) + " mins,");
-                }
-                System.out.println("Replication Average");
-
-                // one row per task
-                for (int task = 0; task < vars.totalTaskType; task++) {
-                    System.out.print(vars.taskName_all[task] + ",");
-                    for (int time = 0; time < numColumn; time++) {
-                        Double percentage = utilization[task][time];
-                        timeSectionSum[time] += percentage;
-                        System.out.print(percentage + ",");
-                    }
-                    System.out.println(" ");
-                }
-
-                // print a line for timeSectionSum
-                System.out.print(",");
-
-                for (int time = 0; time < numColumn; time++) {
-                    if (timeSectionSum[time] > max10mins) {
-                        max10mins = timeSectionSum[time];
-                    }
-                    System.out.print(timeSectionSum[time] + ",");
-                }
+                printUtilizationLabel(timeSize, rep);
+                max10mins = printUtilizationPerReplication(max10mins, utilization);
 
                 // print the sum of timeSectionSum
-                System.out.print(u.averageUtilization[op][rep] + ",");
-
-                System.out.println(" ");
+                System.out.println(u.averageUtilization[op][rep] + ",");
                 System.out.println(" ");
             }
 
@@ -337,6 +302,70 @@ public class DataWrapper {
 
         System.setOut(stdout);
 
+    }
+
+    /****************************************************************************
+     *
+     *	Method:     printUtilizationPerReplication
+     *
+     *	Purpose:    Print the matrix of percentage utilization for a certain
+     *              operator in a certain replication. Return the max percentage
+     *              utilization among all time intervals.
+     *
+     ****************************************************************************/
+    //Naixin 05/21/18
+
+    private double printUtilizationPerReplication(double max10mins, Double[][] utilization) {
+
+        int numColumn = utilization[0].length;
+
+        Double[] timeSectionSum = new Double[numColumn];
+        for (int i = 0; i < numColumn; i++) {
+            timeSectionSum[i] = 0.0;
+        }
+
+        // one row per task
+        for (int task = 0; task < vars.totalTaskType; task++) {
+            System.out.print(vars.taskName_all[task] + ",");
+            for (int time = 0; time < numColumn; time++) {
+                Double percentage = utilization[task][time];
+                timeSectionSum[time] += percentage;
+                System.out.print(percentage + ",");
+            }
+            System.out.println(" ");
+        }
+
+        // print a line for timeSectionSum
+        System.out.print(",");
+
+        for (int time = 0; time < numColumn; time++) {
+
+            max10mins = Math.max(timeSectionSum[time], max10mins);
+
+            System.out.print(timeSectionSum[time] + ",");
+        }
+
+        return max10mins;
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:     printUtilizationLable
+     *
+     *	Purpose:    Print the labels for utilization output, including replication
+     *              index and time intervals
+     *
+     ****************************************************************************/
+    //Naixin 05/21/18
+
+    private void printUtilizationLabel(int timeSize, int rep) {
+        int numColumn = (int) Math.ceil((double)vars.numHours * 6 / timeSize);
+        System.out.print("Replication" + rep + ",");
+        for(int col = 0; col < numColumn; col++){
+            System.out.print(String.valueOf(col * 10 * timeSize) + "~" + String.valueOf((col + 1) * 10 * timeSize) + " mins,");
+        }
+        System.out.println("Average");
     }
 
 
@@ -456,24 +485,6 @@ public class DataWrapper {
         System.out.println("Average Utilization is " + sum / count);
 
     }
-
-
-//    /****************************************************************************
-//     *
-//     *	Method:     round
-//     *
-//     *	Purpose:    Round double numbers
-//     *
-//     ****************************************************************************/
-//
-//    public static double round(double value, int places) {
-//        if (places < 0) throw new IllegalArgumentException();
-//        long factor = (long) Math.pow(10, places);
-//        value = value * factor;
-//        long tmp = Math.round(value);
-//        return (double) tmp / factor;
-//    }
-
 
 }
 

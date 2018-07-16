@@ -23,6 +23,8 @@ public class Utilization {
     String[] taskName;
     Double[][][][] utilization; //[operator][replication][task][time];
     Double[][] averageUtilization; //[operator][replication];
+    //Double[][][][] fleetUtilization; //[operator][fleet][replication][time]
+    //Double[][][] averageFleetUtilization; //[operator][fleet][replication];
 
 
     public Double[][][][] getUtilization() { return utilization; }
@@ -34,8 +36,8 @@ public class Utilization {
      *	Purpose:	Create a object to record the utilization
      *                  1. per operator
      *                  2. per replication
-     *                  3. per 10-minutes interval
-     *                  4. per task type
+     *                  3. per task type
+     *                  4. per 10-minutes interval
      *
      ****************************************************************************/
 

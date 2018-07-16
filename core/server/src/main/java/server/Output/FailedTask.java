@@ -6,6 +6,9 @@ public class FailedTask {
     String[] operatorName;
     String[] taskName;
     int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
+    int [][][][] successTask; //[replication][phase][team][task type]
+    int [][][][] totalTask; //[replication][phase][team][task type]
+
 
     /****************************************************************************
      *
