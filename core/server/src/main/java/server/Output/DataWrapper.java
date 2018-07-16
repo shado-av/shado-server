@@ -64,11 +64,9 @@ public class DataWrapper {
         Utilization u = new Utilization(vars);
         FailedTask f = vars.failedTask;
 
-//        testUtilization();
-
         //Out put the report files
 
-        printUtilization(u,1);
+        printUtilization(u,2);
         printSummaryReport();
         printErrorReport();
         printTaskRecord();
@@ -79,19 +77,6 @@ public class DataWrapper {
 
 //        testHumanError();
 
-    }
-
-
-    private void testUtilization() throws IOException{
-        Utilization u = new Utilization(vars);
-
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-
-        String summary_file_name = outPutDirectory + "TestUtilization.json";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(summary_file_name, false)), true));
-        System.out.println(gson.toJson(u));
     }
 
     /****************************************************************************
@@ -106,11 +91,8 @@ public class DataWrapper {
     //Naixin 07/12/2018
     private void cleanDirectory() throws  IOException{
 
-        System.out.println("We should make a folder: " + outPutDirectory);
-
         File mainDir = new File(outPutDirectory);
         if (!mainDir.exists()) {
-            System.out.println("Create a folder: " + outPutDirectory);
             mainDir.mkdir();
         }
         FileUtils.cleanDirectory(mainDir);
@@ -305,7 +287,7 @@ public class DataWrapper {
             // print utilization per repulication
             for (int rep = 0; rep < vars.numReps; rep++) {
 
-                Double[][] utilization = u.timeSectionSum(op, rep, timeSize);
+                Double[][] utilization = u.timeSectionSum(vars, op, rep, timeSize);
                 Double[] timeSectionSum = new Double[numColumn];
                 for (int i = 0; i < numColumn; i++) {
                     timeSectionSum[i] = 0.0;

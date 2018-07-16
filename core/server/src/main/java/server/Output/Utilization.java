@@ -2,9 +2,23 @@ package server.Output;
 import server.Engine.Data;
 import server.Input.loadparam;
 
+/***************************************************************************
+ *
+ * 	FILE: 			Utilization.java
+ *
+ * 	AUTHOR: 		Naixin Yu
+ *
+ * 	LATEST EDIT:	07/16/2018
+ *
+ * 	VER: 			1.0
+ *
+ * 	Purpose: 		A class to records and manage the percentage utilization.
+ * 	                Also used for JSON output to the website.
+ *
+ **************************************************************************/
+
 public class Utilization {
 
-    loadparam param;
     String[] operatorName;
     String[] taskName;
     Double[][][][] utilization; //[operator][replication][task][time];
@@ -17,8 +31,6 @@ public class Utilization {
      *
      *	Shado Object:	Utilization
      *
-     *  Author: Naixin 05/29/2018
-     *
      *	Purpose:	Create a object to record the utilization
      *                  1. per operator
      *                  2. per replication
@@ -29,7 +41,6 @@ public class Utilization {
 
     public Utilization(loadparam vars){
 
-        param = vars;
         taskName = vars.taskName_all;
 
         // get operators' name
@@ -47,11 +58,20 @@ public class Utilization {
         utilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
         averageUtilization = new Double[vars.numRemoteOp][vars.numReps];
 
-        fillUtilization();
+        fillUtilization(vars);
 
     }
 
-    private void fillUtilization(){
+    /****************************************************************************
+     *
+     *	Method:     fillUtilization
+     *
+     *	Purpose:    Filled the utilization and averageUtilization matrix based on
+     *              utilizationOutput records.
+     *
+     ****************************************************************************/
+
+    private void fillUtilization(loadparam param){
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
@@ -75,15 +95,31 @@ public class Utilization {
 
     }
 
-    public Double[][] timeSectionSum(int operator, int replication, int size) throws Exception{
+    /****************************************************************************
+     *
+     *	Method:     timeSectionSum
+     *
+     *	Purpose:    Return a utilization matrix for particular operator and
+     *          	replication. The length of time, by which each column of this
+     *          	matrix represent, can be customized using the size parameter.
+     *
+     *              e.g.    size        percentage utilization in
+     *                       1                  10 min
+     *                       2                  20 min
+     *
+     ****************************************************************************/
+
+    public Double[][] timeSectionSum(loadparam param, int operator, int replication, int size) throws Exception{
 
         if (size > param.numHours * 6 || size < 1) {
             throw new Exception("Incorrect time interval size for utilization output");
         }
 
         Double[][] rawData = utilization[operator][replication];
+
         double i = param.numHours * 6;
         int numColumn = (int)Math.ceil(i / size);
+
         Double[][] result = new Double[param.totalTaskType][numColumn];
         for (int k = 0; k < param.totalTaskType; k++){
             for (int j = 0; j < numColumn; j++) {
@@ -94,11 +130,9 @@ public class Utilization {
         for (int task = 0; task < param.totalTaskType; task++) {
             for (int time = 0; time < numColumn; time++) {
                 for (int offset = 0; offset < size; offset++) {
-                    if (time * size + offset > rawData[0].length) {
-                        break;
-                    }
                     result[task][time] += rawData[task][time * size + offset];
                 }
+                result[task][time] = round(result[task][time] / size, 2);
             }
         }
 
