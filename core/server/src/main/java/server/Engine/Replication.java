@@ -3,7 +3,6 @@ package server.Engine;
 import server.Input.loadparam;
 import java.util.*;
 import java.lang.*;
-import java.util.concurrent.BlockingQueue;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
@@ -119,7 +118,7 @@ public class Replication {
         // and set to expired at the end of this phase
         if (task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) {
             task.setexpired();
-            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
+            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
             return;
         }
 
@@ -127,7 +126,7 @@ public class Replication {
         if (task.getPhase() == vars.numPhases - 1) {
             if (vars.essential[task.getType()] == 0 && vars.interruptable[task.getType()] == 0) {
                 task.setexpired();
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
                 return;
             }
         }
@@ -243,6 +242,7 @@ public class Replication {
         }
 
         if(Math.random() < humanErrorRate){
+            task.setFail();
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
             int currCnt = failCnt.get(vars.replicationTracker);
             failCnt.put(vars.replicationTracker,++currCnt);
@@ -250,13 +250,12 @@ public class Replication {
 
             if (Math.random() > errorCatching) {
                 //Task failed but wasn't caught
-                task.setFail();
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][2]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][2]++;
                 return;
             }
 
             //Task failed and caught
-            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
+            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
             task.setNeedReDo(true);
         }
 
@@ -398,6 +397,7 @@ public class Replication {
         task.changeServTime(vars.ETServiceTime[team]);
         task.setEndTime(task.getArrTime() + task.getSerTime());
         vars.AITasks.add(task);
+        vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][task.getPhase()][team][task.getType()]++;
     }
 
 

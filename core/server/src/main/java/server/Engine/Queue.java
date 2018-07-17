@@ -140,7 +140,9 @@ public class Queue implements Comparable<Queue>{
             Task currentTask = taskqueue.peek();
 
             recordtasks.add(taskqueue.poll());
-
+            if (!currentTask.getFail()) {
+                vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][currentTask.getType()]++;
+            }
             SetTime(finTime);
 
             if(currentTask.getNeedReDo()){
@@ -151,7 +153,7 @@ public class Queue implements Comparable<Queue>{
                 }
                 else {
                     // This redo task cannot be complete within the shift hours, add it to expired task.
-                    vars.failedTask.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
+                    vars.taskRecord.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
                 }
             }
         }
@@ -170,7 +172,7 @@ public class Queue implements Comparable<Queue>{
 
             int taskType = taskqueue.peek().getType();
 
-            vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
+            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
             vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 
@@ -219,7 +221,7 @@ public class Queue implements Comparable<Queue>{
                 onHandTask.addInterruptTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
                 onHandTask.setEndTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
                 onHandTask.setWaitTime(vars.phaseBegin[onHandTask.getPhase() + 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
                 recordtasks.add(taskqueue.poll());
             }
 
@@ -235,7 +237,7 @@ public class Queue implements Comparable<Queue>{
             }
             else {
                 taskqueue.peek().setexpired();
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
                 recordtasks.add(taskqueue.poll());
             }
 
