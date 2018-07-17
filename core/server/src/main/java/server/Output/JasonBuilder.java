@@ -12,12 +12,12 @@ public class JasonBuilder {
 
     String outputDirectory;
     Utilization utilization;
-    FailedTask failedTask;
+    TaskRecord taskRecord;
 
-    public JasonBuilder(String output, Utilization u, FailedTask f){
+    public JasonBuilder(String output, Utilization u, TaskRecord t){
         outputDirectory = output;
         utilization = u;
-        failedTask = f;
+        taskRecord = t;
     }
 
     public void outputJSON() throws IOException {
@@ -30,10 +30,10 @@ public class JasonBuilder {
                 new FileOutputStream(summary_file_name, false)), true));
         System.out.println(gson.toJson(utilization));
 
-        summary_file_name = outputDirectory + "FailedTask.json";
+        summary_file_name = outputDirectory + "TaskRecord.json";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
-        System.out.println(gson.toJson(failedTask));
+        System.out.println(gson.toJson(taskRecord));
         System.setOut(stdout);
     }
 }
