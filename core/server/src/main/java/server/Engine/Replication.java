@@ -61,7 +61,6 @@ public class Replication {
     public Replication(loadparam param, int id) {
         vars = param;
         this.repID = id;
-        vars.failTaskCount.put(vars.replicationTracker,0);
         failedTasks = new ArrayList<>();
     }
 
@@ -243,10 +242,6 @@ public class Replication {
 
         if(Math.random() < humanErrorRate){
             task.setFail();
-            HashMap<Integer,Integer> failCnt = vars.failTaskCount;
-            int currCnt = failCnt.get(vars.replicationTracker);
-            failCnt.put(vars.replicationTracker,++currCnt);
-            this.failedTasks.add(new Pair <Operator,Task>(operator,task));
 
             if (Math.random() > errorCatching) {
                 //Task failed but wasn't caught

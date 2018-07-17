@@ -68,7 +68,7 @@ public class DataWrapper {
 
         printUtilization(u,1);
         printSummaryReport();
-        printErrorReport();
+//        printErrorReport();
         printTaskRecord();
         printValidationReport(u.getUtilization());
 
