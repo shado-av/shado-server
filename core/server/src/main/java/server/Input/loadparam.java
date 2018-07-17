@@ -39,7 +39,6 @@ public class loadparam {
     public int[]        teamSize;
     public String[]     opNames;
     public String[]     opStrats;
-    public int[][]      opTasks;
     public int[][][]    opExpertise; //team * task * fleet
     public int[][][]    taskPrty; //phase * team * task
     public char[]       teamComm;
@@ -106,10 +105,6 @@ public class loadparam {
 
 	// Toggle Global Variables
 	public static boolean TRAFFIC_ON = true;
-	public static boolean FATIGUE_ON = true;
-	public static boolean DEBUG_ON = false;
-	public static boolean OUTPUT_ON = true;
-	public static boolean RAND_RUN_ON = true;
 
 	//SCHEN 11/15/17 test separated replication
 	public double[][][] repUtilOp;
