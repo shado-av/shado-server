@@ -26,7 +26,6 @@ public class Utilization {
     //Double[][][][] fleetUtilization; //[operator][fleet][replication][time]
     //Double[][][] averageFleetUtilization; //[operator][fleet][replication];
 
-
     public Double[][][][] getUtilization() { return utilization; }
 
     /****************************************************************************
@@ -157,6 +156,5 @@ public class Utilization {
         long tmp = Math.round(value);
         return (double) tmp / factor;
     }
-
 
 }

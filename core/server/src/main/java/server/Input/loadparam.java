@@ -40,6 +40,7 @@ public class loadparam {
     public String[]     opNames;
     public String[]     opStrats;
     public int[][]      opTasks;
+    public int[][][]    opExpertise; //team * task * fleet
     public int[][][]    taskPrty; //phase * team * task
     public char[]       teamComm;
     public double[][][] humanError;
@@ -56,7 +57,6 @@ public class loadparam {
 
     // Fleet Variables
     public int          fleetTypes;
-//    public int[][]      fleetOps;
     public int[]        numvehicles;
     public char[]       autolvl;
     public int[][]      fleetHetero;
@@ -83,7 +83,7 @@ public class loadparam {
     public String[]                     taskName_all;
     public int                          totalTaskType;
     public int                          numRemoteOp;
-    public int[]                        ETteam; //which team has ET for this task type
+    public int[][]                      ETteam; //[taks][fleet]: which team has ET for this task type this fleet
     public boolean                      hasET = false;
     public int                          replicationTracker;
     public int                          currRepnum = 0;
@@ -271,19 +271,24 @@ public class loadparam {
      ****************************************************************************/
     private void checkET(){
 
-        ETteam = new int[numTaskTypes];
+        ETteam = new int[numTaskTypes][fleetTypes];
 
         //set hasET default to false
-        for(int i = 0; i < numTaskTypes; i++){
-            ETteam[i] = -1;
+        for (int i = 0; i < numTaskTypes; i++) {
+            for (int j = 0; j < fleetTypes; j++) {
+                ETteam[i][j] = -1;
+            }
         }
 
         for(int team = 0; team < numTeams; team++){
             //if this team has equal teammate AIDA
             if(AIDAtype[team][0] == 1){
                 hasET = true;
-                for(int i : opTasks[team]) {
-                    ETteam[i] = team;
+                for (int i = 0; i < numTaskTypes; i++) {
+                    for (int j = 0; j < fleetTypes; j++) {
+                        if (opExpertise[team][i][j] == 1)
+                            ETteam[i][j] = team;
+                    }
                 }
             }
         }

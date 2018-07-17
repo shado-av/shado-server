@@ -98,10 +98,10 @@ public class VehicleSim  {
         Task newTask;
 
         if (preTask == null) {
-            newTask = new Task(taskType, 0, vars, true);
+            newTask = new Task(taskType, 0, vars, true, vehicleID);
         }
         else {
-            newTask = new Task(taskType, preTask.getArrTime(), vars, true);
+            newTask = new Task(taskType, preTask.getArrTime(), vars, true, vehicleID);
         }
 
         if (newTask.getArrTime() < 0) {
@@ -129,7 +129,7 @@ public class VehicleSim  {
 
         for(int taskType : followedTaskType){
 
-            Task newTask = new Task(taskType, prevTime, vars, true);
+            Task newTask = new Task(taskType, prevTime, vars, true, vehicleID);
             if(newTask.getArrTime() < 0) continue;
             newTask.setID(vehicleID);
             indlist.add(newTask);

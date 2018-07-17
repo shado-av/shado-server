@@ -64,6 +64,8 @@ public class Task implements Comparable<Task> {
 
 	public int getRepeatTimes() { return repeatTimes; }
 
+	public int getVehicleID() { return vehicleID; }
+
 	public void setFail(){ this.fail = true; }
 
 	public void setNeedReDo(boolean b){ this.needReDo = b; }
@@ -117,6 +119,7 @@ public class Task implements Comparable<Task> {
 	public Task() { }
 
 	public Task(Task t){
+		vehicleID = t.vehicleID;
 		Type = t.getType();
 		vars = t.vars;
 		Priority = t.Priority;
@@ -140,9 +143,10 @@ public class Task implements Comparable<Task> {
 		repeatTimes = t.repeatTimes + 1;
 	}
 
-	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
+	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, int vehicle) {
 
 		Type = type;
+		vehicleID = vehicle;
 		vars = Param;
 		prevTime = PrevTime;
 		Phase = getPhase(PrevTime);
