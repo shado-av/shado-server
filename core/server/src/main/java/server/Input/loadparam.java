@@ -85,7 +85,6 @@ public class loadparam {
     public int                          numRemoteOp;
     public int[]                        ETteam; //which team has ET for this task type
     public boolean                      hasET = false;
-    public int[]                        RemoteOpTasks;
     public int                          replicationTracker;
     public int                          currRepnum = 0;
     public double[][]                   humanErrorRate;
@@ -94,7 +93,6 @@ public class loadparam {
     public Replication[]                                reps;
     public HashMap<Integer,ArrayList>                   rep_failTask;
     public TaskRecord                                   taskRecord;
-    public HashMap<Integer,Integer>                     failTaskCount;
     public Data[][]                                     utilizationOutput;   //utilization[numRep][numOperator]
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
     public ArrayList<Task>                              AITasks;
@@ -144,7 +142,6 @@ public class loadparam {
         getNumRemoteOp();
         totalTaskType = numTaskTypes + 3;
         collectTaskNames();
-        failTaskCount = new HashMap<>();
         taskRecord = new TaskRecord(this);
         replicationTracker = 0;
         processedRepId = 0;

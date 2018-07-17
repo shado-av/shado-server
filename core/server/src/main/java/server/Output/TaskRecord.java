@@ -9,18 +9,23 @@ public class TaskRecord {
     private int [][][][] numSuccessTask; //[replication][phase][team][task type]
     private int [][][][] numTotalTask; //[replication][phase][team][task type]
 
-//TODO: update the comments here
     /****************************************************************************
      *
      *	Shado Object:	TaskRecods
      *
-     *  Author: Naixin 07/02/2018
+     *  Author: Naixin 07/17/2018
      *
-     *	Purpose:	Create a object to record the number of failed task
+     *	Purpose:	Create a object to record the number of task
      *                  1. per replication
      *                  2. per phase
      *                  3. per team
      *                  4. per task type
+     *
+     *              The records including:
+     *                  1. number of failed tasks
+     *                  2. number of success tasks
+     *                  3. number of total task
+     *
      *              Four types of failed tasks are record:
      *                  1. missed task (never start)
      *                  2. incomplete task (start but not finish)

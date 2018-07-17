@@ -30,15 +30,9 @@ public class ProcRep {
 
     private Data[] RemoteOpdata;
 
-    private Data[] operatordata;
-
     private Replication rep;
 
-    private VehicleSim[][] vehicles;
-
     private int repID;
-
-    private int numoperator;
 
     private int numtasktypes;
 
@@ -46,20 +40,13 @@ public class ProcRep {
 
     private Data[] repdisdata;
 
-    private int[] completed;
-
-    private int[] expired;
-
     private loadparam vars;
 
     private int totalRemoteOp;
 
     private int numSpecialTasks;
+
     // INSPECTORS
-
-    public int[] getExpired() { return expired; }
-
-    public int[] getCompleted() { return completed; }
 
     public Data[] getRepdisdata() { return repdisdata; }
 
@@ -73,21 +60,14 @@ public class ProcRep {
      *
      ****************************************************************************/
 
-    public ProcRep(Data[] dis, Data[] ops, Replication rep, loadparam vars, int SpecialTasks){
+    public ProcRep(Data[] dis, Replication rep, loadparam vars, int SpecialTasks){
 
         this.rep = rep;
         RemoteOpdata = dis;
-        operatordata = ops;
-        vehicles = rep.getvehicles();
         repID = rep.getRepID();
-        numoperator = rep.vars.numTeams;
         numtasktypes = rep.vars.numTaskTypes;
         hours = rep.vars.numHours;
         numSpecialTasks = SpecialTasks;
-
-        //     [ normal task & followed task | special task ]
-        expired = new int[numtasktypes + numSpecialTasks];
-        completed = new int[numtasktypes + numSpecialTasks];
 
         this.vars = vars;
 
@@ -163,14 +143,6 @@ public class ProcRep {
 
             if(taskType < 0){ // This is a special task
                 taskType = numtasktypes - taskType - 1;
-            }
-
-
-            if (each.checkexpired()){
-                expired[taskType]++;
-                continue;
-            } else {
-                completed[taskType]++;
             }
 
             for(int i = 0; i < each.workSchedule.size(); i++){

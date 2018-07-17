@@ -24,10 +24,6 @@ public class Simulation {
 
 	private loadparam vars;
 
-    private int[] expiredtaskcount;
-
-    private int[] completedtaskcount;
-
     private Data[] operatoroutput;
 
     private Data[] RemoteOpoutput;
@@ -35,14 +31,6 @@ public class Simulation {
     private int repnumber;
 
     private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
-
-    public int[] getExpiredtask() {
-        return expiredtaskcount;
-    }
-
-    public int[] getCompletedtaskcount() {
-        return completedtaskcount;
-    }
 
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
@@ -69,15 +57,12 @@ public class Simulation {
 
         operatoroutput = new Data[param.numTeams];
         for (int i = 0; i < param.numTeams; i++) {
-            operatoroutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
+            operatoroutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
         }
         RemoteOpoutput = new Data[vars.numRemoteOp];
         for (int i = 0; i < vars.numRemoteOp; i++) {
-            RemoteOpoutput[i] = new Data(param.numTaskTypes + numSpecialTasks, (int) param.numHours * 6, param.numReps);
+            RemoteOpoutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
         }
-
-        expiredtaskcount = new int[param.numTaskTypes + numSpecialTasks];
-        completedtaskcount = new int[param.numTaskTypes + numSpecialTasks];
 
     }
 
@@ -121,16 +106,13 @@ public class Simulation {
 
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
-            ProcRep process = new ProcRep(RemoteOpoutput, operatoroutput, vars.reps[i],vars,numSpecialTasks);
+            ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i],vars,numSpecialTasks);
             process.run();
             vars.utilizationOutput[i] = process.getRepdisdata();
 
             //Global Tracker for replication processed
             vars.currRepnum++;
-            for (int j = 0; j < vars.numTaskTypes + numSpecialTasks; j++) {
-                expiredtaskcount[j] += process.getExpired()[j];
-                completedtaskcount[j] += process.getCompleted()[j];
-            }
+
         }
 
         vars.taskRecord.computeTotalTaskNumber();

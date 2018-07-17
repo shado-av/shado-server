@@ -20,7 +20,7 @@ import javafx.util.Pair;
  *
  * 	VER: 			1.0                     Rocky Li
  * 	                1.?                     Richard Chen
- * 	                2.0     07/16/2018      Naixin Yu
+ * 	                2.0     07/17/2018      Naixin Yu
  *
  * 	Purpose: 		Wrapping the data field for analysis.
  *
@@ -75,8 +75,6 @@ public class DataWrapper {
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
-//        testHumanError();
-
     }
 
     /****************************************************************************
@@ -121,8 +119,8 @@ public class DataWrapper {
      *	Purpose:    Output the summary report, including:
      *
      *              1. Total number of tasks generated in each replication
-     *              2. Number of expired and completed tasks for each task type
-     *              3. Number of failed tasks in each replication
+     *              2. Number of expired, failed and completed tasks for each task type
+     *
      *
      ****************************************************************************/
 
@@ -147,18 +145,28 @@ public class DataWrapper {
 
         for(int i = 0; i < vars.totalTaskType; i++){
             System.out.println("Task name: " + vars.taskName_all[i]);
-            System.out.println(",Expired: " + sim.getExpiredtask()[i]);
-            System.out.println(",Completed: " + sim.getCompletedtaskcount()[i]);
+
+            int expiredTasks = 0;
+            int failedTasks = 0;
+            int completeTasks = 0;
+
+            for (int rep = 0; rep < vars.numReps; rep++) {
+                for (int phase = 0; phase < vars.numPhases; phase++) {
+                    for (int team = 0; team < vars.numTeams; team++) {
+                        expiredTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][0];
+                        expiredTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][1];
+                        failedTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][2];
+                        failedTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][3];
+                        completeTasks += vars.taskRecord.getNumSuccessTask()[rep][phase][team][i];
+                    }
+                }
+            }
+
+            System.out.println(",Expired: " + expiredTasks);
+            System.out.println(",Failed: " + failedTasks);
+            System.out.println(",Completed: " + completeTasks);
         }
 
-        //print failed task count
-
-        System.out.println("*** FAILED TASKS ***");
-        for (int i = 0; i < vars.numReps; i++) {
-            HashMap<Integer, Integer> failCnt = vars.failTaskCount;
-            int currFailCnt = failCnt.get(i);
-            System.out.println("In Replication " + i + ": " + "Number of Fail Tasks: " + currFailCnt);
-        }
 
         System.setOut(stdout);
     }
@@ -314,8 +322,8 @@ public class DataWrapper {
      *              utilization among all time intervals.
      *
      ****************************************************************************/
-    //Naixin 05/21/18
 
+    //Naixin 05/21/18
     private double printUtilizationPerReplication(double max10mins, Double[][] utilization) {
 
         int numColumn = utilization[0].length;
@@ -358,8 +366,8 @@ public class DataWrapper {
      *              index and time intervals
      *
      ****************************************************************************/
-    //Naixin 05/21/18
 
+    //Naixin 05/21/18
     private void printUtilizationLabels(int timeSize, int rep) {
         int numColumn = (int) Math.ceil((double)vars.numHours * 6 / timeSize);
         System.out.print("Replication" + rep + ",");
@@ -409,32 +417,6 @@ public class DataWrapper {
 
     }
 
-    /****************************************************************************
-     *
-     *	Method:     testHumanError
-     *
-     *	Purpose:    Print a vector of failed tasks percentage per replication.
-     *
-     ****************************************************************************/
-
-    private void testHumanError() throws IOException{
-
-        String file_name = outPutDirectory + "humanError" + ".csv";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(file_name, false)), true));
-
-        System.out.println("ErrorRate");
-
-        HashMap<Integer, Integer> failCnt = vars.failTaskCount;
-
-        for (int i = 0; i < vars.numReps; i++) {
-            double failedTasks = failCnt.get(i);
-            double generatedTasks = vars.repNumTasks[i];
-            System.out.println(failedTasks / generatedTasks);
-        }
-
-        System.setOut(stdout);
-    }
 
     /****************************************************************************
      *
