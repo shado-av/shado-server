@@ -105,7 +105,7 @@ public class Simulation {
      *
      ***************************************************************************/
 
-    public void run() throws IOException {
+    public void run() throws Exception {
 
         for (int i = 0; i < repnumber; i++) {
 
@@ -132,6 +132,8 @@ public class Simulation {
                 completedtaskcount[j] += process.getCompleted()[j];
             }
         }
+
+        vars.taskRecord.computeTotalTaskNumber();
 
         for (Data each: RemoteOpoutput){
             each.avgdata();

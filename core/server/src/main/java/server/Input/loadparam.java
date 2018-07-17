@@ -4,9 +4,7 @@ import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
 import javafx.util.Pair;
-import server.Output.FailedTask;
-
-import java.io.*;
+import server.Output.TaskRecord;
 import java.util.*;
 
 /***************************************************************************
@@ -95,7 +93,7 @@ public class loadparam {
     // Records
     public Replication[]                                reps;
     public HashMap<Integer,ArrayList>                   rep_failTask;
-    public FailedTask                                   failedTask;
+    public TaskRecord                                   taskRecord;
     public HashMap<Integer,Integer>                     failTaskCount;
     public Data[][]                                     utilizationOutput;   //utilization[numRep][numOperator]
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
@@ -147,7 +145,7 @@ public class loadparam {
         totalTaskType = numTaskTypes + 3;
         collectTaskNames();
         failTaskCount = new HashMap<>();
-        failedTask = new FailedTask(this);
+        taskRecord = new TaskRecord(this);
         replicationTracker = 0;
         processedRepId = 0;
         debugCnt = 0;

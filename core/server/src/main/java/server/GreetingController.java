@@ -112,13 +112,13 @@ public class GreetingController {
         };
     }
 
-    @RequestMapping(value = "/shado/getFailedJSON", method = RequestMethod.GET)
+    @RequestMapping(value = "/shado/getTaskJSON", method = RequestMethod.GET)
     public StreamingResponseBody getFailed(@RequestParam(value="sessionN", defaultValue="") String sessionN, HttpServletResponse response) throws IOException{
 
-        String fileName = homeDirectory + sessionN + "/FailedTask.json";
+        String fileName = homeDirectory + sessionN + "/TaskRecord.json";
 
         response.setContentType("application/json");
-        response.setHeader("Content-Disposition", "attachment; filename=\"FailedTask.json\"");
+        response.setHeader("Content-Disposition", "attachment; filename=\"TaskRecord.json\"");
         InputStream inputStream = new FileInputStream(new File(fileName));
         return outputStream -> {
             int iRead;

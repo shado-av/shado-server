@@ -1,18 +1,18 @@
 package server.Output;
 import server.Input.loadparam;
 
-public class FailedTask {
+public class TaskRecord {
 
-    String[] operatorName;
-    String[] taskName;
-    int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
-    int [][][][] successTask; //[replication][phase][team][task type]
-    int [][][][] totalTask; //[replication][phase][team][task type]
+    private String[] operatorName;
+    private String[] taskName;
+    private int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
+    private int [][][][] numSuccessTask; //[replication][phase][team][task type]
+    private int [][][][] numTotalTask; //[replication][phase][team][task type]
 
-
+//TODO: update the comments here
     /****************************************************************************
      *
-     *	Shado Object:	FailedTask
+     *	Shado Object:	TaskRecods
      *
      *  Author: Naixin 07/02/2018
      *
@@ -29,7 +29,7 @@ public class FailedTask {
      *
      ****************************************************************************/
 
-    public FailedTask(loadparam vars){
+    public TaskRecord(loadparam vars){
 
         taskName = vars.taskName_all;
 
@@ -44,15 +44,45 @@ public class FailedTask {
             }
         }
 
-        //create the matrix for failed task
+        //create the matrix for task records
 
         numFailedTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
+        numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
+        numTotalTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
 
     }
 
     public int[][][][][] getNumFailedTask() {
         return numFailedTask;
     }
+
+    public int[][][][] getNumSuccessTask() { return numSuccessTask; }
+
+    public void computeTotalTaskNumber(){
+
+        int numRep = numFailedTask.length;
+        int numPhase = numFailedTask[0].length;
+        int numTeam = numFailedTask[0][0].length;
+        int numTask = numFailedTask[0][0][0].length;
+
+        for (int rep = 0; rep < numRep; rep++) {
+            for (int phase = 0; phase < numPhase; phase++) {
+                for (int team = 0; team < numTeam; team++) {
+                    for (int task = 0; task < numTask; task++) {
+                        numTotalTask[rep][phase][team][task] = 0;
+                        int fail = 0;
+                        for (int i = 0; i < 4; i++) {
+                            fail += numFailedTask[rep][phase][team][task][i];
+                        }
+                        numTotalTask[rep][phase][team][task] += fail;
+                        numTotalTask[rep][phase][team][task] += numSuccessTask[rep][phase][team][task];
+                    }
+                }
+            }
+        }
+
+    }
+
 
     @Override
     public String toString() {
@@ -63,3 +93,4 @@ public class FailedTask {
         return " ";
     }
 }
+

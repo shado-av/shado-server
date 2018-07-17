@@ -43,7 +43,7 @@ public class Task implements Comparable<Task> {
 	private String name;
 	private int vehicleID;
 	private boolean expired;
-	private boolean fail; // Indicates fail but proceed
+	private boolean fail; // Indicates fail
 	private boolean needReDo = false; // Indicates fail but caught
 	private int repeatTimes;
 
@@ -64,10 +64,7 @@ public class Task implements Comparable<Task> {
 
 	public int getRepeatTimes() { return repeatTimes; }
 
-	public void setFail(){
-//		System.out.println("The " + name + " arrived at " + arrTime + " is failed but not caught.");
-		this.fail = true;
-	}
+	public void setFail(){ this.fail = true; }
 
 	public void setNeedReDo(boolean b){ this.needReDo = b; }
 

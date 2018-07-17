@@ -62,17 +62,17 @@ public class DataWrapper {
         //Generate JSON files
 
         Utilization u = new Utilization(vars);
-        FailedTask f = vars.failedTask;
+        TaskRecord t = vars.taskRecord;
 
         //Out put the report files
 
-        printUtilization(u,2);
+        printUtilization(u,1);
         printSummaryReport();
         printErrorReport();
         printTaskRecord();
         printValidationReport(u.getUtilization());
 
-        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, f);
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
 //        testHumanError();
@@ -285,12 +285,13 @@ public class DataWrapper {
             for (int rep = 0; rep < vars.numReps; rep++) {
 
                 Double[][] utilization = u.timeSectionSum(vars, op, rep, timeSize);
-                printUtilizationLabel(timeSize, rep);
+                printUtilizationLabels(timeSize, rep);
                 max10mins = printUtilizationPerReplication(max10mins, utilization);
 
                 // print the sum of timeSectionSum
                 System.out.println(u.averageUtilization[op][rep] + ",");
                 System.out.println(" ");
+
             }
 
             System.out.println("The max utilization in 10 mins is " + max10mins);
@@ -359,7 +360,7 @@ public class DataWrapper {
      ****************************************************************************/
     //Naixin 05/21/18
 
-    private void printUtilizationLabel(int timeSize, int rep) {
+    private void printUtilizationLabels(int timeSize, int rep) {
         int numColumn = (int) Math.ceil((double)vars.numHours * 6 / timeSize);
         System.out.print("Replication" + rep + ",");
         for(int col = 0; col < numColumn; col++){
