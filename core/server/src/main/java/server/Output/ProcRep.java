@@ -38,8 +38,6 @@ public class ProcRep {
 
     private int repID;
 
-    private int numRemoteOp;
-
     private int numoperator;
 
     private int numtasktypes;
@@ -48,8 +46,6 @@ public class ProcRep {
 
     private Data[] repdisdata;
 
-    private Data[] repopsdata;
-
     private int[] completed;
 
     private int[] expired;
@@ -57,6 +53,8 @@ public class ProcRep {
     private loadparam vars;
 
     private int totalRemoteOp;
+
+    private int numSpecialTasks;
     // INSPECTORS
 
     public int[] getExpired() { return expired; }
@@ -65,9 +63,6 @@ public class ProcRep {
 
     public Data[] getRepdisdata() { return repdisdata; }
 
-    public String[] attributes = {"\t", "Average","Minimum","1st Quartile","Median",
-            "3rd Quartile","Maximum", "Variance","Count of utilization 0-30%","Count of utilization 30%-70%","Count of utilization 70%-100%"};
-    public String[] rowName = {"Workload","Error","Expired",""};
 
     /****************************************************************************
      *
@@ -78,22 +73,53 @@ public class ProcRep {
      *
      ****************************************************************************/
 
-    public ProcRep(Data[] dis, Data[] ops, Replication rep, loadparam vars){
+    public ProcRep(Data[] dis, Data[] ops, Replication rep, loadparam vars, int SpecialTasks){
 
         this.rep = rep;
         RemoteOpdata = dis;
         operatordata = ops;
         vehicles = rep.getvehicles();
         repID = rep.getRepID();
-        numRemoteOp = rep.vars.numRemoteOp;
         numoperator = rep.vars.numTeams;
         numtasktypes = rep.vars.numTaskTypes;
         hours = rep.vars.numHours;
-        expired = new int[numtasktypes];
-        completed = new int[numtasktypes];
+        numSpecialTasks = SpecialTasks;
+
+        //     [ normal task & followed task | special task ]
+        expired = new int[numtasktypes + numSpecialTasks];
+        completed = new int[numtasktypes + numSpecialTasks];
+
         this.vars = vars;
-//        totalRemoteOp = rep.vars.numRemoteOp;
-        int totalRemoteOp = 0;
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:			run
+     *
+     *	Purpose:		A wrapper that runs the ProcRep class.
+     *
+     ****************************************************************************/
+
+    public void run(){
+        setTotalRemoteOps();
+        tmpData();
+        fillRepData();
+        appendData();
+    }
+
+    /****************************************************************************
+     *
+     *	Method:			setTotalRemoteOps
+     *
+     *	Purpose:		Set the total number of operators.
+     *
+     ****************************************************************************/
+
+    private void setTotalRemoteOps(){
+        for(int i : vars.teamSize){
+            totalRemoteOp += i;
+        }
     }
 
     /****************************************************************************
@@ -106,20 +132,11 @@ public class ProcRep {
 
     public void tmpData(){
 
-//        System.out.println("Total Num RemoteOps: " + totalRemoteOp);
-//        repdisdata = new Data[numRemoteOp];
         repdisdata = new Data[totalRemoteOp];
         for (int i = 0; i < totalRemoteOp; i++){
-            repdisdata[i] = new Data(numtasktypes,(int) hours*6, 1);
+            repdisdata[i] = new Data(numtasktypes + numSpecialTasks,(int) hours*6, 1);
         }
 
-        repopsdata = new Data[numoperator];
-        for (int i = 0; i < numoperator; i++) {
-            for (int j = 0; j < rep.vars.fleetTypes; j++) {
-                //TODO: it lloks wried here, do you k is tha max length of all the vehicle types?
-                repopsdata[i] = new Data(numtasktypes, (int) hours * 6, vehicles[j].length);
-            }
-        }
     }
 
     /****************************************************************************
@@ -140,47 +157,63 @@ public class ProcRep {
 
         for (Task each: records){
 
-            if (each.checkexpired()){
-                expired[each.getType()]++;
-                continue;
-            } else {
-                completed[each.getType()]++;
+            //[ normal task | followed task | special task  ]
+
+            int taskType = each.getType();
+
+            if(taskType < 0){ // This is a special task
+                taskType = numtasktypes - taskType - 1;
             }
 
-            double beginscale = (each.getEndTime() - each.getSerTime()) / 10;
-            double endscale = each.getEndTime() / 10;
 
-            boolean startcheck = false;
+            if (each.checkexpired()){
+                expired[taskType]++;
+                continue;
+            } else {
+                completed[taskType]++;
+            }
 
-            for (int i = 1; i < (int) hours*6 + 1; i++) {
-
-                // If task hasn't began yet
-
-                if (beginscale > i) {
+            for(int i = 0; i < each.workSchedule.size(); i++){
+                if (each.workSchedule.get(i)[0] >= each.workSchedule.get(i)[1]) {
                     continue;
                 }
+                double beginscale = each.workSchedule.get(i)[0] / 10;
+                double endscale = each.workSchedule.get(i)[1] / 10;
+                fill(beginscale, endscale, incremented, taskType);
+            }
+        }
 
-                // If task began but not finished in this interval.
+    }
 
-//                vehicleID = 0;
-//                int zero = 0;
-//                int zero = vehicleID;
 
-                if (endscale > i) {
-                    if (!startcheck) {
-                        incremented.datainc(each.getType(), i - 1, 0, i - beginscale);
-                        startcheck = true;
-                    } else {
-                        incremented.datainc(each.getType(), i - 1, 0, 1);
-                    }
+    private void fill(double beginscale, double endscale, Data incremented, int taskType){
+
+        boolean startcheck = false;
+
+        for (int i = 1; i < (int) hours*6 + 1; i++) {
+
+            // If task hasn't began yet
+
+            if (beginscale > i) {
+                continue;
+            }
+
+            // If task began but not finished in this interval.
+
+            if (endscale > i) {
+                if (!startcheck) {
+                    incremented.datainc(taskType, i - 1, 0, i - beginscale);
+                    startcheck = true;
                 } else {
-                    if (!startcheck) {
-                        incremented.datainc(each.getType(), i - 1, 0, endscale - beginscale);
-                        break;
-                    } else {
-                        incremented.datainc(each.getType(), i - 1, 0, endscale - i + 1);
-                        break;
-                    }
+                    incremented.datainc(taskType, i - 1, 0, 1);
+                }
+            } else {
+                if (!startcheck) {
+                    incremented.datainc(taskType, i - 1, 0, endscale - beginscale);
+                    break;
+                } else {
+                    incremented.datainc(taskType, i - 1, 0, endscale - i + 1);
+                    break;
                 }
             }
         }
@@ -196,27 +229,12 @@ public class ProcRep {
      ****************************************************************************/
 
     public void fillRepData(){
+
         //SCHEN 11/29/17
-        //TODO: output operator's data
         Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
 
         for (int i = 0; i < totalRemoteOp; i++){
             fillRepDataCell(RemoteOpers[i], repdisdata[i]);
-        }
-//        for(int i = 0; i < rep.vars.fleetTypes;i++) {
-////            for(int j = 0 ; j < vehicles[i].length; j++){
-//                for (VehicleSim vehicle : vehicles[i]) {
-////                    System.out.println("Op calculation for vehicle: " + i);
-//                    Operator[] operators = vehicle.operators;
-//                    for (int j = 0; j < 2; j++) {
-////                        System.out.println("fillRepDataCell for vehicleID: " + vehicle.getvehicleID()%10);
-//                        fillRepDataCell(operators[j], repopsdata[j], vehicle.getvehicleID());
-//                    }
-//                }
-////            }
-//        }
-        for (Data each: repopsdata){
-            each.avgdata();
         }
 
     }
@@ -242,113 +260,7 @@ public class ProcRep {
             }
         }
 
-        // Process the operator data
-
-        for (int i = 0; i < numoperator; i++){
-            Data processed = operatordata[i];
-            for (int x = 0; x < processed.data.length; x++){
-                for (int y = 0; y < processed.data[0].length; y++){
-                    processed.datainc(x, y, repID, repopsdata[i].avgget(x, y));
-                }
-            }
-        }
     }
 
-    /****************************************************************************
-     *
-     *	Method:			testClass
-     *
-     *	Purpose:		Test the ProcRep class.
-     *
-     ****************************************************************************/
-
-    public void outputProcRep(int currRep) throws IOException {
-        //get mapping for Operator->Num
-        ArrayList<Integer>remoteNum = new ArrayList<>();
-        ArrayList<Integer>remoteType = new ArrayList<>();
-        for(int i = 0 ;i< vars.teamSize.length;i++){
-           for(int j = 0; j < vars.teamSize[i]; j++){
-              remoteNum.add(j);
-              remoteType.add(i);
-           }
-        }
-//        System.out.println("repdisdata.size(): "+repdisdata.length);
-        System.out.println(Arrays.toString(remoteNum.toArray()));
-
-        int i = 0;
-        for (Data each: repdisdata) {
-            each.avgdata();
-            String opName = vars.opNames[remoteType.get(i)]+"_"+remoteNum.get(i);
-            sepCSV(each, currRep, opName,remoteType.get(i),remoteNum.get(i));
-            i++;
-        }
-
-
-    }
-    private void setTotalRemoteOps(){
-        for(int i : vars.teamSize){
-            totalRemoteOp += i;
-        }
-    }
-
-    /****************************************************************************
-     *
-     *	Method:			Run
-     *
-     *	Purpose:		A wrapper that runs the ProcRep class.
-     *
-     ****************************************************************************/
-
-    public void run(int currRep){
-        setTotalRemoteOps();
-        tmpData();
-        fillRepData();
-        appendData();
-       try{
-           outputProcRep(currRep);
-       }catch(Exception e){
-//           System.out.println("JAVA IO EXCEPTION");
-           System.out.println(e);
-       };
-
-
-    }
-    /****************************************************************************
-     *
-     *	Method:			SepCSV
-     *
-     *	Purpose:		output CSV for every replication (per Operator, per Replication)
-     *
-     ****************************************************************************/
-    public void sepCSV(Data RemoteOpout, int repNum,String opName,int opType,int opID)throws IOException{
-//        String  file_head = FileWizard.getabspath();
-        //SCHEN 11/30/17
-        //Make RemoteOper dir if not exists
-        String directoryName = "/home/rapiduser/shado-server/core/server/out/repCSV/";
-//        String directoryName = "/Users/zhanglian1/shado-server/core/server/out/repCSV/";
-        File directory = new File(directoryName);
-
-        if (!directory.exists()){
-            directory.mkdir();
-        }
-
-        String file_name = directoryName + "Op_"+opName+"_Rep_"+repNum+ ".csv";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(file_name, false)), true));
-        for(String s : attributes){
-            System.out.print(s + ",");
-        }
-        System.out.println();
-        for(String s :rowName){
-            System.out.print(s +",");
-            //Feed Data
-            RemoteOpout.printMetaData(s,repNum,vars,this,opName,opType,opID);
-            System.out.println();
-        }
-        //Print raw data
-        System.out.println();
-        System.out.println("\t\t---Raw data in 10 min interval---");
-        RemoteOpout.outputdata();
-    }
 
 }

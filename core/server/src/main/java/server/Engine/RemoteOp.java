@@ -73,15 +73,12 @@ public class RemoteOp {
         // SCHEN 11/20/17
         // Note: RemoteOper is a 1d array, to fit in the data structure,
         // change it to 2d array with each subarray with length == 1
-        RemoteOpers = new Operator[vars.teamSizeTotal];
+        RemoteOpers = new Operator[vars.numRemoteOp];
         int cnt = 0;
         for (int i = 0; i < vars.opTasks.length; i++) {
             //TODO[COMPLETE] generate Operator base on different types of remote Ops
             for (int j = 0; j < vars.teamSize[i]; j++) {
-                // TODO: adjust i * 10 + j to meet the team size requirement
-                RemoteOpers[cnt++] = new Operator(i * 100 + j,vars.opNames[i], vars.opTasks[i]);
-                //DEBUG
-//                System.out.println("New "+vars.opNames[i]+", ID: "+ (i*10 + j)+" With Task: " + Arrays.toString(vars.opTasks[i]));
+                RemoteOpers[cnt++] = new Operator(i * 100 + j,vars.opNames[i], vars.opTasks[i], vars);
             }
         }
     }
@@ -99,95 +96,97 @@ public class RemoteOp {
 //        runRemoteOp();
     }
 
-    /****************************************************************************
-     *
-     *	Method:		    genTeamTasks
-     *
-     *	Purpose:		Generate all the linked tasks that requires both RemoteOper and
-     *					operator input.
-     *
-     ****************************************************************************/
-
-    public void genRemoteOpTask() {
-
-        // Creates a new task arraylist of the tasks that are linked
-        ArrayList<Integer> linkedt = new ArrayList<Integer>();
-        linkedtasks = new ArrayList<Task>();
-
-        // Discrete Tasks owned by the RemoteOper:
-        for (int la : vars.RemoteOpTasks) {
-
-            // Create a new empty list of Tasks
-            ArrayList<Task> indlist = new ArrayList<Task>();
-
-            // Start a new task with PrevTime = 0
-            Task newTask = new Task(la, 0, vars, true);
-
-            if (newTask.linked())
-                continue;
-
-            // Set vehicle ID.
-            newTask.setID(-1);
-            indlist.add(newTask);
-
-            // While the next task is within the time frame, generate.
-            while (newTask.getArrTime() < vars.numHours * 60) {
-                newTask = new Task(la, newTask.getArrTime(), vars, true);
-                newTask.setID(-1);
-                indlist.add(newTask);
-            }
-
-            // Put all task into the master tasklist.
-
-            linkedtasks.addAll(indlist);
-
-        }
-
-        // For each vehicle:
-
-        //SCHEN 11/10/17 Modify the functionality to fit fleet heterogeneity
-        //for (int j = 0; j < vars.numvehicles; j++) {
-        for (int k = 0; k < vars.fleetTypes; k++) {
-
-            //For each vehicle
-            for (int j = 0; j < vars.numvehicles[k]; j++) {
-
-                // For each type of tasks:
-                for (int i = 0; i < vars.numTaskTypes; i++) {
-
-                    // Create a new empty list of Tasks
-                    ArrayList<Task> indlist = new ArrayList<Task>();
-
-                    // Start a new task with PrevTime = 0
-                    Task newTask = new Task(i, 0, vars, true);
-                    if (!newTask.linked()) {
-                        continue;
-                    }
-                    linkedt.add(i);
-
-                    // Set vehicle ID.
-                    //SCHEN 11/10/17 vehicle id for 2d array
-//                    System.out.println("vehicle id: " + (k*10 +j));
-                    int id = k*10 +j;
-                    newTask.setID(id);
-
-                    indlist.add(newTask);
-
-                    // While the next task is within the time frame, generate.
-                    while (newTask.getArrTime() < vars.numHours * 60) {
-                        newTask = new Task(i, newTask.getArrTime(), vars, true);
-                        newTask.setID(j);
-                        indlist.add(newTask);
-                    }
-
-                    // Put all task into the master tasklist.
-                    linkedtasks.addAll(indlist);
-                }
-            }
-
-            linked = linkedt.stream().mapToInt(Integer::intValue).toArray();
-        }
-    }
+//    /****************************************************************************
+//     *
+//     *	Method:		    genTeamTasks
+//     *
+//     *	Purpose:		Generate all the linked tasks that requires both RemoteOper and
+//     *					operator input.
+//     *
+//     ****************************************************************************/
+//
+//    //TODO: the vehicleID here may cause problem (cannot be -1)
+//
+//    public void genRemoteOpTask() {
+//
+//        // Creates a new task arraylist of the tasks that are linked
+//        ArrayList<Integer> linkedt = new ArrayList<Integer>();
+//        linkedtasks = new ArrayList<Task>();
+//
+//        // Discrete Tasks owned by the RemoteOper:
+//        for (int la : vars.RemoteOpTasks) {
+//
+//            // Create a new empty list of Tasks
+//            ArrayList<Task> indlist = new ArrayList<Task>();
+//
+//            // Start a new task with PrevTime = 0
+//            Task newTask = new Task(la, 0, vars, true);
+//
+//            if (newTask.linked())
+//                continue;
+//
+//            // Set vehicle ID.
+//            newTask.setID(-1);
+//            indlist.add(newTask);
+//
+//            // While the next task is within the time frame, generate.
+//            while (newTask.getArrTime() < vars.numHours * 60) {
+//                newTask = new Task(la, newTask.getArrTime(), vars, true);
+//                newTask.setID(-1);
+//                indlist.add(newTask);
+//            }
+//
+//            // Put all task into the master tasklist.
+//
+//            linkedtasks.addAll(indlist);
+//
+//        }
+//
+//        // For each vehicle:
+//
+//        //SCHEN 11/10/17 Modify the functionality to fit fleet heterogeneity
+//        //for (int j = 0; j < vars.numvehicles; j++) {
+//        for (int k = 0; k < vars.fleetTypes; k++) {
+//
+//            //For each vehicle
+//            for (int j = 0; j < vars.numvehicles[k]; j++) {
+//
+//                // For each type of tasks:
+//                for (int i = 0; i < vars.numTaskTypes; i++) {
+//
+//                    // Create a new empty list of Tasks
+//                    ArrayList<Task> indlist = new ArrayList<Task>();
+//
+//                    // Start a new task with PrevTime = 0
+//                    Task newTask = new Task(i, 0, vars, true);
+//                    if (!newTask.linked()) {
+//                        continue;
+//                    }
+//                    linkedt.add(i);
+//
+//                    // Set vehicle ID.
+//                    //SCHEN 11/10/17 vehicle id for 2d array
+////                    System.out.println("vehicle id: " + (k*10 +j));
+//                    int id = k*100 +j;
+//                    newTask.setID(id);
+//
+//                    indlist.add(newTask);
+//
+//                    // While the next task is within the time frame, generate.
+//                    while (newTask.getArrTime() < vars.numHours * 60) {
+//                        newTask = new Task(i, newTask.getArrTime(), vars, true);
+//                        newTask.setID(j);
+//                        indlist.add(newTask);
+//                    }
+//
+//                    // Put all task into the master tasklist.
+//                    linkedtasks.addAll(indlist);
+//                }
+//            }
+//
+//            linked = linkedt.stream().mapToInt(Integer::intValue).toArray();
+//        }
+//    }
 
 
 

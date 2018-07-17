@@ -24,12 +24,8 @@ public class Parser {
         Gson g = new Gson();
         System.out.println("PARSING JSON...");
         in = g.fromJson(this.input, loadparam.class);
-        printloadparam(in);
+//        printloadparam(in);
         in.setGlobalData();
-//        System.out.println("Traffic: "+ Arrays.toString(in.traffic));
-//        System.out.println("OpStrats: "+in.opStrats);
-////        System.out.println("OpNames: "+ in.opNames[0]);
-//        System.out.println("Fleet Hetero: "+Arrays.toString(in.fleetHetero));
         return in;
     }
 
@@ -42,14 +38,12 @@ public class Parser {
         System.out.println("numRemoteOp: " + in.numRemoteOp);
         System.out.println("numTeams: " + in.numTeams);
         System.out.println("numPhases: " + in.numPhases);
-        System.out.println("autolvl: " + in.autolvl);
+        System.out.println("phaseBegin: " + Arrays.toString(in.phaseBegin));
+        System.out.println("autolvl: " + Arrays.toString(in.autolvl));
         System.out.println("the exo: " + Arrays.toString(in.hasExogenous));
-        System.out.println("exNames: "+ Arrays.toString(in.exNames));
-        System.out.println("exTypes: "+ Arrays.toString(in.exTypes));
-        System.out.println("failThreshold: " + in.failThreshold);
-        System.out.println("OpStrats: "+in.opStrats);
+        System.out.println("OpStrats: "+ Arrays.toString(in.opStrats));
         System.out.println("OpNames: "+ in.opNames[0]);
-//        System.out.println("opTasks: : " + Arrays.toString(in.opTasks));
+        System.out.println("teamCoordAff: : " + Arrays.toString(in.teamCoordAff));
         System.out.println("teamComm: "+ Arrays.toString(in.teamComm));
         System.out.println("teamSize: "+ Arrays.toString(in.teamSize));
         System.out.println("fleetTypes: "+in.fleetTypes);
@@ -57,14 +51,33 @@ public class Parser {
         System.out.println("numTaskTypes: "+in.numTaskTypes);
         System.out.println("taskNames: "+ Arrays.toString(in.taskNames));
         for(int i = 0; i < in.numTaskTypes; i++) {
-            System.out.println("For task type " + i);
-            System.out.print("taskPrty:");
-            for(int j = 0; j < in.numPhases; j++) {
-                System.out.print(in.taskPrty[i][j] + " ");
+            for(int k = 0; k < in.numTeams; k++){
+                System.out.println("For task type " + i + " team " + k);
+                System.out.print("taskPrty:");
+                for(int j = 0; j < in.numPhases; j++) {
+                    System.out.print(in.taskPrty[j][k][i] + " ");
+                }
+                System.out.println(" ");
+            }
+        }
+
+        for(int i = 0; i < in.numTeams; i++){
+            System.out.print("The AIDA for team " + i + ": ");
+            for(int j = 0; j < 3; j++){
+                System.out.print(" " + in.AIDAtype[i][j]);
             }
             System.out.println(" ");
         }
-        //System.out.println("arrpms: " + Arrays.toString(in.arrPms));
+
+        for(int i = 0; i < in.numPhases; i++){
+            for(int j = 0; j < in.numTaskTypes; j++){
+                System.out.print("In phase " + i + " Task " + j + " : ");
+                System.out.println(Arrays.toString(in.arrPms[i][j]));
+            }
+        }
+
+        System.out.println("LeadTask: " + Arrays.toString(in.leadTask));
+        System.out.println("******* Parse End. *******");
     }
 
 }

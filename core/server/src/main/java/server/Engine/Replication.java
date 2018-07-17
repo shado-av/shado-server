@@ -1,20 +1,12 @@
 package server.Engine;
 
-import server.Engine.RemoteOp;
-import server.Engine.Simulation;
-import server.Engine.Task;
-import server.Engine.VehicleSim;
 import server.Input.loadparam;
 import java.util.*;
 import java.lang.*;
-//import org.javatuples.Tuple;
 import java.util.concurrent.BlockingQueue;
 import javafx.util.Pair;
-
-
 import java.util.ArrayList;
 import java.util.stream.IntStream;
-
 
 /***************************************************************************
  *
@@ -37,16 +29,11 @@ public class Replication {
 
     private int repID;
 
-    private ArrayList<Task> linked;
-
     private VehicleSim[][] vehicles;
 
     private RemoteOp remoteOps;
 
     private ArrayList<Task> globalTasks;
-
-    //TEST: Multithreaded producer with global timing
-    private BlockingQueue<Task> globalWatingTasks;
 
     private ArrayList<Pair <Operator,Task>> failedTasks;
 
@@ -93,94 +80,127 @@ public class Replication {
         // Create a new arraylist of queue:
 
         ArrayList<Queue> proc = new ArrayList<Queue>();
-
         ArrayList<Operator> working = new ArrayList<>(proc.size());
 
-        // If the task can be operated by this operator, get his queue.
+        findAvaliableOperator(proc, working, task);
 
-//        for (int i = 0; i < operators.length; i++) {
-        for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
-            if(remoteOps.getRemoteOp()[j] != null) {
-                if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
-                    //Put task in appropriate Queue
+        if (working.size()==0) {
+            task.setexpired();
+            return;
+        }
 
-                    //DEBUG:
-//                    System.out.println("    Adding Task "+task.getType()+" to-> "+remoteOps.getRemoteOp()[j].getName()
-//                    +", Current queue Size: " + remoteOps.getRemoteOp()[j].getQueue().taskqueue.size());
+        Operator optimal_op = findOptimalOperator(working);
 
-                    proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                    working.add(remoteOps.getRemoteOp()[j]);
-                    //System.out.println("Op "+remoteOps.getRemoteOp()[j].getName()+" is eligible");
+        // apply AIs
+        double errorChangeRate = 1;
+        if(task.getType() < vars.numTaskTypes) {
+
+            //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
+            if (!optimal_op.getQueue().taskqueue.isEmpty()) {
+                int team = vars.ETteam[task.getType()];
+                if (team > -1){
+                    equalTeammateDone(task, team);
+                    return;
                 }
             }
-//            }
+
+            //AI feature: Individual Assistant AIDA
+            errorChangeRate = applyIndividualAssistant(optimal_op, task);
+
+            //check team communication, change the serve time and error rate
+            task.changeServTime(getTeamComm(optimal_op.dpID));
+            errorChangeRate *= getTeamComm(optimal_op.dpID);
+
+            // assign task priority according to phase, team and task type
+            task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
         }
-        if(working.size()==0)
+
+        // In the second last phase, the tasks which cannot be complete within this phase will be stopped
+        // and set to expired at the end of this phase
+        if (task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) {
+            task.setexpired();
+            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
             return;
+        }
 
-        // Sort queue by tasks queued.
-//        Collections.sort(proc);
+        // Only the essential task and interruptable tasks can enter the last phase
+        if (task.getPhase() == vars.numPhases - 1) {
+            if (vars.essential[task.getType()] == 0 && vars.interruptable[task.getType()] == 0) {
+                task.setexpired();
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
+                return;
+            }
+        }
 
-        //SCHEN 2/7 Fix: to get the shortest Queue of Operators
+            // check if the task is failed
+        failTask(optimal_op, task, errorChangeRate);
+
+        task.setTeamType(optimal_op.dpID / 100);
+        optimal_op.getQueue().add(task);
+
+    }
+
+    private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task){
+
+        if(task.getType() == vars.numTaskTypes || task.getType() == vars.numTaskTypes + 1){  // team coordination task, which can only be handled within certain team
+            int operatorType = task.getTeamType();
+            if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
+                task.changeServTime(0.5);
+            }
+            for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
+                if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
+                    //Put task in appropriate Queue
+                    proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                    working.add(remoteOps.getRemoteOp()[j]);
+                }
+            }
+        }
+        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task and followed tasks can be handled by all the operator
+            for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
+                proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                working.add(remoteOps.getRemoteOp()[j]);
+            }
+        }
+        else { // regular task. If the task can be operated by this operator, get his queue.
+            for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
+                if (remoteOps.getRemoteOp()[j] != null) {
+                    if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
+                        //Put task in appropriate Queue
+                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
+                        working.add(remoteOps.getRemoteOp()[j]);
+                    }
+                }
+            }
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    findOptimalOperator
+     *
+     *	Purpose:	    Return the operator who has the shortest queue in the
+     *                  working list
+     *
+     ****************************************************************************/
+    //SCHEN 2/7
+    private Operator findOptimalOperator(ArrayList<Operator> working){
 
         Operator optimal_op = working.get(0);
         for(Operator op: working){
             if(op.getQueue().taskqueue.size() <= optimal_op.getQueue().taskqueue.size()){
-//                System.out.println("new optimal op: "+op.getName()+" with queue length: "+op.getQueue().taskqueue.size());
                 if(op.getQueue().taskqueue.size() == optimal_op.getQueue().taskqueue.size()) {
                     if (Math.random() > 0.5)
                         optimal_op = op;
                 }
                 else
                     optimal_op = op;
-
             }
         }
-//        if(vars.metaSnapShot % 50 == 0) {
-//            System.out.println("Optimal Operator: " + optimal_op.getName());
-//            for (Operator currOp : working)
-//                System.out.println("-- Current queue length for [" + currOp.getName() + "]: " + currOp.getQueue().taskqueue.size()+", ExpectedFinTime: "+currOp.getQueue().getExpectedFinTime());
-//        }
+        return optimal_op;
 
-        // Before inserting new tasks, make sure all the tasks that can be finished
-        // before the arrival of the new tasks is finished.
-        // NEW FEATURE: AI Assistant
-//        while (optimal_op.getQueue().getfinTime() < task.getArrTime()) {
-//            optimal_op.getQueue().done(vars,optimal_op);
-//            System.out.print("-- done");
-//        }
-        // add task to queue.
-        // **** I'm setting the operator so that we can access the data arrays of each operator ****
-//        proc.get(0).operator = working.get(0);
-        if(!failTask(optimal_op,task, task.getType(),getTriangularDistribution(task.getType()))){
-                optimal_op.getQueue().add(task);
-        }
     }
 
-    /****************************************************************************
-     *
-     *	Method:		    getTriangularDistribution
-     *
-     *	Purpose:	    generate a TriangularDistribution value
-     *
-     ****************************************************************************/
-    private double getTriangularDistribution(int Type){
-        double c = vars.humanError[Type][0];
-        double a = vars.humanError[Type][1];
-        double b = vars.humanError[Type][2];
-
-        double F = (c - a)/(b - a);
-        double rand = Math.random();
-//        System.out.print("Triangular Distribution: ");
-        if (rand < F) {
-//            System.out.println( a + Math.sqrt(rand * (b - a) * (c - a)));
-            return a + Math.sqrt(rand * (b - a) * (c - a));
-        } else {
-//            System.out.println( b - Math.sqrt((1 - rand) * (b - a) * (b - c)));
-            return b - Math.sqrt((1 - rand) * (b - a) * (b - c));
-
-        }
-    }
     /****************************************************************************
      *
      *	Method:		    failTask
@@ -190,74 +210,120 @@ public class Replication {
      *
      *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
-    private boolean failTask(Operator operator,Task task,int type, double distValue){
-        double rangeMin = vars.humanError[type][1];
-        double rangeMax = vars.humanError[type][2];
-        Random r = new Random();
-        double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
-//        System.out.println("comparing" +distValue+" and "+randomValue);
+    private void failTask(Operator operator,Task task, double changeRate){
 
-        //If it is AI, skip
-        if(operator.getName().split(" ")[0].equals("Artificially")||operator.getName().equals("AIDA"))
-            return false;
-        if(Math.abs(randomValue - distValue) <= 0.0001){
+        int taskType = Math.max(task.getType(), 0);
+        int teamType = operator.dpID / 100;
+        int Phase = task.getPhase();
+
+        double humanErrorRate = vars.humanErrorRate[Phase][taskType];
+        double errorCatching;
+        int affByTeamCoord;
+
+        if (taskType >= vars.numTaskTypes) {
+            errorCatching = 0.5;
+            affByTeamCoord = 0;
+        }
+        else {
+            errorCatching = vars.ECC[Phase][teamType][taskType];
+            affByTeamCoord = vars.teamCoordAff[taskType];
+        }
+
+
+        // Modify the human error rate according to the changeRate
+        for(int i = 0; i < task.getRepeatTimes(); i++){
+            changeRate *= 0.5;
+        }
+        humanErrorRate *= changeRate;
+        humanErrorRate = Math.max(humanErrorRate, 0.0001);
+
+        // Modify the error catching chance according to team coordination
+        if (affByTeamCoord == 1) {
+            errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
+        }
+
+        if(Math.random() < humanErrorRate){
             HashMap<Integer,Integer> failCnt = vars.failTaskCount;
             int currCnt = failCnt.get(vars.replicationTracker);
             failCnt.put(vars.replicationTracker,++currCnt);
-//            System.out.println(operator.getName()+" fails " +task.getName()+", Total Fail "+ currCnt);
             this.failedTasks.add(new Pair <Operator,Task>(operator,task));
-            if(Math.random() < vars.failThreshold){
-                //Task Failed but still processed by operator
+
+            if (Math.random() > errorCatching) {
+                //Task failed but wasn't caught
                 task.setFail();
-                return false;
+                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][2]++;
+                return;
             }
-            return true;
+
+            //Task failed and caught
+            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
+            task.setNeedReDo(true);
         }
-        return false;
+
     }
+
+
+    /****************************************************************************
+     *
+     *	Method:		    sortTask
+     *
+     *	Purpose:	    Sort the tasks in the globalTask in a timely order
+     *
+     ****************************************************************************/
 
     public void sortTask() {
 
-        // Sort task by time.
-
         Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
-//        for(int i = 0; i< 100; i++){
-//            System.out.println(globalTasks.get(i).getArrTime());
-//        }
-//        System.exit(0);
+
     }
 
+    /****************************************************************************
+     *
+     *	Method:		    workingUntilNewTaskArrive
+     *
+     *	Purpose:	    For each operator, complete all the tasks in its queue,
+     *              	which has a end time earlier than the new task's arrival
+     *              	time.
+     *
+     ****************************************************************************/
+
     public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
+
+        //if no new task arrive, finish the remained tasks in the queue
         if (task == null){
             double totaltime = vars.numHours * 60;
             for (Operator each : remoteOp.getRemoteOp()) {
-                if (each != null) {
-                    while (each.getQueue().getfinTime() < totaltime) {
-                        each.getQueue().done(vars,each);
+                while (each != null && each.getQueue().taskqueue.peek() != null) {
+
+                    if (each.getQueue().getfinTime() < totaltime) {
+                        each.getQueue().done(vars, each);
+                    }
+                    else {
+                        each.getQueue().clearTask(vars, each);
                     }
                 }
             }
             return;
         }
-        //When a new task is added, let operator finish all there tasks
+
+        //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-//            if(vars.metaSnapShot % 50 ==0){
-//                System.out.println("---SNAPSHOT---");
-//                System.out.println("Op:["+op.getName()+"]" +
-//                        "\n\t Queue length: "+op.getQueue().taskqueue.size()+
-//                        "\n\t FinTime: "+op.getQueue().getfinTime()+
-//                        "\n\t ExpectedFinTime: "+op.getQueue().getExpectedFinTime());
-//                if(op.getQueue().taskqueue.peek()!=null)
-//                    System.out.println("First Task\n\t Begin: " + op.getQueue().taskqueue.peek().getArrTime() + "\n\t Arr: "+op.getQueue().taskqueue.peek().getArrTime());
-//
-//            }
-            while (op.getQueue().getNumTask() > 0 &&
-                    op.getQueue().getExpectedFinTime() < task.getArrTime()) {
+//            System.out.println("-------------------------------------------------------");
+//            System.out.print(op.toString() + ", ");
+//            System.out.println(op.getQueue().toString());
+
+            if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
+                if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
+                    op.getQueue().clearTask(vars, op);
+                }
+            }
+
+            while (op.getQueue().taskqueue.size() > 0 &&
+                    op.getQueue().getfinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
-//            System.out.println("--op "+op.getName()+"'s queue -1 , length == "+op.getQueue().taskqueue.size());
             }
         }
-//        System.out.println("Operators working...");
+
     }
     /****************************************************************************
      *
@@ -269,16 +335,15 @@ public class Replication {
 
     public void run() {
 
+        System.out.println("Curr Replication: " + vars.replicationTracker);
+
         // Initialize control center.
 
-        //TODO 1.generate a global queue and can be modified
         globalTasks = new ArrayList<Task>();
 
         remoteOps = new RemoteOp(vars,globalTasks);
         remoteOps.run();
-        linked = remoteOps.gettasks();
 
-        //SCHEN 11/10/17 For this version of Fleet hetero, assume each batch has 10 vehicles
         int maxLen = 0;
         for(int i = 0; i < vars.fleetTypes; i++ )
             if(vars.numvehicles[i] > maxLen)
@@ -288,36 +353,170 @@ public class Replication {
 
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
-                // vehicleId to for 2d Array
-                vehicles[i][j] = new VehicleSim(vars,i*10 + j,remoteOps.getRemoteOp(),globalTasks,globalWatingTasks);
-                System.out.println("Vehicle "+(i*10+j)+" generates tasks");
-                vehicles[i][j].genVehicleTask();
+
+                vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
+                vehicles[i][j].taskgen();
+
             }
+        }
+
+        //Generate team communication tasks and exogenous task
+        for(int i = 0; i < vars.numTeams; i++){
+            if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
+            if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
+            if(vars.hasExogenous[0] == 1) genExoTask();
         }
 
         //Put all tasks in a timely order
         sortTask();
-        System.out.println("Total Tasks: "+ globalTasks.size());
 
-        if(vars.replicationTracker == 0){
-            vars.allTasks = globalTasks;
-        }
-        else{
-            for(Task a : globalTasks){
-                vars.allTasks.add(a);
-            }
-        }
+        vars.allTasksPerRep.add(globalTasks);
 
         for (Task task : globalTasks) {
             workingUntilNewTaskArrive(remoteOps,task);
             puttask(task);
-            vars.metaSnapShot++;
         }
         // Finish all remaining tasks
         workingUntilNewTaskArrive(remoteOps,null);
 
         vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
-        System.out.println("Curr Replication: " + vars.replicationTracker);
 
     }
+
+
+    /****************************************************************************
+     *
+     *	Method:		    equalTeammateDone
+     *
+     *	Purpose:	    A record for the tasks done by equal teammate AIDA
+     *
+     ****************************************************************************/
+
+    private void equalTeammateDone(Task task, int team){
+        //TODO: not apply the fail task part
+        task.setBeginTime(task.getArrTime());
+        task.changeServTime(vars.ETServiceTime[team]);
+        task.setEndTime(task.getArrTime() + task.getSerTime());
+        vars.AITasks.add(task);
+    }
+
+
+    /****************************************************************************
+     *
+     *	Method:		    applyIndividualAssistant
+     *
+     *	Purpose:	    check if this operator has IA AIDA, if so reduce the
+     *              	service time for certain tasks by 30%(some) or 70%(full)
+     *
+     ****************************************************************************/
+
+    private double applyIndividualAssistant(Operator op, Task task){
+        if (vars.AIDAtype[op.dpID / 100][1] == 1 &&
+                IntStream.of(vars.IAtasks[op.dpID / 100]).anyMatch(x -> x == task.getType())) {
+            double changeRate = getIndividualAssistantLevel(op.dpID);
+            task.changeServTime(changeRate);
+            return changeRate;
+        }
+        return 1;
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    getTeamComm
+     *
+     *	Purpose:	    return the change factor according to team coordination level
+     *
+     ****************************************************************************/
+
+    private double getTeamComm(int dpID){
+
+        int type = dpID / 100;
+        double teamComm = 1;
+        if(vars.teamCoordAff[type] == 0) return teamComm;
+        if(vars.teamComm[type] == 'S') teamComm = 0.7;
+        if(vars.teamComm[type] == 'F') teamComm = 0.3;
+        return teamComm;
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    getIndividualAssistantLevel
+     *
+     *	Purpose:	    return the change factor according to Individual Assistant
+     *                  AIDA level
+     *
+     ****************************************************************************/
+
+    private double getIndividualAssistantLevel(int dpId){
+        int type = dpId / 100;
+        double IAlvl = 1;
+        if(vars.IALevel[type] == 'S') IAlvl = 0.7;
+        if(vars.IALevel[type] == 'F') IAlvl = 0.3;
+        return IAlvl;
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    genTeamCommTask
+     *
+     *	Purpose:	    Generate team communication tasks and add them to the
+     *                  global task queue.
+     *
+     ****************************************************************************/
+
+
+    private void genTeamCommTask(char level, int team){
+
+        int taskType = vars.numTaskTypes;
+        if(level == 'S') taskType = vars.numTaskTypes;
+        if(level == 'F') taskType = vars.numTaskTypes + 1;
+
+        ArrayList<Task> indlist = new ArrayList<Task>();
+        Task newTask = new Task(taskType, 0, vars, true);
+        if (newTask.getArrTime() < 0) return;
+        newTask.setTeamType(team);
+        indlist.add(newTask);
+
+        while(newTask.getArrTime() < vars.numHours * 60){
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask.setTeamType(team);
+            if (newTask.getArrTime() < 0) break;
+            indlist.add(newTask);
+        }
+
+        globalTasks.addAll(indlist);
+        vars.repNumTasks[vars.replicationTracker]+= indlist.size();
+    }
+
+
+    /****************************************************************************
+     *
+     *	Method:		    genExoTask
+     *
+     *	Purpose:	    Generate exogenous tasks and add them to the
+     *                  global task queue.
+     *
+     ****************************************************************************/
+
+    private void genExoTask(){
+        int taskType = vars.numTaskTypes + 2;
+        ArrayList<Task> indlist = new ArrayList<Task>();
+        Task newTask = new Task(taskType, 0, vars, true);
+        if(newTask.getArrTime() < 0) return;
+        indlist.add(newTask);
+
+        while(newTask.getArrTime() < vars.numHours * 60){
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            if(newTask.getArrTime() < 0) break;
+            indlist.add(newTask);
+        }
+
+        globalTasks.addAll(indlist);
+        vars.repNumTasks[vars.replicationTracker]+= indlist.size();
+    }
+
 }
+
+
+
