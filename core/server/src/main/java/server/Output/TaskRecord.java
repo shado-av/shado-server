@@ -8,6 +8,9 @@ public class TaskRecord {
     private int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
     private int [][][][] numSuccessTask; //[replication][phase][team][task type]
     private int [] numTotalTask; // total # of succesful tasks, total # of each failed tasks
+                                 // [success, missed, incompleted, failed but not caught, failed and caughgt]
+    private double[][][] averageFailed; //[team][task][4 kinds of failed tasks]
+    private double[][][] stdFailed; //[team][task][4 kinds of failed tasks]
 
     /****************************************************************************
      *
@@ -49,11 +52,12 @@ public class TaskRecord {
             }
         }
 
-        //create the matrix for task records
-
+        //create the matrix
         numFailedTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
         numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
         numTotalTask = new int[5];
+        averageFailed = new double[vars.numTeams][vars.totalTaskType][4];
+        stdFailed = new double[vars.numTeams][vars.totalTaskType][4];
 
     }
 
@@ -76,11 +80,48 @@ public class TaskRecord {
                     for (int task = 0; task < numTask; task++) {
                         for (int i = 0; i < 4; i++) {
                             numTotalTask[i+1] += numFailedTask[rep][phase][team][task][i];
+                            averageFailed[team][task][i] += numFailedTask[rep][phase][team][task][i];
                         }
                         numTotalTask[0] += numSuccessTask[rep][phase][team][task];
                     }
                 }
             }
+        }
+
+    }
+
+    public void failedAnalysis(){
+
+        int numRep = numFailedTask.length;
+        int numPhase = numFailedTask[0].length;
+        int numTeam = numFailedTask[0][0].length;
+        int numTask = numFailedTask[0][0][0].length;
+
+        //compute the average # of failed tasks over replication
+        for (int team = 0; team < numTeam; team++) {
+            for (int task = 0; task < numTask; task++) {
+                for (int i = 0; i < 4; i++) {
+                    averageFailed[team][task][i] /= numRep;
+                }
+            }
+        }
+
+        //compute the standard deviation
+        for (int team = 0; team < numTeam; team++) {
+            for (int task = 0; task < numTask; task++) {
+                for (int i = 0; i < 4; i++) {
+                    double sum = 0;
+                    for (int rep = 0; rep < numRep; rep++) {
+                        double temp = 0;
+                        for (int phase = 0; phase < numPhase; phase++) {
+                            temp += numFailedTask[rep][phase][team][task][i];
+                        }
+                        sum = sum + (temp - averageFailed[team][task][i]) * (temp - averageFailed[team][task][i]);
+                    }
+                    stdFailed[team][task][i] = Math.sqrt(sum / (numRep - 1));
+                }
+            }
+
         }
 
     }
