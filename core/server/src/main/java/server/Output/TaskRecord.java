@@ -7,7 +7,7 @@ public class TaskRecord {
     private String[] taskName;
     private int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
     private int [][][][] numSuccessTask; //[replication][phase][team][task type]
-    private int [][][][] numTotalTask; //[replication][phase][team][task type]
+    private int [] numTotalTask; // total # of succesful tasks, total # of each failed tasks
 
     /****************************************************************************
      *
@@ -53,7 +53,7 @@ public class TaskRecord {
 
         numFailedTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
         numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
-        numTotalTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
+        numTotalTask = new int[5];
 
     }
 
@@ -74,13 +74,10 @@ public class TaskRecord {
             for (int phase = 0; phase < numPhase; phase++) {
                 for (int team = 0; team < numTeam; team++) {
                     for (int task = 0; task < numTask; task++) {
-                        numTotalTask[rep][phase][team][task] = 0;
-                        int fail = 0;
                         for (int i = 0; i < 4; i++) {
-                            fail += numFailedTask[rep][phase][team][task][i];
+                            numTotalTask[i+1] += numFailedTask[rep][phase][team][task][i];
                         }
-                        numTotalTask[rep][phase][team][task] += fail;
-                        numTotalTask[rep][phase][team][task] += numSuccessTask[rep][phase][team][task];
+                        numTotalTask[0] += numSuccessTask[rep][phase][team][task];
                     }
                 }
             }
