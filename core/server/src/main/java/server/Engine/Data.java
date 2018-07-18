@@ -1,11 +1,5 @@
 package server.Engine;
 
-import server.Input.loadparam;
-import server.Output.ProcRep;
-import javafx.util.Pair;
-
-import java.util.*;
-
 /***************************************************************************
  * 	FILE: 			Data.java
  *
@@ -56,14 +50,6 @@ public class Data {
         return data[i][j][k];
     }
 
-    public double avgget(int i, int j) {
-        return avg[i][j];
-    }
-
-    public double stdget(int i, int j) {
-        return std[i][j];
-    }
-
     // MUTATOR
 
     public void datainc(int i, int j, int k, double inc) {
@@ -80,9 +66,6 @@ public class Data {
 
     public void avgdata() {
 
-        int N = 0;
-        double mean = 0;
-        double devSum = 0;
         double delta;
 
         //calculate mean and std dev across all replications
@@ -90,9 +73,9 @@ public class Data {
         for (int x = 0; x < data.length; x++) {
             for (int y = 0; y < data[x].length; y++) {
 
-                N = 0;
-                mean = 0;
-                devSum = 0;
+                int N = 0;
+                double mean = 0;
+                double devSum = 0;
 
                 for (int z = 0; z < data[x][y].length; z++) {
                     N++;
@@ -107,195 +90,4 @@ public class Data {
         }
     }
 
-    /****************************************************************************
-     *
-     *	Method:     outputdata
-     *
-     *	Purpose:    Write data out to csv format.
-     *
-     ****************************************************************************/
-
-    public void outputdata() {
-
-        for (double[] x : this.avg) {
-            for (double y : x) {
-                System.out.print(y + ",");
-            }
-            System.out.println();
-
-        }
-    }
-    /****************************************************************************
-     *
-     *	Method:     printMetaData
-     *
-     *	Purpose:    Write data out to csv format.
-     *              Attributes: "Average","Minimum","1st Quartile","Median","3rd Quartile","Maximum", "Variance"
-     *
-     ****************************************************************************/
-    public void printMetaData(String type, int repNum, loadparam vars, ProcRep proc,String op,int opType,int opID) {
-        switch (type) {
-            case "Workload":
-                double sum = 0;
-                double cnt = 0;
-                double min = Double.MAX_VALUE;
-                double max = Double.MIN_VALUE;
-                double var = 0;
-                double[] columnSum = new double[this.avg[0].length];
-                int count_0 = 0,count_30 = 0,count_70 = 0;
-
-                int col_itr;
-
-                ArrayList<Double> expanded = new ArrayList<>();
-                for (double[] x : this.avg) {
-                    col_itr = 0;
-                    for (double y : x) {
-                        columnSum[col_itr++] += y;
-//                        sum += y;
-//                        cnt++;
-//                        expanded.add(y);
-//                        if (y <= min)
-//                            min = y;
-//                        if (y >= max)
-//                            max = y;
-                    }
-                }
-
-                double columMean  = 0;
-                double columnMin = Double.MAX_VALUE;
-                double columnMax = Double.MIN_VALUE;
-                double columnVar = 0;
-                for(int i  = 0 ; i < columnSum.length;i++){
-                    if(columnSum[i] >=1 )
-                        columnSum[i] = 1;
-                    columMean += columnSum[i];
-                    if (columnSum[i] > columnMax) columnMax = columnSum[i];
-                    if (columnSum[i] < columnMin) columnMin = columnSum[i];
-                }
-                double mean = columMean/columnSum.length;
-
-                for(int i  = 0 ; i < columnSum.length;i++){
-                    columnVar+= (columnSum[i] -mean)*(columnSum[i] -mean);
-                }
-                columnVar = columnVar/(columnSum.length -1);
-
-                for (double[] x : this.avg) {
-                    for (double y : x) {
-                        var += (y- mean)*(y - mean);
-                    }
-                }
-
-                //Average
-                System.out.print(mean + ",");
-                //Add individual op utilization to global tracker
-                vars.repUtilOp[repNum][opType][opID] = mean;
-
-                //Minimum
-                System.out.print(columnMin + ",");
-                //1st Quartile, Median, 3rd Quartile
-
-                Arrays.sort(columnSum);
-                int first_quart = columnSum.length/4;
-                int median = columnSum.length/2;
-                int third_quart = columnSum.length*3/4;
-                System.out.print(columnSum[first_quart]+",");
-                System.out.print(columnSum[median]+",");
-                System.out.print(columnSum[third_quart]+",");
-
-                //Maximum
-                System.out.print(columnMax+",");
-                //Variance
-                System.out.print(columnVar+",");
-
-                for(double c: columnSum){
-                    //Count of utilization 0-30%
-                    if(c < 0.3) count_0++;
-
-                    //Count of utilization 30%-70%
-                    else if (c >= 0.3 && c <0.7) count_30++;
-
-                    //Count of utilization 70%-100%
-                    else if (c >= 0.7) count_70 ++;
-
-                }
-                vars.crossRepCount[repNum] = new double[]{count_0,count_30,count_70};
-                System.out.print(count_0+","+count_30+","+count_70);
-
-                break;
-            case "Delay":
-
-                break;
-
-            case "Error":
-                int totalRep = vars.numReps; // Use to calculate the across replications
-                double failCnt = 0.0;
-                double varErr = 0.0;
-                ArrayList<Pair<Operator,Task>> failList = vars.rep_failTask.get(repNum);
-
-                //Average:
-                //Get fail count for this replication
-
-                for(Pair<Operator,Task> p: failList){
-                    if(p.getKey().getName().equals(op)) {
-//                        System.err.println(p.getKey().getName()+" == "+op);
-                        failCnt++;
-                    }
-                }
-                //Get sum of fail task for all replications
-                int totalFail = 0;
-                double[] failEachRep = new double[totalRep];
-                for(int i = 0; i < totalRep; i++){
-                    ArrayList<Pair<Operator,Task>> thisFail = vars.rep_failTask.get(i);
-                    for(Pair<Operator,Task> p: thisFail){
-                        if(p.getKey().getName().equals(op)) {
-                            failEachRep[i]++;
-                            totalFail++;
-                        }
-                    }
-//                    System.err.println(totalFail+",  "+totalRep);
-                }
-
-                //Mean
-                int meanErr = totalFail/totalRep;
-
-                //Variance calculation
-                for(double v : failEachRep){
-                    varErr+=(v-meanErr)*(v-meanErr);
-                }
-
-                System.out.print(meanErr+","+failCnt+","+failCnt+","+failCnt+","+failCnt+","+failCnt+","+ varErr/totalFail+",N/A,N/A,N/A");
-                break;
-
-            case "Expired":
-                int expCount = 0;
-                int expTotal = 0;
-                double varExp = 0.0;
-                double[] expEachRep = new double[vars.numReps];
-                ArrayList<Pair<Operator,Task>> thisExpired = vars.expiredTasks.get(repNum);
-
-                for(Pair<Operator,Task> p: thisExpired){
-                    if(p.getKey().getName().equals(op)) {
-                        expCount++;
-                    }
-                }
-
-                for(int i = 0; i < vars.numReps; i++){
-                    ArrayList<Pair<Operator,Task>> eachExpired = vars.expiredTasks.get(i);
-                    for(Pair<Operator,Task> p: eachExpired){
-                        if(p.getKey().getName().equals(op)) {
-                            expEachRep[i]++;
-                            expTotal++;
-                        }
-                    }
-                }
-
-                int meanExp = expTotal/vars.numReps;
-                for(double v : expEachRep){
-                    varExp+=(v-meanExp)*(v-meanExp);
-                }
-
-                System.out.print(meanExp+","+expCount+","+expCount+","+expCount+","+expCount+","+expCount+","+varExp/expTotal+",N/A,N/A,N/A");
-                break;
-        }
-    }
 }

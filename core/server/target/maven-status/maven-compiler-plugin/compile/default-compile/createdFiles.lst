@@ -1,6 +1,5 @@
 server/Output/DataWrapper.class
 server/Engine/Task.class
-server/Input/ShadoVar.class
 server/GreetingController.class
 server/Application.class
 server/Greeting.class
@@ -9,13 +8,11 @@ server/Engine/Parser.class
 server/Engine/RemoteOp.class
 server/Output/JasonBuilder.class
 server/Input/FileWizard.class
-server/shadoParam.class
 server/Input/loadparam.class
 server/Output/Utilization.class
 server/Engine/Replication.class
 server/Engine/Shado.class
 server/Input/testLoadParam.class
-server/Engine/index.class
 server/Output/ProcRep.class
 server/Output/ZipDir.class
 server/Engine/Operator.class

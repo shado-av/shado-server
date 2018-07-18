@@ -75,10 +75,10 @@ public class RemoteOp {
         // change it to 2d array with each subarray with length == 1
         RemoteOpers = new Operator[vars.numRemoteOp];
         int cnt = 0;
-        for (int i = 0; i < vars.opTasks.length; i++) {
+        for (int i = 0; i < vars.numTeams; i++) {
             //TODO[COMPLETE] generate Operator base on different types of remote Ops
             for (int j = 0; j < vars.teamSize[i]; j++) {
-                RemoteOpers[cnt++] = new Operator(i * 100 + j,vars.opNames[i], vars.opTasks[i], vars);
+                RemoteOpers[cnt++] = new Operator(i * 100 + j, vars.opNames[i], vars);
             }
         }
     }

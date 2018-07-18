@@ -95,7 +95,7 @@ public class Replication {
 
             //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
             if (!optimal_op.getQueue().taskqueue.isEmpty()) {
-                int team = vars.ETteam[task.getType()];
+                int team = vars.ETteam[task.getType()][task.getVehicleID() / 100];
                 if (team > -1){
                     equalTeammateDone(task, team);
                     return;
@@ -153,7 +153,7 @@ public class Replication {
                 }
             }
         }
-        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task and followed tasks can be handled by all the operator
+        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task can be handled by all the operator
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
                 proc.add(remoteOps.getRemoteOp()[j].getQueue());
                 working.add(remoteOps.getRemoteOp()[j]);
@@ -161,12 +161,11 @@ public class Replication {
         }
         else { // regular task. If the task can be operated by this operator, get his queue.
             for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
-                if (remoteOps.getRemoteOp()[j] != null) {
-                    if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
-                        //Put task in appropriate Queue
-                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                        working.add(remoteOps.getRemoteOp()[j]);
-                    }
+                Operator eachOperator = remoteOps.getRemoteOp()[j];
+                if (eachOperator != null && vars.opExpertise[eachOperator.dpID / 100][task.getType()][task.getVehicleID() / 100] == 1) {
+                    //Put task in appropriate Queue
+                    proc.add(eachOperator.getQueue());
+                    working.add(eachOperator);
                 }
             }
         }
@@ -468,13 +467,13 @@ public class Replication {
         if(level == 'F') taskType = vars.numTaskTypes + 1;
 
         ArrayList<Task> indlist = new ArrayList<Task>();
-        Task newTask = new Task(taskType, 0, vars, true);
+        Task newTask = new Task(taskType, 0, vars, true, team * 100);
         if (newTask.getArrTime() < 0) return;
         newTask.setTeamType(team);
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
-            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true, team * 100);
             newTask.setTeamType(team);
             if (newTask.getArrTime() < 0) break;
             indlist.add(newTask);
@@ -497,12 +496,12 @@ public class Replication {
     private void genExoTask(){
         int taskType = vars.numTaskTypes + 2;
         ArrayList<Task> indlist = new ArrayList<Task>();
-        Task newTask = new Task(taskType, 0, vars, true);
+        Task newTask = new Task(taskType, 0, vars, true,-1);
         if(newTask.getArrTime() < 0) return;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
-            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true,-1);
             if(newTask.getArrTime() < 0) break;
             indlist.add(newTask);
         }
