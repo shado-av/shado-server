@@ -30,8 +30,6 @@ public class Simulation {
 
     private int repnumber;
 
-    private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
-
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
     }
@@ -53,6 +51,7 @@ public class Simulation {
         repnumber = param.numReps;
 
         System.out.println("Number of reputations: " + repnumber);
+
         // Generate overall data field
 
         operatoroutput = new Data[param.numTeams];
@@ -100,9 +99,12 @@ public class Simulation {
             processReplication(i);
 
             //Global tracker for current replication
-            vars.replicationTracker ++;
+            vars.replicationTracker++;
 
         }
+
+        //reset the replicationTracker to data processing for each replication
+        vars.replicationTracker = 0;
 
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
@@ -112,12 +114,14 @@ public class Simulation {
             vars.utilization.fillFleetUtilization(i, process.getUtilization_fleet(), vars);
 
             //Global Tracker for replication processed
-            vars.currRepnum++;
+            vars.replicationTracker++;
 
         }
 
+//        vars.utilization.removeEmptyTask(vars);
         vars.taskRecord.computeTotalTaskNumber();
         vars.taskRecord.failedAnalysis();
+
 
         for (Data each: RemoteOpoutput){
             each.avgdata();

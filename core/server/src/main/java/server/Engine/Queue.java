@@ -173,7 +173,7 @@ public class Queue implements Comparable<Queue>{
             int taskType = taskqueue.peek().getType();
 
             vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
-            vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
+            vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 
         }

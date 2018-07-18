@@ -3,14 +3,14 @@ import server.Input.loadparam;
 
 public class TaskRecord {
 
-    private String[] operatorName;
-    private String[] taskName;
-    private int[][][][][] numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
-    private int [][][][] numSuccessTask; //[replication][phase][team][task type]
-    private int [] numTotalTask; // total # of succesful tasks, total # of each failed tasks
-                                 // [success, missed, incompleted, failed but not caught, failed and caughgt]
-    private double[][][] averageFailed; //[team][task][4 kinds of failed tasks]
-    private double[][][] stdFailed; //[team][task][4 kinds of failed tasks]
+    private String[]        operatorName;
+    private String[]        taskName;
+    private int[][][][][]   numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
+    private int [][][][]    numSuccessTask; //[replication][phase][team][task type]
+    private int []          numTotalTask; // total # of succesful tasks, total # of each failed tasks
+                                          // [success, missed, incompleted, failed but not caught, failed and caughgt]
+    private double[][][]    averageFailed; //[team][task][4 kinds of failed tasks]
+    private double[][][]    stdFailed; //[team][task][4 kinds of failed tasks]
 
     /****************************************************************************
      *
@@ -54,19 +54,28 @@ public class TaskRecord {
         }
 
         //create the matrix
-        numFailedTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
+
+        numFailedTask  = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
         numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
-        numTotalTask = new int[5];
-        averageFailed = new double[vars.numTeams][vars.totalTaskType][4];
-        stdFailed = new double[vars.numTeams][vars.totalTaskType][4];
+        numTotalTask   = new int[5];
+        averageFailed  = new double[vars.numTeams][vars.totalTaskType][4];
+        stdFailed      = new double[vars.numTeams][vars.totalTaskType][4];
 
     }
 
-    public int[][][][][] getNumFailedTask() {
-        return numFailedTask;
-    }
+    public int[][][][][] getNumFailedTask() { return numFailedTask; }
 
     public int[][][][] getNumSuccessTask() { return numSuccessTask; }
+
+
+    /****************************************************************************
+     *
+     *	Method:     computeTotalTaskNumber
+     *
+     *	Purpose:    Compute the total number of tasks from the success task and
+     *              failed task records.
+     *
+     ****************************************************************************/
 
     public void computeTotalTaskNumber(){
 
@@ -91,12 +100,20 @@ public class TaskRecord {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:     failedAnalysis
+     *
+     *	Purpose:    Compute the average and std for failed tasks.
+     *
+     ****************************************************************************/
+
     public void failedAnalysis(){
 
-        int numRep = numFailedTask.length;
+        int numRep   = numFailedTask.length;
         int numPhase = numFailedTask[0].length;
-        int numTeam = numFailedTask[0][0].length;
-        int numTask = numFailedTask[0][0][0].length;
+        int numTeam  = numFailedTask[0][0].length;
+        int numTask  = numFailedTask[0][0][0].length;
 
         //compute the average # of failed tasks over replication
         for (int team = 0; team < numTeam; team++) {
@@ -122,19 +139,9 @@ public class TaskRecord {
                     stdFailed[team][task][i] = Math.sqrt(sum / (numRep - 1));
                 }
             }
-
         }
 
     }
 
-
-    @Override
-    public String toString() {
-        System.out.println("1. # replications: " + numFailedTask.length);
-        System.out.println("2. # phases: " + numFailedTask[0].length);
-        System.out.println("3. # team: " + numFailedTask[0][0].length);
-        System.out.println("4. # task: " + numFailedTask[0][0][0].length);
-        return " ";
-    }
 }
 

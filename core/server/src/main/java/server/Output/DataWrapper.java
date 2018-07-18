@@ -66,6 +66,7 @@ public class DataWrapper {
         //Out put the report files
 
         printUtilization(u,1);
+        u.removeEmptyTask(vars);
         printSummaryReport();
 //        printErrorReport();
         printTaskRecord();
@@ -229,8 +230,8 @@ public class DataWrapper {
     private void printTaskRecord() throws IOException{
 
         //print task information per task
-        System.out.println();
-        for(int taskType = 0; taskType < vars.totalTaskType; taskType++) {
+
+        for(int taskType : vars.allTaskTypes) {
             String fileName = outPutDirectory + "task_" + vars.taskName_all[taskType] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
@@ -248,6 +249,7 @@ public class DataWrapper {
             }
             System.setOut(stdout);
         }
+
     }
 
 
@@ -333,7 +335,7 @@ public class DataWrapper {
         }
 
         // one row per task
-        for (int task = 0; task < vars.totalTaskType; task++) {
+        for (int task : vars.allTaskTypes) {
             System.out.print(vars.taskName_all[task] + ",");
             for (int time = 0; time < numColumn; time++) {
                 Double percentage = utilization[task][time];

@@ -2,6 +2,9 @@ package server.Output;
 import server.Engine.Data;
 import server.Input.loadparam;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /***************************************************************************
  *
  * 	FILE: 			Utilization.java
@@ -61,8 +64,6 @@ public class Utilization {
         fleetUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.fleetTypes][numColumn];
 //        averageFleetUtilization = new Double[vars.numRemoteOp][vars.fleetTypes];
 
-//        fillUtilization(vars);
-
     }
 
     /****************************************************************************
@@ -115,32 +116,6 @@ public class Utilization {
 
     }
 
-
-
-//    public void fillUtilization(loadparam param){
-//
-//        int numColumn = (int) Math.ceil(param.numHours * 6);
-//
-//        for (int op = 0; op < param.numRemoteOp; op++) {
-//            for (int rep = 0; rep < param.numReps; rep++) {
-//
-//                double sum = 0;
-//                Data currentUtilization = param.utilizationOutput[rep][op];
-//
-//                for (int task = 0; task < param.totalTaskType; task++) {
-//                    for (int time = 0; time < numColumn; time++) {
-//                        double u = currentUtilization.dataget(task, time, 0);
-//                        taskUtilization[op][rep][task][time] = round(u,2);
-//                        sum += u;
-//                    }
-//                }
-//                sum /= param.numHours * 6;
-//                averageTaskUtilization[op][rep] = sum;
-//            }
-//        }
-//
-//    }
-
     /****************************************************************************
      *
      *	Method:     timeSectionSum
@@ -184,6 +159,109 @@ public class Utilization {
 
         return result;
 
+    }
+
+    public void removeEmptyTask(loadparam param){
+
+        //Check if there is any exogenous task
+        int sum = 0;
+        for (int i : param.hasExogenous) {
+            sum += i;
+        }
+        if (sum == 0) {
+            removeTask(param.EXOGENOUS_TASK, param);
+            param.totalTaskType--;
+        }
+
+
+        //Check if there is any team communication task
+        Set<Character> teamCommunication = new HashSet<>();
+        for (Character c: param.teamComm) {
+            if (!c.equals('N') && !teamCommunication.contains(c))
+                teamCommunication.add(c);
+        }
+
+        if (!teamCommunication.contains('F')) {
+            removeTask(param.TC_FULL_TASK, param);
+            param.totalTaskType--;
+        }
+
+
+        if (!teamCommunication.contains('S')) {
+            removeTask(param.TC_SOME_TASK, param);
+            param.totalTaskType--;
+        }
+
+    }
+
+    /*
+
+    String[] taskName;
+    Double[][][][] taskUtilization; //[operator][replication][task][time]
+
+     */
+
+
+
+    private void removeTask(int task, loadparam param){
+
+        int numOp = taskUtilization.length;
+        int numRep = taskUtilization[0].length;
+        int numTask = taskUtilization[0][0].length;
+        int numColumn = taskUtilization[0][0][0].length;
+
+        String[] newTaskName = new String[numTask - 1];
+        Double[][][][] newTaskUtilization = new Double[numOp][numRep][numTask - 1][numColumn];
+
+        for (int op = 0; op < numOp; op++) {
+            for (int rep = 0; rep < numRep; rep++) {
+                for (int col = 0; col < numColumn; col++) {
+                    for (int t = 0; t < task; t++) {
+                        newTaskName[t] = taskName[t];
+                        newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t][col];
+                    }
+
+                    for (int t = task; t < numTask - 1; t++) {
+                        newTaskName[t] = taskName[t + 1];
+                        newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t + 1][col];
+                    }
+                }
+            }
+        }
+
+
+//        if (task == param.EXOGENOUS_TASK || task == param.TC_FULL_TASK) { //remove the last task
+//            for (int op = 0; op < numOp; op++) {
+//                for (int rep = 0; rep < numRep; rep++) {
+//                    for (int col = 0; col < numColumn; col++) {
+//                        for (int t = 0; t < numTask - 1; t++) {
+//                            newTaskName[t] = taskName[t];
+//                            newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t][col];
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        else {
+//            for (int op = 0; op < numOp; op++) {
+//                for (int rep = 0; rep < numRep; rep++) {
+//                    for (int col = 0; col < numColumn; col++) {
+//                        for (int t = 0; t < task; t++) {
+//                            newTaskName[t] = taskName[t];
+//                            newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t][col];
+//                        }
+//
+//                        for (int t = task; t < numTask - 1; t++) {
+//                            newTaskName[t] = taskName[t + 1];
+//                            newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t + 1][col];
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+        taskName = newTaskName;
+        taskUtilization = newTaskUtilization;
     }
 
     /****************************************************************************
