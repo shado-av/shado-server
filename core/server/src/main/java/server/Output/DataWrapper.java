@@ -58,10 +58,9 @@ public class DataWrapper {
 
         cleanDirectory();
 
-
         //Generate JSON files
 
-        Utilization u = new Utilization(vars);
+        Utilization u = vars.utilization;
         TaskRecord t = vars.taskRecord;
 
         //Out put the report files
@@ -70,7 +69,7 @@ public class DataWrapper {
         printSummaryReport();
 //        printErrorReport();
         printTaskRecord();
-        printValidationReport(u.getUtilization());
+        printValidationReport(u.getTaskUtilization());
 
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
@@ -297,7 +296,7 @@ public class DataWrapper {
                 max10mins = printUtilizationPerReplication(max10mins, utilization);
 
                 // print the sum of timeSectionSum
-                System.out.println(u.averageUtilization[op][rep] + ",");
+                System.out.println(u.averageTaskUtilization[op][rep] + ",");
                 System.out.println(" ");
 
             }
@@ -306,8 +305,8 @@ public class DataWrapper {
 
         }
 
-        averageAll(u.averageUtilization);
-        findMinMax(u.averageUtilization);
+        averageAll(u.averageTaskUtilization);
+        findMinMax(u.averageTaskUtilization);
 
         System.setOut(stdout);
 

@@ -1,10 +1,11 @@
 package server.Input;
-import server.Engine.Data;
 import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
 import javafx.util.Pair;
 import server.Output.TaskRecord;
+import server.Output.Utilization;
+
 import java.util.*;
 
 /***************************************************************************
@@ -84,7 +85,7 @@ public class loadparam {
     public int                          numRemoteOp;
     public int[][]                      ETteam; //[taks][fleet]: which team has ET for this task type this fleet
     public boolean                      hasET = false;
-    public int                          replicationTracker;
+    public int                          replicationTracker; //keep record of the current replication
     public int                          currRepnum = 0;
     public double[][]                   humanErrorRate;
 
@@ -92,10 +93,15 @@ public class loadparam {
     public Replication[]                                reps;
     public HashMap<Integer,ArrayList>                   rep_failTask;
     public TaskRecord                                   taskRecord;
-    public Data[][]                                     utilizationOutput;   //utilization[numRep][numOperator]
+    public Utilization                                  utilization;
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
     public ArrayList<Task>                              AITasks;
     public ArrayList<ArrayList<Pair<Operator,Task>>>    expiredTasks;
+
+
+    public int TC_SOME_TASK;
+    public int TC_FULL_TASK;
+    public int EXOGENOUS_TASK;
 
 
     // Operator settings
@@ -130,6 +136,10 @@ public class loadparam {
 
         // Add special tasks' setting
 
+        TC_SOME_TASK = numTaskTypes;
+        TC_FULL_TASK = numTaskTypes + 1;
+        EXOGENOUS_TASK = numTaskTypes + 2;
+
         expandEssential();
         expandInterruptable();
         expandPhaseBegin();
@@ -137,7 +147,10 @@ public class loadparam {
         getNumRemoteOp();
         totalTaskType = numTaskTypes + 3;
         collectTaskNames();
+
         taskRecord = new TaskRecord(this);
+        utilization = new Utilization(this);
+
         replicationTracker = 0;
         processedRepId = 0;
         debugCnt = 0;
@@ -165,7 +178,6 @@ public class loadparam {
                 maxTeamSize = teamSize[i];
             }
         }
-        utilizationOutput = new Data[numReps][numRemoteOp];
 
         // create the ET team matrix
         checkET();

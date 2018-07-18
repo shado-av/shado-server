@@ -59,7 +59,7 @@ public class VehicleSim  {
      *
      ****************************************************************************/
 
-    public synchronized void taskgen() {
+    public synchronized void taskgen() throws Exception{
 
         // For each type of tasks:
         int fleetType = this.vehicleID/100;
@@ -93,7 +93,7 @@ public class VehicleSim  {
 
     }
 
-    private Task genRegularTask(int taskType, ArrayList<Task> indlist, Task preTask){
+    private Task genRegularTask(int taskType, ArrayList<Task> indlist, Task preTask) throws Exception{
 
         Task newTask;
 
@@ -117,7 +117,7 @@ public class VehicleSim  {
         return newTask;
     }
 
-    private void genLinkedTask(ArrayList<Task> indlist, Task leadTask){
+    private void genLinkedTask(ArrayList<Task> indlist, Task leadTask) throws Exception{
 
         int leadTaskType = leadTask.getType();
         double prevTime = leadTask.getArrTime();

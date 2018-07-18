@@ -75,7 +75,7 @@ public class Simulation {
      *
      ****************************************************************************/
 
-    public void processReplication(int repID){
+    public void processReplication(int repID) throws Exception{
 
         Replication processed = new Replication(vars, repID);
         processed.run();
@@ -106,9 +106,10 @@ public class Simulation {
 
         //Data Processing for Replications
         for(int i = 0; i < repnumber; i++){
-            ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i],vars,numSpecialTasks);
+            ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i], vars);
             process.run();
-            vars.utilizationOutput[i] = process.getRepdisdata();
+            vars.utilization.fillTaskUtilization(i, process.getUtilization_task(), vars);
+            vars.utilization.fillFleetUtilization(i, process.getUtilization_fleet(), vars);
 
             //Global Tracker for replication processed
             vars.currRepnum++;

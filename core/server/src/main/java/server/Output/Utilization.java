@@ -21,12 +21,12 @@ public class Utilization {
 
     String[] operatorName;
     String[] taskName;
-    Double[][][][] utilization; //[operator][replication][task][time];
-    Double[][] averageUtilization; //[operator][replication];
-    //Double[][][][] fleetUtilization; //[operator][fleet][replication][time]
-    //Double[][][] averageFleetUtilization; //[operator][fleet][replication];
+    Double[][][][] taskUtilization; //[operator][replication][task][time]
+    Double[][] averageTaskUtilization; //[operator][replication]
+    Double[][][][] fleetUtilization; //[operator][replication][fleet][time]
+//    Double[][] averageFleetUtilization; //[operator][fleet]
 
-    public Double[][][][] getUtilization() { return utilization; }
+    public Double[][][][] getTaskUtilization() { return taskUtilization; }
 
     /****************************************************************************
      *
@@ -56,10 +56,12 @@ public class Utilization {
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        utilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
-        averageUtilization = new Double[vars.numRemoteOp][vars.numReps];
+        taskUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
+        averageTaskUtilization = new Double[vars.numRemoteOp][vars.numReps];
+        fleetUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.fleetTypes][numColumn];
+//        averageFleetUtilization = new Double[vars.numRemoteOp][vars.fleetTypes];
 
-        fillUtilization(vars);
+//        fillUtilization(vars);
 
     }
 
@@ -72,29 +74,72 @@ public class Utilization {
      *
      ****************************************************************************/
 
-    private void fillUtilization(loadparam param){
+    public void fillTaskUtilization(int rep, Data[] taskU, loadparam param){
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
         for (int op = 0; op < param.numRemoteOp; op++) {
-            for (int rep = 0; rep < param.numReps; rep++) {
 
                 double sum = 0;
-                Data taskUtilization = param.utilizationOutput[rep][op];
-
+                Data currentUtilization = taskU[op];
                 for (int task = 0; task < param.totalTaskType; task++) {
                     for (int time = 0; time < numColumn; time++) {
-                        double u = taskUtilization.dataget(task, time, 0);
-                        utilization[op][rep][task][time] = round(u,2);
+                        double u = currentUtilization.dataget(task, time, 0);
+                        taskUtilization[op][rep][task][time] = round(u,2);
                         sum += u;
                     }
                 }
                 sum /= param.numHours * 6;
-                averageUtilization[op][rep] = sum;
+                averageTaskUtilization[op][rep] = sum;
+
+        }
+    }
+
+    public void fillFleetUtilization(int rep, Data[] fleetU, loadparam param){
+
+        int numColumn = (int) Math.ceil(param.numHours * 6);
+
+        for (int op = 0; op < param.numRemoteOp; op++) {
+
+            Data currentUtilization = fleetU[op];
+
+            for (int fleet = 0; fleet < param.fleetTypes; fleet++) {
+                for (int time = 0; time < numColumn; time++) {
+
+                    double u = currentUtilization.dataget(fleet, time, 0);
+                    fleetUtilization[op][rep][fleet][time] = round(u,2);
+
+                }
             }
         }
 
     }
+
+
+
+//    public void fillUtilization(loadparam param){
+//
+//        int numColumn = (int) Math.ceil(param.numHours * 6);
+//
+//        for (int op = 0; op < param.numRemoteOp; op++) {
+//            for (int rep = 0; rep < param.numReps; rep++) {
+//
+//                double sum = 0;
+//                Data currentUtilization = param.utilizationOutput[rep][op];
+//
+//                for (int task = 0; task < param.totalTaskType; task++) {
+//                    for (int time = 0; time < numColumn; time++) {
+//                        double u = currentUtilization.dataget(task, time, 0);
+//                        taskUtilization[op][rep][task][time] = round(u,2);
+//                        sum += u;
+//                    }
+//                }
+//                sum /= param.numHours * 6;
+//                averageTaskUtilization[op][rep] = sum;
+//            }
+//        }
+//
+//    }
 
     /****************************************************************************
      *
@@ -116,7 +161,7 @@ public class Utilization {
             throw new Exception("Incorrect time interval size for utilization output");
         }
 
-        Double[][] rawData = utilization[operator][replication];
+        Double[][] rawData = taskUtilization[operator][replication];
 
         double i = param.numHours * 6;
         int numColumn = (int)Math.ceil(i / size);

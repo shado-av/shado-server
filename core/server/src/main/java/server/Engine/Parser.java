@@ -46,7 +46,6 @@ public class Parser {
         System.out.println("teamComm: "+ Arrays.toString(in.teamComm));
         System.out.println("teamSize: "+ Arrays.toString(in.teamSize));
         System.out.println("fleetTypes: "+in.fleetTypes);
-//        System.out.println("Fleet Hetero: "+Arrays.toString(in.fleetHetero));
         System.out.println("numTaskTypes: "+in.numTaskTypes);
         System.out.println("taskNames: "+ Arrays.toString(in.taskNames));
         for(int i = 0; i < in.numTaskTypes; i++) {

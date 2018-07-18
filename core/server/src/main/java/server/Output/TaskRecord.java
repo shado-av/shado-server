@@ -28,6 +28,7 @@ public class TaskRecord {
      *                  1. number of failed tasks
      *                  2. number of success tasks
      *                  3. number of total task
+     *                  4. average number of failed tasks and its standard deviation
      *
      *              Four types of failed tasks are record:
      *                  1. missed task (never start)

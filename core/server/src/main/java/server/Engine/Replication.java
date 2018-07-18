@@ -326,7 +326,7 @@ public class Replication {
      *
      ****************************************************************************/
 
-    public void run() {
+    public void run() throws Exception{
 
         System.out.println("Curr Replication: " + vars.replicationTracker);
 
@@ -460,7 +460,7 @@ public class Replication {
      ****************************************************************************/
 
 
-    private void genTeamCommTask(char level, int team){
+    private void genTeamCommTask(char level, int team) throws Exception{
 
         int taskType = vars.numTaskTypes;
         if(level == 'S') taskType = vars.numTaskTypes;
@@ -493,7 +493,7 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private void genExoTask(){
+    private void genExoTask() throws Exception{
         int taskType = vars.numTaskTypes + 2;
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true,-1);

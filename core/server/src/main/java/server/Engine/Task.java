@@ -47,6 +47,7 @@ public class Task implements Comparable<Task> {
 	private boolean needReDo = false; // Indicates fail but caught
 	private int repeatTimes;
 
+
 	// This adds the ability for task to track queue retroactively
 
 	private int queued;
@@ -143,7 +144,7 @@ public class Task implements Comparable<Task> {
 		repeatTimes = t.repeatTimes + 1;
 	}
 
-	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, int vehicle) {
+	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, int vehicle) throws Exception{
 
 		Type = type;
 		vehicleID = vehicle;
@@ -185,15 +186,15 @@ public class Task implements Comparable<Task> {
 			expTime = Double.POSITIVE_INFINITY;
 			Priority = 0;
 
-			if(type == vars.numTaskTypes){
+			if(type == vars.TC_SOME_TASK){
 				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
 			}
-			else if(type == vars.numTaskTypes + 1){
+			else if(type == vars.TC_FULL_TASK){
 				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
 			}
-			else if(type == vars.numTaskTypes + 2){
+			else if(type == vars.EXOGENOUS_TASK){
 				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
 				Priority = 7;
@@ -341,7 +342,7 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double GenTime (char type, double[] param){
+	private double GenTime (char type, double[] param) throws Exception{
 		switch (type){
 			case 'E':
 				return Exponential(param[0]);
@@ -369,11 +370,10 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Exponential(double beta){
+	private double Exponential(double beta) throws Exception{
 
 		if(beta <= 0){
-			System.out.println("Please offer a positive mean value for the Exponential distribution.");
-			return Double.POSITIVE_INFINITY;
+			throw new Exception("Please offer a positive mean value for the Exponential distribution.");
 		}
 
 		double lambda = 1 / beta;
@@ -426,7 +426,16 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Triangular(double min, double mode, double max){
+	private double Triangular(double min, double mode, double max) throws Exception{
+
+		if (!(min < mode && mode < max)) {
+			throw new Exception("For the triangular distribution: please offer min < mode < max.");
+		}
+
+		if (min <= 0) {
+			throw new Exception("Please offer positive value for the triangular distribution.");
+		}
+
 		double F = (mode - min)/(max - min);
 		double rand = Math.random();
 		if (rand < F) {
@@ -446,7 +455,7 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double genArrTime(double PrevTime, int type){
+	private double genArrTime(double PrevTime, int type) throws Exception{
 
 		int fleet = vehicleID / 100;
 		double TimeTaken;
@@ -534,7 +543,7 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double genExpTime(){
+	private double genExpTime() throws Exception{
 
 		double expiration;
 		expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
