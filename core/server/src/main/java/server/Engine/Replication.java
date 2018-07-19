@@ -301,9 +301,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-//            System.out.println("-------------------------------------------------------");
+            System.out.println("-------------------------------------------------------");
 //            System.out.print(op.toString() + ", ");
-//            System.out.println(op.getQueue().toString());
+            System.out.println(op.getQueue().toString());
 
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
                 if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
@@ -313,6 +313,8 @@ public class Replication {
 
             while (op.getQueue().taskqueue.size() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) {
+                System.out.println("new task is: " + task.getName() + "(" + task.getArrTime() + ")");
+                System.out.println("the finTime now: " + op.getQueue().getfinTime());
                 op.getQueue().done(vars, op);
             }
         }

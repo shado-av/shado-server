@@ -66,12 +66,13 @@ public class DataWrapper {
         //Out put the report files
 
         printUtilization(u,1);
-        u.removeEmptyTask(vars);
-        printSummaryReport();
-//        printErrorReport();
-        printTaskRecord();
         printValidationReport(u.getTaskUtilization());
+        printSummaryReport();
+        printTaskRecord();
+//        printErrorReport();
 
+        u.removeEmptyTask(vars);
+        t.removeEmptyTask(vars);
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
@@ -143,7 +144,7 @@ public class DataWrapper {
 
         //print summary for each task type
 
-        for(int i = 0; i < vars.totalTaskType; i++){
+        for(int i : vars.allTaskTypes){
             System.out.println("Task name: " + vars.taskName_all[i]);
 
             int expiredTasks = 0;
@@ -170,7 +171,6 @@ public class DataWrapper {
 
         System.setOut(stdout);
     }
-
 
     /****************************************************************************
      *
@@ -404,7 +404,7 @@ public class DataWrapper {
                 for (int rep = 0; rep < vars.numReps; rep++) {
 
                     Double utilization10min = 0.0;
-                    for (int taskType = 0; taskType < vars.totalTaskType; taskType++) {
+                    for (int taskType : vars.allTaskTypes) {
                          utilization10min += utilization[op][rep][taskType][time];
                     }
                     System.out.print(utilization10min + ",");

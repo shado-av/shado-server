@@ -40,7 +40,14 @@ public class TaskRecord {
 
     public TaskRecord(loadparam vars){
 
-        taskName = vars.taskName_all;
+//        taskName = vars.taskName_all;
+
+        taskName = new String[vars.allTaskTypes.size()];
+        int index = 0;
+        for(int i : vars.allTaskTypes) {
+            taskName[index] = vars.taskName_all[i];
+            index++;
+        }
 
         // get operators' name
 
@@ -136,10 +143,42 @@ public class TaskRecord {
                         }
                         sum = sum + (temp - averageFailed[team][task][i]) * (temp - averageFailed[team][task][i]);
                     }
-                    stdFailed[team][task][i] = Math.sqrt(sum / (numRep - 1));
+                    stdFailed[team][task][i] = numRep == 1 ? 0 : Math.sqrt(sum / (numRep - 1));
                 }
             }
         }
+
+    }
+
+
+    public void removeEmptyTask(loadparam vars){
+
+        int[][][][][] newNumFailedTask  = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.allTaskTypes.size()][4];
+        int[][][][]   newNumSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.allTaskTypes.size()];
+        double[][][]  newAverageFailed  = new double[vars.numTeams][vars.allTaskTypes.size()][4];
+        double[][][]  newStdFailed      = new double[vars.numTeams][vars.allTaskTypes.size()][4];
+
+        for (int rep = 0; rep < vars.numReps; rep++) {
+            for (int phase = 0; phase < vars.numPhases; phase++) {
+                for(int team = 0; team < vars.numTeams; team++) {
+                    int count = 0;
+                    for(int task : vars.allTaskTypes) {
+                        for(int i = 0; i < 4; i++){
+                            newNumFailedTask[rep][phase][team][count][i] = numFailedTask[rep][phase][team][task][i];
+                            newAverageFailed[team][count][i] = averageFailed[team][task][i];
+                            newStdFailed[team][count][i] = stdFailed[team][task][i];
+                        }
+                        newNumSuccessTask[rep][phase][team][count] = numSuccessTask[rep][phase][team][task];
+                        count++;
+                    }
+                }
+            }
+        }
+
+        numFailedTask = newNumFailedTask;
+        numSuccessTask = newNumSuccessTask;
+        averageFailed = newAverageFailed;
+        stdFailed = newStdFailed;
 
     }
 

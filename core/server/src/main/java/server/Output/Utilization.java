@@ -194,15 +194,6 @@ public class Utilization {
 
     }
 
-    /*
-
-    String[] taskName;
-    Double[][][][] taskUtilization; //[operator][replication][task][time]
-
-     */
-
-
-
     private void removeTask(int task, loadparam param){
 
         int numOp = taskUtilization.length;
@@ -228,37 +219,6 @@ public class Utilization {
                 }
             }
         }
-
-
-//        if (task == param.EXOGENOUS_TASK || task == param.TC_FULL_TASK) { //remove the last task
-//            for (int op = 0; op < numOp; op++) {
-//                for (int rep = 0; rep < numRep; rep++) {
-//                    for (int col = 0; col < numColumn; col++) {
-//                        for (int t = 0; t < numTask - 1; t++) {
-//                            newTaskName[t] = taskName[t];
-//                            newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t][col];
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        else {
-//            for (int op = 0; op < numOp; op++) {
-//                for (int rep = 0; rep < numRep; rep++) {
-//                    for (int col = 0; col < numColumn; col++) {
-//                        for (int t = 0; t < task; t++) {
-//                            newTaskName[t] = taskName[t];
-//                            newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t][col];
-//                        }
-//
-//                        for (int t = task; t < numTask - 1; t++) {
-//                            newTaskName[t] = taskName[t + 1];
-//                            newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t + 1][col];
-//                        }
-//                    }
-//                }
-//            }
-//        }
 
         taskName = newTaskName;
         taskUtilization = newTaskUtilization;

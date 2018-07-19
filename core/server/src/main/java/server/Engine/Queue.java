@@ -135,7 +135,7 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().addInterruptTime(finTime);
             taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
 
-//            taskqueue.peek().printBasicInfo();
+            taskqueue.peek().printBasicInfo();
 
             Task currentTask = taskqueue.peek();
 

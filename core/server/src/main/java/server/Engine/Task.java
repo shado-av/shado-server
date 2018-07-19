@@ -622,10 +622,10 @@ public class Task implements Comparable<Task> {
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);
 		System.out.println("Arrival time : " + arrTime);
-		System.out.println("Begin Time : " + beginTime);
-		System.out.println("Service Time : " + serTime);
-		System.out.println("Expire Time : " + expTime);
-		System.out.println("Finish Time : " + endTime);
+//		System.out.println("Begin Time : " + beginTime);
+//		System.out.println("Service Time : " + serTime);
+//		System.out.println("Expire Time : " + expTime);
+//		System.out.println("Finish Time : " + endTime);
 		System.out.print("Here is my work schedule: ");
 		for(int i = 0; i < workSchedule.size(); i++){
 			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");
