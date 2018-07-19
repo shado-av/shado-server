@@ -302,7 +302,9 @@ public class DataWrapper {
                 System.out.println(" ");
 
             }
-
+            if (max10mins > 1.02) {
+                throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
+            }
             System.out.println("The max utilization in 10 mins is " + max10mins);
 
         }

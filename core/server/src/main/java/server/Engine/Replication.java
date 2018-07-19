@@ -313,8 +313,6 @@ public class Replication {
 
             while (op.getQueue().taskqueue.size() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) {
-                System.out.println("new task is: " + task.getName() + "(" + task.getArrTime() + ")");
-                System.out.println("the finTime now: " + op.getQueue().getfinTime());
                 op.getQueue().done(vars, op);
             }
         }

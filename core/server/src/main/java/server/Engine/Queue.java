@@ -37,6 +37,7 @@ public class Queue implements Comparable<Queue>{
 
     // Mutator:
     public void             SetTime(double Time) {
+        System.out.println("Set time: " + Time);
         this.time = Time;
     }
 
@@ -92,7 +93,7 @@ public class Queue implements Comparable<Queue>{
 
         // Set the time of the queue to the arrival time of the task.
 
-        SetTime(task.getArrTime());
+        SetTime(Math.max(task.getArrTime(), time));
 
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
@@ -205,12 +206,9 @@ public class Queue implements Comparable<Queue>{
 
     public void clearTask(loadparam vars, Operator op){
 
-
-
         blockLastSecondPhase = true;
         Task onHandTask = taskqueue.peek(); //last task in this phase that has been started, will be recorded as unfinished task
                                             //other task will be set to missed and clear
-//        System.out.println("About to go into phase " + (onHandTask.getPhase() + 1) + "......");
 
         if (taskqueue.peek() != null) {
 
@@ -243,11 +241,7 @@ public class Queue implements Comparable<Queue>{
 
         }
 
-        System.out.println("PhaseBegin: " + Arrays.toString(vars.phaseBegin));
-        System.out.println("phase: " + onHandTask.getPhase());
-
-        SetTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
-        finTime();
+        SetTime(Math.max(vars.phaseBegin[onHandTask.getPhase() + 1], time));
 
     }
 
