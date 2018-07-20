@@ -38,17 +38,10 @@ public class Replication {
 
     // Inspectors:
 
-    public VehicleSim[][] getvehicles() {
-        return vehicles;
-    }
+    public RemoteOp getRemoteOp() { return remoteOps; }
 
-    public RemoteOp getRemoteOp() {
-        return remoteOps;
-    }
+    public int getRepID() { return repID; }
 
-    public int getRepID() {
-        return repID;
-    }
 
     /****************************************************************************
      *
@@ -138,9 +131,18 @@ public class Replication {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:		    findAvaliableOperator
+     *
+     *	Purpose:	    According to the opExpertise, find a list of operator
+     *                  who can do this task
+     *
+     ****************************************************************************/
+
     private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task){
 
-        if(task.getType() == vars.numTaskTypes || task.getType() == vars.numTaskTypes + 1){  // team coordination task, which can only be handled within certain team
+        if(task.getType() == vars.TC_SOME_TASK || task.getType() == vars.TC_FULL_TASK){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
                 task.changeServTime(0.5);
@@ -153,7 +155,7 @@ public class Replication {
                 }
             }
         }
-        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task can be handled by all the operator
+        else if(task.getType() == vars.EXOGENOUS_TASK){ // exogenous task can be handled by all the operator
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
                 proc.add(remoteOps.getRemoteOp()[j].getQueue());
                 working.add(remoteOps.getRemoteOp()[j]);
@@ -209,7 +211,7 @@ public class Replication {
      ****************************************************************************/
     private void failTask(Operator operator,Task task, double changeRate){
 
-        int taskType = Math.max(task.getType(), 0);
+        int taskType = task.getType();
         int teamType = operator.dpID / 100;
         int Phase = task.getPhase();
 
@@ -217,22 +219,23 @@ public class Replication {
         double errorCatching;
         int affByTeamCoord;
 
-        if (taskType >= vars.numTaskTypes) {
+        if (taskType >= vars.numTaskTypes) {//settings for special tasks
             errorCatching = 0.5;
             affByTeamCoord = 0;
         }
         else {
             errorCatching = vars.ECC[Phase][teamType][taskType];
+            if (operator.isAI)
+                errorCatching *= vars.ETFailThreshold[teamType];
             affByTeamCoord = vars.teamCoordAff[taskType];
         }
-
 
         // Modify the human error rate according to the changeRate
         for(int i = 0; i < task.getRepeatTimes(); i++){
             changeRate *= 0.5;
         }
         humanErrorRate *= changeRate;
-        humanErrorRate = Math.max(humanErrorRate, 0.0001);
+        humanErrorRate = Math.max(humanErrorRate, 0.0001);//0.0001 is the minimum human error rate
 
         // Modify the error catching chance according to team coordination
         if (affByTeamCoord == 1) {
@@ -301,9 +304,9 @@ public class Replication {
 
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
-            System.out.println("-------------------------------------------------------");
+//            System.out.println("-------------------------------------------------------");
 //            System.out.print(op.toString() + ", ");
-            System.out.println(op.getQueue().toString());
+//            System.out.println(op.getQueue().toString());
 
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
                 if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
@@ -334,8 +337,8 @@ public class Replication {
 
         globalTasks = new ArrayList<Task>();
 
-        remoteOps = new RemoteOp(vars,globalTasks);
-        remoteOps.run();
+        remoteOps = new RemoteOp(vars);
+        remoteOps.genRemoteOp();
 
         int maxLen = 0;
         for(int i = 0; i < vars.fleetTypes; i++ )
@@ -344,12 +347,11 @@ public class Replication {
 
         vehicles = new VehicleSim[vars.fleetTypes][maxLen];
 
+        // Generate all the vehicles
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
-
                 vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
                 vehicles[i][j].taskgen();
-
             }
         }
 
@@ -386,7 +388,12 @@ public class Replication {
      ****************************************************************************/
 
     private void equalTeammateDone(Task task, int team){
-        //TODO: not apply the fail task part
+
+        //Create an ET operator
+        Operator dummyOperator = new Operator(team * 100, "Equal Teammate", vars);
+        dummyOperator.isAI = true;
+        failTask(dummyOperator, task, vars.ETErrorRate[team]);
+        //TODO: if AI failed task, add it to its own queue?
         task.setBeginTime(task.getArrTime());
         task.changeServTime(vars.ETServiceTime[team]);
         task.setEndTime(task.getArrTime() + task.getSerTime());

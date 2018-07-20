@@ -36,7 +36,7 @@ public class Queue implements Comparable<Queue>{
     public boolean          checkBlock()   { return blockLastSecondPhase; }
 
     // Mutator:
-    public void             SetTime(double Time) {
+    public void SetTime(double Time) {
         System.out.println("Set time: " + Time);
         this.time = Time;
     }

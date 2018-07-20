@@ -20,32 +20,32 @@ import server.Input.loadparam;
 public class Task implements Comparable<Task> {
 
 	//General task input params.
+	private String name;
 	private int Type;
 	private int Priority;
 	private int teamType;
+	private int Phase;
+	private int shiftPeriod;
 	public loadparam vars;
+	private int vehicleID;
 	private double lvl_SOME = 0.7;
 	private double lvl_FULL = 0.3;
 	private double lvl_None = 1.0;
 
 	//Task specific variables.
-	private int Phase;
-	private int shiftPeriod;
-	private double prevTime;
+	private double prevTime; //Time last task in same type arrived
 	private double arrTime;
+	private double beginTime;
 	private double serTime;
+	private double endTime;
 	private double expTime;
 	private double elapsedTime;
 	public ArrayList<double[]> workSchedule;
 	private double waitTime;
-	private double beginTime;
-	private double endTime;
-	private String name;
-	private int vehicleID;
 	private boolean expired;
 	private boolean fail; // Indicates fail
 	private boolean needReDo = false; // Indicates fail but caught
-	private int repeatTimes;
+	private int repeatTimes; // Indicates how many times this task has been redone
 
 
 	// This adds the ability for task to track queue retroactively
@@ -119,6 +119,11 @@ public class Task implements Comparable<Task> {
 
 	public Task() { }
 
+
+	// Constructor ---- build a redo task
+	// deep copy the original task
+	// and set the arrival time follow the original task
+
 	public Task(Task t){
 		vehicleID = t.vehicleID;
 		Type = t.getType();
@@ -144,6 +149,8 @@ public class Task implements Comparable<Task> {
 		repeatTimes = t.repeatTimes + 1;
 	}
 
+	// Constructor
+
 	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, int vehicle) throws Exception{
 
 		Type = type;
@@ -160,7 +167,6 @@ public class Task implements Comparable<Task> {
 		workSchedule = new ArrayList<>();
 		repeatTimes = 0;
 		name = vars.taskName_all[type];
-
 
 		if(type < vars.numTaskTypes){
 
@@ -607,6 +613,15 @@ public class Task implements Comparable<Task> {
 		return arrivalRate;
 	}
 
+	/****************************************************************************
+	 *
+	 *	Method:			addBeginTime, addInterruptTime
+	 *
+	 *	Purpose:		To add a working period in the workSchedule by adding a
+	 *					pair of begin time and end time.
+	 *
+	 ****************************************************************************/
+
 	public void addBeginTime(double beginTime){
 		double[] newSchedule = new double[2];
 		newSchedule[0] = beginTime;
@@ -618,6 +633,14 @@ public class Task implements Comparable<Task> {
 		int lastOne = workSchedule.size() - 1;
 		workSchedule.get(lastOne)[1] = time;
 	}
+
+	/****************************************************************************
+	 *
+	 *	Method:			printBasicInfo
+	 *
+	 *	Purpose:		Print the basic information for a task. Used for debugging.
+	 *
+	 ****************************************************************************/
 
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);

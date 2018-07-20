@@ -28,8 +28,6 @@ public class Simulation {
 
     private Data[] RemoteOpoutput;
 
-    private int repnumber;
-
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
     }
@@ -48,9 +46,6 @@ public class Simulation {
         // Get overall vars
 
         vars = param;
-        repnumber = param.numReps;
-
-        System.out.println("Number of reputations: " + repnumber);
 
         // Generate overall data field
 
@@ -91,7 +86,7 @@ public class Simulation {
 
     public void run() throws Exception {
 
-        for (int i = 0; i < repnumber; i++) {
+        for (int i = 0; i < vars.numReps; i++) {
 
             vars.refreshHumanErrorRate();
 
@@ -107,7 +102,7 @@ public class Simulation {
         vars.replicationTracker = 0;
 
         //Data Processing for Replications
-        for(int i = 0; i < repnumber; i++){
+        for(int i = 0; i < vars.numReps; i++){
             ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i], vars);
             process.run();
             vars.utilization.fillTaskUtilization(i, process.getUtilization_task(), vars);
@@ -118,10 +113,8 @@ public class Simulation {
 
         }
 
-//        vars.utilization.removeEmptyTask(vars);
         vars.taskRecord.computeTotalTaskNumber();
         vars.taskRecord.failedAnalysis();
-
 
         for (Data each: RemoteOpoutput){
             each.avgdata();

@@ -138,13 +138,13 @@ public class loadparam {
         TC_SOME_TASK = numTaskTypes;
         TC_FULL_TASK = numTaskTypes + 1;
         EXOGENOUS_TASK = numTaskTypes + 2;
+        totalTaskType = numTaskTypes + 3;
 
         expandEssential();
         expandInterruptable();
         expandPhaseBegin();
 
         getNumRemoteOp();
-        totalTaskType = numTaskTypes + 3;
         collectTaskNames();
         collectTaskTypes();
 
