@@ -52,9 +52,7 @@ public class Parser {
             for(int k = 0; k < in.numTeams; k++){
                 System.out.println("For task type " + i + " team " + k);
                 System.out.print("taskPrty:");
-                for(int j = 0; j < in.numPhases; j++) {
-                    System.out.print(in.taskPrty[j][k][i] + " ");
-                }
+                System.out.print(in.taskPrty[k][i] + " ");
                 System.out.println(" ");
             }
         }
@@ -67,12 +65,11 @@ public class Parser {
             System.out.println(" ");
         }
 
-        for(int i = 0; i < in.numPhases; i++){
-            for(int j = 0; j < in.numTaskTypes; j++){
-                System.out.print("In phase " + i + " Task " + j + " : ");
-                System.out.println(Arrays.toString(in.arrPms[i][j]));
-            }
+        for(int j = 0; j < in.numTaskTypes; j++){
+            System.out.print("In Task " + j + " the arrPms: ");
+            System.out.println(Arrays.toString(in.arrPms[j]));
         }
+
 
         System.out.println("LeadTask: " + Arrays.toString(in.leadTask));
         System.out.println("******* Parse End. *******");

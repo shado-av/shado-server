@@ -68,6 +68,15 @@ public class Replication {
 
     public void puttask(Task task) {
 
+        // Turn Over tasks should be applied to all the operators
+
+        if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
+            for (Operator op : remoteOps.getRemoteOp()) {
+                op.getQueue().add(task);
+            }
+            return;
+        }
+
         // Create a new arraylist of queue:
 
         ArrayList<Queue> proc = new ArrayList<Queue>();
@@ -103,7 +112,7 @@ public class Replication {
             errorChangeRate *= getTeamComm(optimal_op.dpID);
 
             // assign task priority according to phase, team and task type
-            task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
+            task.setPriority(vars.taskPrty[optimal_op.dpID / 100][task.getType()]);
         }
 
         // In the second last phase, the tasks which cannot be complete within this phase will be stopped
@@ -163,12 +172,14 @@ public class Replication {
         }
         else { // regular task. If the task can be operated by this operator, get his queue.
             for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
+
                 Operator eachOperator = remoteOps.getRemoteOp()[j];
                 if (eachOperator != null && vars.opExpertise[eachOperator.dpID / 100][task.getType()][task.getVehicleID() / 100] == 1) {
                     //Put task in appropriate Queue
                     proc.add(eachOperator.getQueue());
                     working.add(eachOperator);
                 }
+
             }
         }
 
@@ -213,9 +224,8 @@ public class Replication {
 
         int taskType = task.getType();
         int teamType = operator.dpID / 100;
-        int Phase = task.getPhase();
 
-        double humanErrorRate = vars.humanErrorRate[Phase][taskType];
+        double humanErrorRate = vars.humanErrorRate[taskType];
         double errorCatching;
         int affByTeamCoord;
 
@@ -224,7 +234,7 @@ public class Replication {
             affByTeamCoord = 0;
         }
         else {
-            errorCatching = vars.ECC[Phase][teamType][taskType];
+            errorCatching = vars.ECC[teamType][taskType];
             if (operator.isAI)
                 errorCatching *= vars.ETFailThreshold[teamType];
             affByTeamCoord = vars.teamCoordAff[taskType];
@@ -336,6 +346,8 @@ public class Replication {
         // Initialize control center.
 
         globalTasks = new ArrayList<Task>();
+
+        addTurnOverTask();
 
         remoteOps = new RemoteOp(vars);
         remoteOps.genRemoteOp();
@@ -459,6 +471,29 @@ public class Replication {
 
     /****************************************************************************
      *
+     *	Method:		    addTurnOverTask
+     *
+     *	Purpose:	    Generate turn over task and add them to the
+     *                  global task queue.
+     *
+     ****************************************************************************/
+
+    private void addTurnOverTask() throws Exception{
+
+        if (vars.hasTurnOver[0] == 1) {
+            Task newTask = new Task(vars.TURN_OVER_BEGIN_TASK, 0 , vars, true, 0);
+            globalTasks.add(newTask);
+        }
+
+        if (vars.hasTurnOver[1] == 1) {
+            Task newTask = new Task(vars.TURN_OVER_END_TASK, 0 , vars, true, 0);
+            globalTasks.add(newTask);
+        }
+
+    }
+
+    /****************************************************************************
+     *
      *	Method:		    genTeamCommTask
      *
      *	Purpose:	    Generate team communication tasks and add them to the
@@ -469,9 +504,9 @@ public class Replication {
 
     private void genTeamCommTask(char level, int team) throws Exception{
 
-        int taskType = vars.numTaskTypes;
-        if(level == 'S') taskType = vars.numTaskTypes;
-        if(level == 'F') taskType = vars.numTaskTypes + 1;
+        int taskType = vars.TC_SOME_TASK;
+        if(level == 'S') taskType = vars.TC_SOME_TASK;
+        if(level == 'F') taskType = vars.TC_FULL_TASK;
 
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true, team * 100);

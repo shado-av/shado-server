@@ -184,10 +184,10 @@ public class Task implements Comparable<Task> {
 			}
 
 			expTime = genExpTime();
-			serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
+			serTime = GenTime(vars.serDists[Type], vars.serPms[Type]);
 
 		}
-		else{
+		else {
 
 			expTime = Double.POSITIVE_INFINITY;
 			Priority = 0;
@@ -195,18 +195,34 @@ public class Task implements Comparable<Task> {
 			if(type == vars.TC_SOME_TASK){
 				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
+				Phase = getPhase(arrTime);
 			}
 			else if(type == vars.TC_FULL_TASK){
 				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
+				Phase = getPhase(arrTime);
 			}
 			else if(type == vars.EXOGENOUS_TASK){
 				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
 				Priority = 7;
+				Phase = getPhase(arrTime);
+			}
+			else if(type == vars.TURN_OVER_BEGIN_TASK){
+				arrTime = PrevTime;
+				serTime = GenTime(vars.turnOverDists[0], vars.turnOverPms[0]);
+				Priority = 7;
+				Phase = 0;
+				vars.phaseBegin[1] = serTime;
+			}
+			else if(type == vars.TURN_OVER_END_TASK){
+				serTime = GenTime(vars.turnOverDists[1], vars.turnOverPms[1]);
+				arrTime = vars.numHours * 60 - serTime;
+				Priority = 7;
+				Phase = vars.numPhases - 1;
+				vars.phaseBegin[vars.numPhases - 1] = arrTime;
 			}
 
-			Phase = getPhase(arrTime);
 			if (Phase == vars.numPhases) {
 				arrTime = -1;
 				return;
@@ -464,47 +480,17 @@ public class Task implements Comparable<Task> {
 	private double genArrTime(double PrevTime, int type) throws Exception{
 
 		int fleet = vehicleID / 100;
-		double TimeTaken;
-
-		//Skip the front phases who have a negative distribution parameter
-		while (Phase < vars.numPhases && vars.arrDists[Phase][type] == 'N') {
-			Phase++;
-			if (Phase == vars.numPhases) {//Finish checking all the phases
-				return -1;				   //Return -1 will discard this task
-			}
-			PrevTime = vars.phaseBegin[Phase];
-		}
 
 		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
-		TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
-
-		// check if this task stays in the same phase with the last one
-		int newPhase = getPhase(PrevTime + TimeTaken);
-		if (newPhase > Phase) { //come to a new phase
-
-			// skip the phases who have a negative distribution parameter
-			while (newPhase < vars.numPhases && vars.arrDists[newPhase][type] == 'N') {
-				newPhase++;
-			}
-			if (newPhase == vars.numPhases) {
-				return -1;
-			}
-			else {
-				PrevTime = vars.phaseBegin[newPhase];
-				Phase = newPhase;
-				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
-				TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
-			}
-
-		}
+		double TimeTaken = GenTime(vars.arrDists[type], arrivalRate);
 
 		if (TimeTaken == Double.POSITIVE_INFINITY) {
-			return Double.POSITIVE_INFINITY;
+			return -1;
 		}
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (loadparam.TRAFFIC_ON && vars.affByTraff[Phase][type] == 1 ){
+		if (loadparam.TRAFFIC_ON && vars.affByTraff[type] == 1 ){
 			newArrTime = applyTraffic(TimeTaken);
 		}
 
@@ -552,7 +538,7 @@ public class Task implements Comparable<Task> {
 	private double genExpTime() throws Exception{
 
 		double expiration;
-		expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
+		expiration = GenTime(vars.expDists[Type], vars.expPms[Type]);
 		return arrTime + serTime + expiration;
 
 	}
@@ -598,14 +584,14 @@ public class Task implements Comparable<Task> {
 			num *= 1.1;
 		}
 
-		arrivalRate = new double[vars.arrPms[Phase][Type].length];
-		if(vars.arrDists[Phase][Type] == 'L'){
+		arrivalRate = new double[vars.arrPms[Type].length];
+		if(vars.arrDists[Type] == 'L'){
 			arrivalRate[0] = arrivalRate[0] * num;
 			return arrivalRate;
 		}
 
 		int count = 0;
-		for(double d : vars.arrPms[Phase][Type]){
+		for(double d : vars.arrPms[Type]){
 			arrivalRate[count] = d * num;
 			count++;
 		}
