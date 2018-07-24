@@ -35,7 +35,7 @@ public class GreetingController {
     Date date = new Date();
 
 //    private String directory = "/home/rapiduser/out/";
-    private String homeDirectory = "/Users/zhanglian1/Desktop/out/";
+    private String homeDirectory = System.getProperty("user.home") + "/Desktop/out/";
     private String directory = homeDirectory;
 
     @RequestMapping("/shado/hello")
