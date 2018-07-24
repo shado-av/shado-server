@@ -52,12 +52,8 @@ public class RemoteOp {
         // SCHEN 11/20/17
         // Note: RemoteOper is a 1d array, to fit in the data structure,
         // change it to 2d array with each subarray with length == 1
-        if (vars.hasFlexPosition == 1) {
-            RemoteOpers = new Operator[vars.numRemoteOp + 1];
-        }
-        else {
-            RemoteOpers = new Operator[vars.numRemoteOp];
-        }
+
+        RemoteOpers = new Operator[vars.numRemoteOp];
 
         int cnt = 0;
         for (int i = 0; i < vars.numTeams; i++) {
@@ -67,9 +63,6 @@ public class RemoteOp {
             }
         }
 
-        if (vars.hasFlexPosition == 1) {
-            RemoteOpers[vars.numRemoteOp] = new Operator(vars.numTeams * 100, "Flex Position", vars);
-        }
     }
 
 

@@ -129,7 +129,6 @@ public class Replication {
 
         }
 
-
         // check if the task is failed
         failTask(optimal_op, task, errorChangeRate);
 
@@ -178,12 +177,6 @@ public class Replication {
                     working.add(eachOperator);
                 }
 
-            }
-
-            // flex position can do all the tasks
-            if (vars.hasFlexPosition == 1) {
-                proc.add(remoteOps.getRemoteOp()[vars.numRemoteOp].getQueue());
-                working.add(remoteOps.getRemoteOp()[vars.numRemoteOp]);
             }
 
         }
@@ -235,6 +228,7 @@ public class Replication {
         int affByTeamCoord;
 
         if (taskType >= vars.numTaskTypes) {//settings for special tasks
+            //TODO: add human error rate here
             errorCatching = 0.5;
             affByTeamCoord = 0;
         }

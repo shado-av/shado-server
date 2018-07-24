@@ -37,7 +37,6 @@ public class loadparam {
     public char[]       turnOverDists;
     public double[][]   turnOverPms;
     public int []       hasExogenous;
-    public int          hasFlexPosition;
 
     // Team Variables
     public int          numTeams;
@@ -138,8 +137,6 @@ public class loadparam {
     * Set Global data after reading from JSON
     * */
     public void setGlobalData(){
-
-        hasFlexPosition = 0;
 
         // Add special tasks' setting
 
