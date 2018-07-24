@@ -37,7 +37,6 @@ public class Queue implements Comparable<Queue>{
 
     // Mutator:
     public void SetTime(double Time) {
-        System.out.println("Set time: " + Time);
         this.time = Time;
     }
 
@@ -134,9 +133,9 @@ public class Queue implements Comparable<Queue>{
 
             taskqueue.peek().setEndTime(finTime);
             taskqueue.peek().addInterruptTime(finTime);
-            taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
+            taskqueue.peek().setWaitTime(round(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime(),2));
 
-            taskqueue.peek().printBasicInfo();
+//            taskqueue.peek().printBasicInfo();
 
             Task currentTask = taskqueue.peek();
 
@@ -268,6 +267,22 @@ public class Queue implements Comparable<Queue>{
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
         }
+    }
+
+    /****************************************************************************
+     *
+     *	Method:     round
+     *
+     *	Purpose:    Round double numbers
+     *
+     ****************************************************************************/
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 
 }

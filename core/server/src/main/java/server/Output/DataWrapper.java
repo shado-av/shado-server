@@ -240,10 +240,8 @@ public class DataWrapper {
                 System.out.println("Replication " + i);
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
-                        double waitTime = t.getEndTime() - t.getArrTime() - t.getSerTime();
                         System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," +
-                                t.getSerTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
-
+                                t.getSerTime() + "," + t.getWaitTime() + "," + t.getEndTime() + "," + t.getExpTime());
                     }
                 }
             }

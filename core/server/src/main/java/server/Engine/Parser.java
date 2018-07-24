@@ -70,7 +70,6 @@ public class Parser {
             System.out.println(Arrays.toString(in.arrPms[j]));
         }
 
-
         System.out.println("LeadTask: " + Arrays.toString(in.leadTask));
         System.out.println("******* Parse End. *******");
     }

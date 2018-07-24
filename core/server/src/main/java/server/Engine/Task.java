@@ -53,7 +53,6 @@ public class Task implements Comparable<Task> {
 	private int queued;
 
 	// Mutators
-	public boolean checkexpired() { return expired; }
 
 	public boolean getFail(){return this.fail;}
 
@@ -66,6 +65,8 @@ public class Task implements Comparable<Task> {
 	public int getRepeatTimes() { return repeatTimes; }
 
 	public int getVehicleID() { return vehicleID; }
+
+	public double getWaitTime() { return waitTime; }
 
 	public void setFail(){ this.fail = true; }
 
@@ -233,7 +234,8 @@ public class Task implements Comparable<Task> {
 
 		beginTime = arrTime;
 		//shift schedule 1% fatigue increase serve time
-		changeServTime(1 + 0.01 * (shiftPeriod+1));
+		if(type != vars.TURN_OVER_BEGIN_TASK && type != vars.TURN_OVER_END_TASK)
+			changeServTime(1 + 0.01 * shiftPeriod);
 	}
 
 	/****************************************************************************

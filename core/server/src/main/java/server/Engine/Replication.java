@@ -102,6 +102,7 @@ public class Replication {
                     equalTeammateDone(task, team);
                     return;
                 }
+
             }
 
             //AI feature: Individual Assistant AIDA
@@ -111,8 +112,9 @@ public class Replication {
             task.changeServTime(getTeamComm(optimal_op.dpID));
             errorChangeRate *= getTeamComm(optimal_op.dpID);
 
-            // assign task priority according to phase, team and task type
-            task.setPriority(vars.taskPrty[optimal_op.dpID / 100][task.getType()]);
+            // assign task priority according to team and task type
+            if (optimal_op.dpID / 100 < vars.numTeams)
+                task.setPriority(vars.taskPrty[optimal_op.dpID / 100][task.getType()]);
         }
 
         // In the second last phase, the tasks which cannot be complete within this phase will be stopped
@@ -171,7 +173,7 @@ public class Replication {
             }
         }
         else { // regular task. If the task can be operated by this operator, get his queue.
-            for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
+            for (int j = 0; j < vars.numRemoteOp; j++) {
 
                 Operator eachOperator = remoteOps.getRemoteOp()[j];
                 if (eachOperator != null && vars.opExpertise[eachOperator.dpID / 100][task.getType()][task.getVehicleID() / 100] == 1) {
@@ -181,6 +183,13 @@ public class Replication {
                 }
 
             }
+
+            // flex position can do all the tasks
+            if (vars.hasFlexPosition == 1) {
+                proc.add(remoteOps.getRemoteOp()[vars.numRemoteOp].getQueue());
+                working.add(remoteOps.getRemoteOp()[vars.numRemoteOp]);
+            }
+
         }
 
     }
@@ -424,7 +433,9 @@ public class Replication {
      ****************************************************************************/
 
     private double applyIndividualAssistant(Operator op, Task task){
-        if (vars.AIDAtype[op.dpID / 100][1] == 1 &&
+
+        // first condition checks if this operator is a flex position operator
+        if (op.dpID / 100 < vars.numTeams && vars.AIDAtype[op.dpID / 100][1] == 1 &&
                 IntStream.of(vars.IAtasks[op.dpID / 100]).anyMatch(x -> x == task.getType())) {
             double changeRate = getIndividualAssistantLevel(op.dpID);
             task.changeServTime(changeRate);
@@ -444,6 +455,10 @@ public class Replication {
     private double getTeamComm(int dpID){
 
         int type = dpID / 100;
+
+        if (type == vars.numTeams)
+            return 1;
+
         double teamComm = 1;
         if(vars.teamCoordAff[type] == 0) return teamComm;
         if(vars.teamComm[type] == 'S') teamComm = 0.7;
@@ -463,6 +478,10 @@ public class Replication {
 
     private double getIndividualAssistantLevel(int dpId){
         int type = dpId / 100;
+
+        if (type == vars.numTeams)
+            return 1;
+
         double IAlvl = 1;
         if(vars.IALevel[type] == 'S') IAlvl = 0.7;
         if(vars.IALevel[type] == 'F') IAlvl = 0.3;
