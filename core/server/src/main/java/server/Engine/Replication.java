@@ -117,24 +117,20 @@ public class Replication {
                 task.setPriority(vars.taskPrty[optimal_op.dpID / 100][task.getType()]);
         }
 
-        // In the second last phase, the tasks which cannot be complete within this phase will be stopped
-        // and set to expired at the end of this phase
-        if (task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) {
-            task.setexpired();
-            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
-            return;
-        }
+        //If we have turn over task at the end, non-essential tasks will be removed to finish the turn over task
+        if (vars.hasTurnOver[1] == 1 && vars.essential[task.getType()] == 0) {
 
-        // Only the essential task and interruptable tasks can enter the last phase
-        if (task.getPhase() == vars.numPhases - 1) {
-            if (vars.essential[task.getType()] == 0 && vars.interruptable[task.getType()] == 0) {
+            if ((task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) ||
+                    (task.getPhase() == vars.numPhases - 1 && vars.interruptable[task.getType()] == 0)) {
                 task.setexpired();
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
                 return;
             }
+
         }
 
-            // check if the task is failed
+
+        // check if the task is failed
         failTask(optimal_op, task, errorChangeRate);
 
         task.setTeamType(optimal_op.dpID / 100);
