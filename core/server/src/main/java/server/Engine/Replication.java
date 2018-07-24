@@ -3,7 +3,6 @@ package server.Engine;
 import server.Input.loadparam;
 import java.util.*;
 import java.lang.*;
-import java.util.concurrent.BlockingQueue;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
@@ -39,17 +38,10 @@ public class Replication {
 
     // Inspectors:
 
-    public VehicleSim[][] getvehicles() {
-        return vehicles;
-    }
+    public RemoteOp getRemoteOp() { return remoteOps; }
 
-    public RemoteOp getRemoteOp() {
-        return remoteOps;
-    }
+    public int getRepID() { return repID; }
 
-    public int getRepID() {
-        return repID;
-    }
 
     /****************************************************************************
      *
@@ -62,7 +54,6 @@ public class Replication {
     public Replication(loadparam param, int id) {
         vars = param;
         this.repID = id;
-        vars.failTaskCount.put(vars.replicationTracker,0);
         failedTasks = new ArrayList<>();
     }
 
@@ -76,6 +67,15 @@ public class Replication {
      ****************************************************************************/
 
     public void puttask(Task task) {
+
+        // Turn Over tasks should be applied to all the operators
+
+        if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
+            for (Operator op : remoteOps.getRemoteOp()) {
+                op.getQueue().add(task);
+            }
+            return;
+        }
 
         // Create a new arraylist of queue:
 
@@ -97,11 +97,12 @@ public class Replication {
 
             //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
             if (!optimal_op.getQueue().taskqueue.isEmpty()) {
-                int team = vars.ETteam[task.getType()];
+                int team = vars.ETteam[task.getType()][task.getVehicleID() / 100];
                 if (team > -1){
                     equalTeammateDone(task, team);
                     return;
                 }
+
             }
 
             //AI feature: Individual Assistant AIDA
@@ -111,28 +112,24 @@ public class Replication {
             task.changeServTime(getTeamComm(optimal_op.dpID));
             errorChangeRate *= getTeamComm(optimal_op.dpID);
 
-            // assign task priority according to phase, team and task type
-            task.setPriority(vars.taskPrty[task.getPhase()][optimal_op.dpID / 100][task.getType()]);
+            // assign task priority according to team and task type
+            if (optimal_op.dpID / 100 < vars.numTeams)
+                task.setPriority(vars.taskPrty[optimal_op.dpID / 100][task.getType()]);
         }
 
-        // In the second last phase, the tasks which cannot be complete within this phase will be stopped
-        // and set to expired at the end of this phase
-        if (task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) {
-            task.setexpired();
-            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
-            return;
-        }
+        //If we have turn over task at the end, non-essential tasks will be removed to finish the turn over task
+        if (vars.hasTurnOver[1] == 1 && vars.essential[task.getType()] == 0) {
 
-        // Only the essential task and interruptable tasks can enter the last phase
-        if (task.getPhase() == vars.numPhases - 1) {
-            if (vars.essential[task.getType()] == 0 && vars.interruptable[task.getType()] == 0) {
+            if ((task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) ||
+                    (task.getPhase() == vars.numPhases - 1 && vars.interruptable[task.getType()] == 0)) {
                 task.setexpired();
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
                 return;
             }
+
         }
 
-            // check if the task is failed
+        // check if the task is failed
         failTask(optimal_op, task, errorChangeRate);
 
         task.setTeamType(optimal_op.dpID / 100);
@@ -140,9 +137,18 @@ public class Replication {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:		    findAvaliableOperator
+     *
+     *	Purpose:	    According to the opExpertise, find a list of operator
+     *                  who can do this task
+     *
+     ****************************************************************************/
+
     private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task){
 
-        if(task.getType() == vars.numTaskTypes || task.getType() == vars.numTaskTypes + 1){  // team coordination task, which can only be handled within certain team
+        if(task.getType() == vars.TC_SOME_TASK || task.getType() == vars.TC_FULL_TASK){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
                 task.changeServTime(0.5);
@@ -155,22 +161,24 @@ public class Replication {
                 }
             }
         }
-        else if(task.getType() == vars.numTaskTypes + 2){ // exogenous task and followed tasks can be handled by all the operator
+        else if(task.getType() == vars.EXOGENOUS_TASK){ // exogenous task can be handled by all the operator
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
                 proc.add(remoteOps.getRemoteOp()[j].getQueue());
                 working.add(remoteOps.getRemoteOp()[j]);
             }
         }
         else { // regular task. If the task can be operated by this operator, get his queue.
-            for (int j = 0; j < remoteOps.getRemoteOp().length; j++) {
-                if (remoteOps.getRemoteOp()[j] != null) {
-                    if (IntStream.of(remoteOps.getRemoteOp()[j].taskType).anyMatch(x -> x == task.getType())) {
-                        //Put task in appropriate Queue
-                        proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                        working.add(remoteOps.getRemoteOp()[j]);
-                    }
+            for (int j = 0; j < vars.numRemoteOp; j++) {
+
+                Operator eachOperator = remoteOps.getRemoteOp()[j];
+                if (eachOperator != null && vars.opExpertise[eachOperator.dpID / 100][task.getType()][task.getVehicleID() / 100] == 1) {
+                    //Put task in appropriate Queue
+                    proc.add(eachOperator.getQueue());
+                    working.add(eachOperator);
                 }
+
             }
+
         }
 
     }
@@ -212,30 +220,31 @@ public class Replication {
      ****************************************************************************/
     private void failTask(Operator operator,Task task, double changeRate){
 
-        int taskType = Math.max(task.getType(), 0);
+        int taskType = task.getType();
         int teamType = operator.dpID / 100;
-        int Phase = task.getPhase();
 
-        double humanErrorRate = vars.humanErrorRate[Phase][taskType];
+        double humanErrorRate = vars.humanErrorRate[taskType];
         double errorCatching;
         int affByTeamCoord;
 
-        if (taskType >= vars.numTaskTypes) {
+        if (taskType >= vars.numTaskTypes) {//settings for special tasks
+            //TODO: add human error rate here
             errorCatching = 0.5;
             affByTeamCoord = 0;
         }
         else {
-            errorCatching = vars.ECC[Phase][teamType][taskType];
+            errorCatching = vars.ECC[teamType][taskType];
+            if (operator.isAI)
+                errorCatching *= vars.ETFailThreshold[teamType];
             affByTeamCoord = vars.teamCoordAff[taskType];
         }
-
 
         // Modify the human error rate according to the changeRate
         for(int i = 0; i < task.getRepeatTimes(); i++){
             changeRate *= 0.5;
         }
         humanErrorRate *= changeRate;
-        humanErrorRate = Math.max(humanErrorRate, 0.0001);
+        humanErrorRate = Math.max(humanErrorRate, 0.0001);//0.0001 is the minimum human error rate
 
         // Modify the error catching chance according to team coordination
         if (affByTeamCoord == 1) {
@@ -243,20 +252,16 @@ public class Replication {
         }
 
         if(Math.random() < humanErrorRate){
-            HashMap<Integer,Integer> failCnt = vars.failTaskCount;
-            int currCnt = failCnt.get(vars.replicationTracker);
-            failCnt.put(vars.replicationTracker,++currCnt);
-            this.failedTasks.add(new Pair <Operator,Task>(operator,task));
+            task.setFail();
 
             if (Math.random() > errorCatching) {
                 //Task failed but wasn't caught
-                task.setFail();
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][2]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][2]++;
                 return;
             }
 
             //Task failed and caught
-            vars.failedTask.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
+            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
             task.setNeedReDo(true);
         }
 
@@ -333,7 +338,7 @@ public class Replication {
      *
      ****************************************************************************/
 
-    public void run() {
+    public void run() throws Exception{
 
         System.out.println("Curr Replication: " + vars.replicationTracker);
 
@@ -341,8 +346,10 @@ public class Replication {
 
         globalTasks = new ArrayList<Task>();
 
-        remoteOps = new RemoteOp(vars,globalTasks);
-        remoteOps.run();
+        addTurnOverTask();
+
+        remoteOps = new RemoteOp(vars);
+        remoteOps.genRemoteOp();
 
         int maxLen = 0;
         for(int i = 0; i < vars.fleetTypes; i++ )
@@ -351,12 +358,11 @@ public class Replication {
 
         vehicles = new VehicleSim[vars.fleetTypes][maxLen];
 
+        // Generate all the vehicles
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
-
                 vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
                 vehicles[i][j].taskgen();
-
             }
         }
 
@@ -393,11 +399,17 @@ public class Replication {
      ****************************************************************************/
 
     private void equalTeammateDone(Task task, int team){
-        //TODO: not apply the fail task part
+
+        //Create an ET operator
+        Operator dummyOperator = new Operator(team * 100, "Equal Teammate", vars);
+        dummyOperator.isAI = true;
+        failTask(dummyOperator, task, vars.ETErrorRate[team]);
+        //TODO: if AI failed task, add it to its own queue?
         task.setBeginTime(task.getArrTime());
         task.changeServTime(vars.ETServiceTime[team]);
         task.setEndTime(task.getArrTime() + task.getSerTime());
         vars.AITasks.add(task);
+        vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][task.getPhase()][team][task.getType()]++;
     }
 
 
@@ -411,7 +423,9 @@ public class Replication {
      ****************************************************************************/
 
     private double applyIndividualAssistant(Operator op, Task task){
-        if (vars.AIDAtype[op.dpID / 100][1] == 1 &&
+
+        // first condition checks if this operator is a flex position operator
+        if (op.dpID / 100 < vars.numTeams && vars.AIDAtype[op.dpID / 100][1] == 1 &&
                 IntStream.of(vars.IAtasks[op.dpID / 100]).anyMatch(x -> x == task.getType())) {
             double changeRate = getIndividualAssistantLevel(op.dpID);
             task.changeServTime(changeRate);
@@ -431,6 +445,10 @@ public class Replication {
     private double getTeamComm(int dpID){
 
         int type = dpID / 100;
+
+        if (type == vars.numTeams)
+            return 1;
+
         double teamComm = 1;
         if(vars.teamCoordAff[type] == 0) return teamComm;
         if(vars.teamComm[type] == 'S') teamComm = 0.7;
@@ -450,10 +468,37 @@ public class Replication {
 
     private double getIndividualAssistantLevel(int dpId){
         int type = dpId / 100;
+
+        if (type == vars.numTeams)
+            return 1;
+
         double IAlvl = 1;
         if(vars.IALevel[type] == 'S') IAlvl = 0.7;
         if(vars.IALevel[type] == 'F') IAlvl = 0.3;
         return IAlvl;
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		    addTurnOverTask
+     *
+     *	Purpose:	    Generate turn over task and add them to the
+     *                  global task queue.
+     *
+     ****************************************************************************/
+
+    private void addTurnOverTask() throws Exception{
+
+        if (vars.hasTurnOver[0] == 1) {
+            Task newTask = new Task(vars.TURN_OVER_BEGIN_TASK, 0 , vars, true, 0);
+            globalTasks.add(newTask);
+        }
+
+        if (vars.hasTurnOver[1] == 1) {
+            Task newTask = new Task(vars.TURN_OVER_END_TASK, 0 , vars, true, 0);
+            globalTasks.add(newTask);
+        }
+
     }
 
     /****************************************************************************
@@ -466,20 +511,20 @@ public class Replication {
      ****************************************************************************/
 
 
-    private void genTeamCommTask(char level, int team){
+    private void genTeamCommTask(char level, int team) throws Exception{
 
-        int taskType = vars.numTaskTypes;
-        if(level == 'S') taskType = vars.numTaskTypes;
-        if(level == 'F') taskType = vars.numTaskTypes + 1;
+        int taskType = vars.TC_SOME_TASK;
+        if(level == 'S') taskType = vars.TC_SOME_TASK;
+        if(level == 'F') taskType = vars.TC_FULL_TASK;
 
         ArrayList<Task> indlist = new ArrayList<Task>();
-        Task newTask = new Task(taskType, 0, vars, true);
+        Task newTask = new Task(taskType, 0, vars, true, team * 100);
         if (newTask.getArrTime() < 0) return;
         newTask.setTeamType(team);
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
-            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true, team * 100);
             newTask.setTeamType(team);
             if (newTask.getArrTime() < 0) break;
             indlist.add(newTask);
@@ -499,15 +544,15 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private void genExoTask(){
+    private void genExoTask() throws Exception{
         int taskType = vars.numTaskTypes + 2;
         ArrayList<Task> indlist = new ArrayList<Task>();
-        Task newTask = new Task(taskType, 0, vars, true);
+        Task newTask = new Task(taskType, 0, vars, true,-1);
         if(newTask.getArrTime() < 0) return;
         indlist.add(newTask);
 
         while(newTask.getArrTime() < vars.numHours * 60){
-            newTask = new Task(taskType, newTask.getArrTime(), vars, true);
+            newTask = new Task(taskType, newTask.getArrTime(), vars, true,-1);
             if(newTask.getArrTime() < 0) break;
             indlist.add(newTask);
         }

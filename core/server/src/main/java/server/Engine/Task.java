@@ -20,39 +20,39 @@ import server.Input.loadparam;
 public class Task implements Comparable<Task> {
 
 	//General task input params.
+	private String name;
 	private int Type;
 	private int Priority;
 	private int teamType;
+	private int Phase;
+	private int shiftPeriod;
 	public loadparam vars;
+	private int vehicleID;
 	private double lvl_SOME = 0.7;
 	private double lvl_FULL = 0.3;
 	private double lvl_None = 1.0;
 
 	//Task specific variables.
-	private int Phase;
-	private int shiftPeriod;
-	private double prevTime;
+	private double prevTime; //Time last task in same type arrived
 	private double arrTime;
+	private double beginTime;
 	private double serTime;
+	private double endTime;
 	private double expTime;
 	private double elapsedTime;
 	public ArrayList<double[]> workSchedule;
 	private double waitTime;
-	private double beginTime;
-	private double endTime;
-	private String name;
-	private int vehicleID;
 	private boolean expired;
-	private boolean fail; // Indicates fail but proceed
+	private boolean fail; // Indicates fail
 	private boolean needReDo = false; // Indicates fail but caught
-	private int repeatTimes;
+	private int repeatTimes; // Indicates how many times this task has been redone
+
 
 	// This adds the ability for task to track queue retroactively
 
 	private int queued;
 
 	// Mutators
-	public boolean checkexpired() { return expired; }
 
 	public boolean getFail(){return this.fail;}
 
@@ -64,10 +64,11 @@ public class Task implements Comparable<Task> {
 
 	public int getRepeatTimes() { return repeatTimes; }
 
-	public void setFail(){
-//		System.out.println("The " + name + " arrived at " + arrTime + " is failed but not caught.");
-		this.fail = true;
-	}
+	public int getVehicleID() { return vehicleID; }
+
+	public double getWaitTime() { return waitTime; }
+
+	public void setFail(){ this.fail = true; }
 
 	public void setNeedReDo(boolean b){ this.needReDo = b; }
 
@@ -119,7 +120,13 @@ public class Task implements Comparable<Task> {
 
 	public Task() { }
 
+
+	// Constructor ---- build a redo task
+	// deep copy the original task
+	// and set the arrival time follow the original task
+
 	public Task(Task t){
+		vehicleID = t.vehicleID;
 		Type = t.getType();
 		vars = t.vars;
 		Priority = t.Priority;
@@ -143,9 +150,12 @@ public class Task implements Comparable<Task> {
 		repeatTimes = t.repeatTimes + 1;
 	}
 
-	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev) {
+	// Constructor
+
+	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, int vehicle) throws Exception{
 
 		Type = type;
+		vehicleID = vehicle;
 		vars = Param;
 		prevTime = PrevTime;
 		Phase = getPhase(PrevTime);
@@ -158,7 +168,6 @@ public class Task implements Comparable<Task> {
 		workSchedule = new ArrayList<>();
 		repeatTimes = 0;
 		name = vars.taskName_all[type];
-
 
 		if(type < vars.numTaskTypes){
 
@@ -176,29 +185,45 @@ public class Task implements Comparable<Task> {
 			}
 
 			expTime = genExpTime();
-			serTime = GenTime(vars.serDists[Phase][Type], vars.serPms[Phase][Type]);
+			serTime = GenTime(vars.serDists[Type], vars.serPms[Type]);
 
 		}
-		else{
+		else {
 
 			expTime = Double.POSITIVE_INFINITY;
 			Priority = 0;
 
-			if(type == vars.numTaskTypes){
+			if(type == vars.TC_SOME_TASK){
 				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
+				Phase = getPhase(arrTime);
 			}
-			else if(type == vars.numTaskTypes + 1){
+			else if(type == vars.TC_FULL_TASK){
 				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
+				Phase = getPhase(arrTime);
 			}
-			else if(type == vars.numTaskTypes + 2){
+			else if(type == vars.EXOGENOUS_TASK){
 				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
 				Priority = 7;
+				Phase = getPhase(arrTime);
+			}
+			else if(type == vars.TURN_OVER_BEGIN_TASK){
+				arrTime = PrevTime;
+				serTime = GenTime(vars.turnOverDists[0], vars.turnOverPms[0]);
+				Priority = 7;
+				Phase = 0;
+				vars.phaseBegin[1] = serTime;
+			}
+			else if(type == vars.TURN_OVER_END_TASK){
+				serTime = GenTime(vars.turnOverDists[1], vars.turnOverPms[1]);
+				arrTime = vars.numHours * 60 - serTime;
+				Priority = 7;
+				Phase = vars.numPhases - 1;
+				vars.phaseBegin[vars.numPhases - 1] = arrTime;
 			}
 
-			Phase = getPhase(arrTime);
 			if (Phase == vars.numPhases) {
 				arrTime = -1;
 				return;
@@ -209,7 +234,8 @@ public class Task implements Comparable<Task> {
 
 		beginTime = arrTime;
 		//shift schedule 1% fatigue increase serve time
-		changeServTime(1 + 0.01 * (shiftPeriod+1));
+		if(type != vars.TURN_OVER_BEGIN_TASK && type != vars.TURN_OVER_END_TASK)
+			changeServTime(1 + 0.01 * shiftPeriod);
 	}
 
 	/****************************************************************************
@@ -340,7 +366,7 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double GenTime (char type, double[] param){
+	private double GenTime (char type, double[] param) throws Exception{
 		switch (type){
 			case 'E':
 				return Exponential(param[0]);
@@ -368,11 +394,10 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Exponential(double beta){
+	private double Exponential(double beta) throws Exception{
 
 		if(beta <= 0){
-			System.out.println("Please offer a positive mean value for the Exponential distribution.");
-			return Double.POSITIVE_INFINITY;
+			throw new Exception("Please offer a positive mean value for the Exponential distribution.");
 		}
 
 		double lambda = 1 / beta;
@@ -425,7 +450,16 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Triangular(double min, double mode, double max){
+	private double Triangular(double min, double mode, double max) throws Exception{
+
+		if (!(min < mode && mode < max)) {
+			throw new Exception("For the triangular distribution: please offer min < mode < max.");
+		}
+
+		if (min <= 0) {
+			throw new Exception("Please offer positive value for the triangular distribution.");
+		}
+
 		double F = (mode - min)/(max - min);
 		double rand = Math.random();
 		if (rand < F) {
@@ -445,50 +479,20 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double genArrTime(double PrevTime, int type){
+	private double genArrTime(double PrevTime, int type) throws Exception{
 
 		int fleet = vehicleID / 100;
-		double TimeTaken;
-
-		//Skip the front phases who have a negative distribution parameter
-		while (Phase < vars.numPhases && vars.arrDists[Phase][type] == 'N') {
-			Phase++;
-			if (Phase == vars.numPhases) {//Finish checking all the phases
-				return -1;				   //Return -1 will discard this task
-			}
-			PrevTime = vars.phaseBegin[Phase];
-		}
 
 		double[] arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
-		TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
-
-		// check if this task stays in the same phase with the last one
-		int newPhase = getPhase(PrevTime + TimeTaken);
-		if (newPhase > Phase) { //come to a new phase
-
-			// skip the phases who have a negative distribution parameter
-			while (newPhase < vars.numPhases && vars.arrDists[newPhase][type] == 'N') {
-				newPhase++;
-			}
-			if (newPhase == vars.numPhases) {
-				return -1;
-			}
-			else {
-				PrevTime = vars.phaseBegin[newPhase];
-				Phase = newPhase;
-				arrivalRate = changeArrivalRate(getFleetAutonomy(fleet), type);
-				TimeTaken = GenTime(vars.arrDists[Phase][type], arrivalRate);
-			}
-
-		}
+		double TimeTaken = GenTime(vars.arrDists[type], arrivalRate);
 
 		if (TimeTaken == Double.POSITIVE_INFINITY) {
-			return Double.POSITIVE_INFINITY;
+			return -1;
 		}
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (loadparam.TRAFFIC_ON && vars.affByTraff[Phase][type] == 1 ){
+		if (loadparam.TRAFFIC_ON && vars.affByTraff[type] == 1 ){
 			newArrTime = applyTraffic(TimeTaken);
 		}
 
@@ -533,10 +537,10 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double genExpTime(){
+	private double genExpTime() throws Exception{
 
 		double expiration;
-		expiration = GenTime(vars.expDists[Phase][Type], vars.expPms[Phase][Type]);
+		expiration = GenTime(vars.expDists[Type], vars.expPms[Type]);
 		return arrTime + serTime + expiration;
 
 	}
@@ -582,20 +586,29 @@ public class Task implements Comparable<Task> {
 			num *= 1.1;
 		}
 
-		arrivalRate = new double[vars.arrPms[Phase][Type].length];
-		if(vars.arrDists[Phase][Type] == 'L'){
+		arrivalRate = new double[vars.arrPms[Type].length];
+		if(vars.arrDists[Type] == 'L'){
 			arrivalRate[0] = arrivalRate[0] * num;
 			return arrivalRate;
 		}
 
 		int count = 0;
-		for(double d : vars.arrPms[Phase][Type]){
+		for(double d : vars.arrPms[Type]){
 			arrivalRate[count] = d * num;
 			count++;
 		}
 
 		return arrivalRate;
 	}
+
+	/****************************************************************************
+	 *
+	 *	Method:			addBeginTime, addInterruptTime
+	 *
+	 *	Purpose:		To add a working period in the workSchedule by adding a
+	 *					pair of begin time and end time.
+	 *
+	 ****************************************************************************/
 
 	public void addBeginTime(double beginTime){
 		double[] newSchedule = new double[2];
@@ -609,13 +622,21 @@ public class Task implements Comparable<Task> {
 		workSchedule.get(lastOne)[1] = time;
 	}
 
+	/****************************************************************************
+	 *
+	 *	Method:			printBasicInfo
+	 *
+	 *	Purpose:		Print the basic information for a task. Used for debugging.
+	 *
+	 ****************************************************************************/
+
 	public void printBasicInfo(){
 		System.out.println("Name : " + name + " Priority : " + Priority);
 		System.out.println("Arrival time : " + arrTime);
-		System.out.println("Begin Time : " + beginTime);
-		System.out.println("Service Time : " + serTime);
-		System.out.println("Expire Time : " + expTime);
-		System.out.println("Finish Time : " + endTime);
+//		System.out.println("Begin Time : " + beginTime);
+//		System.out.println("Service Time : " + serTime);
+//		System.out.println("Expire Time : " + expTime);
+//		System.out.println("Finish Time : " + endTime);
 		System.out.print("Here is my work schedule: ");
 		for(int i = 0; i < workSchedule.size(); i++){
 			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");

@@ -1,6 +1,5 @@
 package server.Engine;
 import com.google.gson.Gson;
-import server.Input.ShadoVar;
 import server.Input.loadparam;
 
 import java.util.Arrays;
@@ -47,16 +46,13 @@ public class Parser {
         System.out.println("teamComm: "+ Arrays.toString(in.teamComm));
         System.out.println("teamSize: "+ Arrays.toString(in.teamSize));
         System.out.println("fleetTypes: "+in.fleetTypes);
-//        System.out.println("Fleet Hetero: "+Arrays.toString(in.fleetHetero));
         System.out.println("numTaskTypes: "+in.numTaskTypes);
         System.out.println("taskNames: "+ Arrays.toString(in.taskNames));
         for(int i = 0; i < in.numTaskTypes; i++) {
             for(int k = 0; k < in.numTeams; k++){
                 System.out.println("For task type " + i + " team " + k);
                 System.out.print("taskPrty:");
-                for(int j = 0; j < in.numPhases; j++) {
-                    System.out.print(in.taskPrty[j][k][i] + " ");
-                }
+                System.out.print(in.taskPrty[k][i] + " ");
                 System.out.println(" ");
             }
         }
@@ -69,11 +65,9 @@ public class Parser {
             System.out.println(" ");
         }
 
-        for(int i = 0; i < in.numPhases; i++){
-            for(int j = 0; j < in.numTaskTypes; j++){
-                System.out.print("In phase " + i + " Task " + j + " : ");
-                System.out.println(Arrays.toString(in.arrPms[i][j]));
-            }
+        for(int j = 0; j < in.numTaskTypes; j++){
+            System.out.print("In Task " + j + " the arrPms: ");
+            System.out.println(Arrays.toString(in.arrPms[j]));
         }
 
         System.out.println("LeadTask: " + Arrays.toString(in.leadTask));

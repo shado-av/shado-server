@@ -36,7 +36,7 @@ public class Queue implements Comparable<Queue>{
     public boolean          checkBlock()   { return blockLastSecondPhase; }
 
     // Mutator:
-    public void             SetTime(double Time) {
+    public void SetTime(double Time) {
         this.time = Time;
     }
 
@@ -92,7 +92,7 @@ public class Queue implements Comparable<Queue>{
 
         // Set the time of the queue to the arrival time of the task.
 
-        SetTime(task.getArrTime());
+        SetTime(Math.max(task.getArrTime(), time));
 
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
@@ -133,14 +133,16 @@ public class Queue implements Comparable<Queue>{
 
             taskqueue.peek().setEndTime(finTime);
             taskqueue.peek().addInterruptTime(finTime);
-            taskqueue.peek().setWaitTime(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime());
+            taskqueue.peek().setWaitTime(round(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime(),2));
 
 //            taskqueue.peek().printBasicInfo();
 
             Task currentTask = taskqueue.peek();
 
             recordtasks.add(taskqueue.poll());
-
+            if (!currentTask.getFail()) {
+                vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][currentTask.getType()]++;
+            }
             SetTime(finTime);
 
             if(currentTask.getNeedReDo()){
@@ -151,7 +153,7 @@ public class Queue implements Comparable<Queue>{
                 }
                 else {
                     // This redo task cannot be complete within the shift hours, add it to expired task.
-                    vars.failedTask.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
+                    vars.taskRecord.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
                 }
             }
         }
@@ -170,8 +172,8 @@ public class Queue implements Comparable<Queue>{
 
             int taskType = taskqueue.peek().getType();
 
-            vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
-            vars.expiredTasks.get(vars.currRepnum).add(new Pair<>(op,taskqueue.peek()));
+            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
+            vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
 
         }
@@ -203,12 +205,9 @@ public class Queue implements Comparable<Queue>{
 
     public void clearTask(loadparam vars, Operator op){
 
-
-
         blockLastSecondPhase = true;
         Task onHandTask = taskqueue.peek(); //last task in this phase that has been started, will be recorded as unfinished task
                                             //other task will be set to missed and clear
-//        System.out.println("About to go into phase " + (onHandTask.getPhase() + 1) + "......");
 
         if (taskqueue.peek() != null) {
 
@@ -219,7 +218,7 @@ public class Queue implements Comparable<Queue>{
                 onHandTask.addInterruptTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
                 onHandTask.setEndTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
                 onHandTask.setWaitTime(vars.phaseBegin[onHandTask.getPhase() + 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
                 recordtasks.add(taskqueue.poll());
             }
 
@@ -235,17 +234,13 @@ public class Queue implements Comparable<Queue>{
             }
             else {
                 taskqueue.peek().setexpired();
-                vars.failedTask.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
                 recordtasks.add(taskqueue.poll());
             }
 
         }
 
-        System.out.println("PhaseBegin: " + Arrays.toString(vars.phaseBegin));
-        System.out.println("phase: " + onHandTask.getPhase());
-
-        SetTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
-        finTime();
+        SetTime(Math.max(vars.phaseBegin[onHandTask.getPhase() + 1], time));
 
     }
 
@@ -272,6 +267,22 @@ public class Queue implements Comparable<Queue>{
             Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
         }
+    }
+
+    /****************************************************************************
+     *
+     *	Method:     round
+     *
+     *	Purpose:    Round double numbers
+     *
+     ****************************************************************************/
+
+    public static double round(double value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+        long factor = (long) Math.pow(10, places);
+        value = value * factor;
+        long tmp = Math.round(value);
+        return (double) tmp / factor;
     }
 
 }

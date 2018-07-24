@@ -21,9 +21,9 @@ public class Operator {
 
 	public 	int 		dpID;
 	public 	String 		name;
-	public 	int[] 		taskType;
 	private Queue 		myQueue;
 	public 	loadparam 	vars;
+	public 	boolean		isAI;
 
 	// Inspector
 	public Queue 	getQueue()	{ return this.myQueue; }
@@ -40,11 +40,13 @@ public class Operator {
 	 *
 	 ****************************************************************************/
 
-	public Operator(int dpid, String name,int[] task, loadparam param) {
+	public Operator() { }
 
+	public Operator(int dpid, String name, loadparam param) {
+
+		isAI = false;
 		dpID = dpid;
 		this.name =  name +" " + Integer.toString(dpid%100);
-		taskType = task;
 		myQueue = new Queue(this);
 		vars = param;
 
