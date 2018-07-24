@@ -58,20 +58,21 @@ public class DataWrapper {
 
         cleanDirectory();
 
-
         //Generate JSON files
 
-        Utilization u = new Utilization(vars);
+        Utilization u = vars.utilization;
         TaskRecord t = vars.taskRecord;
 
         //Out put the report files
 
         printUtilization(u,1);
+        printValidationReport(u.getTaskUtilization());
         printSummaryReport();
-//        printErrorReport();
         printTaskRecord();
-        printValidationReport(u.getUtilization());
+//        printErrorReport();
 
+        u.removeEmptyTask(vars);
+        t.removeEmptyTask(vars);
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
@@ -143,7 +144,7 @@ public class DataWrapper {
 
         //print summary for each task type
 
-        for(int i = 0; i < vars.totalTaskType; i++){
+        for(int i : vars.allTaskTypes){
             System.out.println("Task name: " + vars.taskName_all[i]);
 
             int expiredTasks = 0;
@@ -170,7 +171,6 @@ public class DataWrapper {
 
         System.setOut(stdout);
     }
-
 
     /****************************************************************************
      *
@@ -230,8 +230,8 @@ public class DataWrapper {
     private void printTaskRecord() throws IOException{
 
         //print task information per task
-        System.out.println();
-        for(int taskType = 0; taskType < vars.totalTaskType; taskType++) {
+
+        for(int taskType : vars.allTaskTypes) {
             String fileName = outPutDirectory + "task_" + vars.taskName_all[taskType] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
@@ -240,15 +240,14 @@ public class DataWrapper {
                 System.out.println("Replication " + i);
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
-                        double waitTime = t.getEndTime() - t.getArrTime() - t.getSerTime();
                         System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," +
-                                t.getSerTime() + "," + waitTime + "," + t.getEndTime() + "," + t.getExpTime());
-
+                                t.getSerTime() + "," + t.getWaitTime() + "," + t.getEndTime() + "," + t.getExpTime());
                     }
                 }
             }
             System.setOut(stdout);
         }
+
     }
 
 
@@ -297,17 +296,19 @@ public class DataWrapper {
                 max10mins = printUtilizationPerReplication(max10mins, utilization);
 
                 // print the sum of timeSectionSum
-                System.out.println(u.averageUtilization[op][rep] + ",");
+                System.out.println(u.averageTaskUtilization[op][rep] + ",");
                 System.out.println(" ");
 
             }
-
+            if (max10mins > 1.02) {
+                throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
+            }
             System.out.println("The max utilization in 10 mins is " + max10mins);
 
         }
 
-        averageAll(u.averageUtilization);
-        findMinMax(u.averageUtilization);
+        averageAll(u.averageTaskUtilization);
+        findMinMax(u.averageTaskUtilization);
 
         System.setOut(stdout);
 
@@ -334,7 +335,7 @@ public class DataWrapper {
         }
 
         // one row per task
-        for (int task = 0; task < vars.totalTaskType; task++) {
+        for (int task : vars.allTaskTypes) {
             System.out.print(vars.taskName_all[task] + ",");
             for (int time = 0; time < numColumn; time++) {
                 Double percentage = utilization[task][time];
@@ -403,7 +404,7 @@ public class DataWrapper {
                 for (int rep = 0; rep < vars.numReps; rep++) {
 
                     Double utilization10min = 0.0;
-                    for (int taskType = 0; taskType < vars.totalTaskType; taskType++) {
+                    for (int taskType : vars.allTaskTypes) {
                          utilization10min += utilization[op][rep][taskType][time];
                     }
                     System.out.print(utilization10min + ",");

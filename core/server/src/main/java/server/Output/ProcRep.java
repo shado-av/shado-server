@@ -38,18 +38,20 @@ public class ProcRep {
 
     private double hours;
 
-    private Data[] repdisdata;
+    private Data[] utilization_task;
+
+    private Data[] utilization_fleet;
 
     private loadparam vars;
 
-    private int totalRemoteOp;
-
-    private int numSpecialTasks;
+    private int TASK_RECORD = 1;
+    private int FLEET_RECORD = 2;
 
     // INSPECTORS
 
-    public Data[] getRepdisdata() { return repdisdata; }
+    public Data[] getUtilization_task() { return utilization_task; }
 
+    public Data[] getUtilization_fleet() { return utilization_fleet; }
 
     /****************************************************************************
      *
@@ -60,15 +62,13 @@ public class ProcRep {
      *
      ****************************************************************************/
 
-    public ProcRep(Data[] dis, Replication rep, loadparam vars, int SpecialTasks){
+    public ProcRep(Data[] dis, Replication rep, loadparam vars){
 
         this.rep = rep;
         RemoteOpdata = dis;
         repID = rep.getRepID();
         numtasktypes = rep.vars.numTaskTypes;
         hours = rep.vars.numHours;
-        numSpecialTasks = SpecialTasks;
-
         this.vars = vars;
 
     }
@@ -82,25 +82,11 @@ public class ProcRep {
      ****************************************************************************/
 
     public void run(){
-        setTotalRemoteOps();
         tmpData();
         fillRepData();
         appendData();
     }
 
-    /****************************************************************************
-     *
-     *	Method:			setTotalRemoteOps
-     *
-     *	Purpose:		Set the total number of operators.
-     *
-     ****************************************************************************/
-
-    private void setTotalRemoteOps(){
-        for(int i : vars.teamSize){
-            totalRemoteOp += i;
-        }
-    }
 
     /****************************************************************************
      *
@@ -112,9 +98,12 @@ public class ProcRep {
 
     public void tmpData(){
 
-        repdisdata = new Data[totalRemoteOp];
-        for (int i = 0; i < totalRemoteOp; i++){
-            repdisdata[i] = new Data(numtasktypes + numSpecialTasks,(int) hours*6, 1);
+        utilization_task = new Data[vars.numRemoteOp];
+        utilization_fleet = new Data[vars.numRemoteOp];
+
+        for (int i = 0; i < vars.numRemoteOp; i++){
+            utilization_task[i] = new Data(vars.totalTaskType,(int) hours * 6, 1);
+            utilization_fleet[i] = new Data(vars.fleetTypes, (int) hours * 6, 1);
         }
 
     }
@@ -127,7 +116,7 @@ public class ProcRep {
      *
      ****************************************************************************/
 
-    public void fillRepDataCell(Operator operator, Data incremented){
+    public void fillRepDataCell(Operator operator, Data incremented, int recordType){
 
         // Get Operator's task record.
 
@@ -139,10 +128,13 @@ public class ProcRep {
 
             //[ normal task | followed task | special task  ]
 
-            int taskType = each.getType();
+            int index;
 
-            if(taskType < 0){ // This is a special task
-                taskType = numtasktypes - taskType - 1;
+            if (recordType == TASK_RECORD) {
+                index = each.getType();
+            }
+            else { //recordType == FLEET_RECORD
+                index = each.getVehicleID() / 100;
             }
 
             for(int i = 0; i < each.workSchedule.size(); i++){
@@ -151,7 +143,7 @@ public class ProcRep {
                 }
                 double beginscale = each.workSchedule.get(i)[0] / 10;
                 double endscale = each.workSchedule.get(i)[1] / 10;
-                fill(beginscale, endscale, incremented, taskType);
+                fill(beginscale, endscale, incremented, index);
             }
         }
 
@@ -205,8 +197,9 @@ public class ProcRep {
         //SCHEN 11/29/17
         Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
 
-        for (int i = 0; i < totalRemoteOp; i++){
-            fillRepDataCell(RemoteOpers[i], repdisdata[i]);
+        for (int i = 0; i < vars.numRemoteOp; i++){
+            fillRepDataCell(RemoteOpers[i], utilization_task[i], TASK_RECORD);
+            fillRepDataCell(RemoteOpers[i], utilization_fleet[i], FLEET_RECORD);
         }
 
     }
@@ -223,11 +216,11 @@ public class ProcRep {
 
         // Process the RemoteOp data
 
-        for (int i = 0; i < totalRemoteOp; i++){
+        for (int i = 0; i < vars.numRemoteOp; i++){
             Data processed = RemoteOpdata[i];
             for (int x = 0; x < processed.data.length; x++){
                 for (int y = 0; y < processed.data[0].length; y++){
-                    processed.datainc(x, y, repID, repdisdata[i].dataget(x, y, 0));
+                    processed.datainc(x, y, repID, utilization_task[i].dataget(x, y, 0));
                 }
             }
         }

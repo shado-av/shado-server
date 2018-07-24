@@ -23,6 +23,7 @@ public class Operator {
 	public 	String 		name;
 	private Queue 		myQueue;
 	public 	loadparam 	vars;
+	public 	boolean		isAI;
 
 	// Inspector
 	public Queue 	getQueue()	{ return this.myQueue; }
@@ -39,8 +40,11 @@ public class Operator {
 	 *
 	 ****************************************************************************/
 
+	public Operator() { }
+
 	public Operator(int dpid, String name, loadparam param) {
 
+		isAI = false;
 		dpID = dpid;
 		this.name =  name +" " + Integer.toString(dpid%100);
 		myQueue = new Queue(this);

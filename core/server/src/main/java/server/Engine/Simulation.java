@@ -28,10 +28,6 @@ public class Simulation {
 
     private Data[] RemoteOpoutput;
 
-    private int repnumber;
-
-    private int numSpecialTasks = 3; //Team Coordinate Task (some), Team Coordinate Task (full), Exogenous Task
-
     public Data getRemoteOpoutput(int i) {
         return RemoteOpoutput[i];
     }
@@ -50,9 +46,7 @@ public class Simulation {
         // Get overall vars
 
         vars = param;
-        repnumber = param.numReps;
 
-        System.out.println("Number of reputations: " + repnumber);
         // Generate overall data field
 
         operatoroutput = new Data[param.numTeams];
@@ -75,7 +69,7 @@ public class Simulation {
      *
      ****************************************************************************/
 
-    public void processReplication(int repID){
+    public void processReplication(int repID) throws Exception{
 
         Replication processed = new Replication(vars, repID);
         processed.run();
@@ -92,7 +86,7 @@ public class Simulation {
 
     public void run() throws Exception {
 
-        for (int i = 0; i < repnumber; i++) {
+        for (int i = 0; i < vars.numReps; i++) {
 
             vars.refreshHumanErrorRate();
 
@@ -100,18 +94,22 @@ public class Simulation {
             processReplication(i);
 
             //Global tracker for current replication
-            vars.replicationTracker ++;
+            vars.replicationTracker++;
 
         }
 
+        //reset the replicationTracker to data processing for each replication
+        vars.replicationTracker = 0;
+
         //Data Processing for Replications
-        for(int i = 0; i < repnumber; i++){
-            ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i],vars,numSpecialTasks);
+        for(int i = 0; i < vars.numReps; i++){
+            ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i], vars);
             process.run();
-            vars.utilizationOutput[i] = process.getRepdisdata();
+            vars.utilization.fillTaskUtilization(i, process.getUtilization_task(), vars);
+            vars.utilization.fillFleetUtilization(i, process.getUtilization_fleet(), vars);
 
             //Global Tracker for replication processed
-            vars.currRepnum++;
+            vars.replicationTracker++;
 
         }
 
