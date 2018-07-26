@@ -67,17 +67,15 @@ public class Queue implements Comparable<Queue>{
     @Override
     public String toString() {
         System.out.println("My queue has " + taskqueue.size() + " tasks: ");
-        printQueue();
-        return "The time is " + time + " , the finTime is " + finTime;
-    }
 
-    private void printQueue(){
         Iterator<Task> it = taskqueue.iterator();
         while (it.hasNext()) {
             Task t = it.next();
             System.out.print(t.getName() + "(" + t.getArrTime() + ")--");
         }
         System.out.println(" ");
+
+        return "The time is " + time + " , the finTime is " + finTime;
     }
 
     /****************************************************************************
@@ -180,7 +178,7 @@ public class Queue implements Comparable<Queue>{
 
         if (taskqueue.peek() != null) {
 
-            // Set the beginTime of the Task in queue to now, i.e. begin working on this task.
+            // Begin working on this task.
 
             taskqueue.peek().setBeginTime(time);
             taskqueue.peek().addBeginTime(time);

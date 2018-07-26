@@ -106,7 +106,7 @@ public class Task implements Comparable<Task> {
 
 	@Override
 	public String toString() {
-		return name + " arrive at "+ arrTime;
+		return name + " ("+ arrTime + ")";
 	}
 
 	/****************************************************************************
@@ -120,8 +120,7 @@ public class Task implements Comparable<Task> {
 
 	public Task() { }
 
-
-	// Constructor ---- build a redo task
+	// Copy Constructor ---- build a redo task
 	// deep copy the original task
 	// and set the arrival time follow the original task
 
@@ -211,24 +210,36 @@ public class Task implements Comparable<Task> {
 			}
 			else if(type == vars.TURN_OVER_BEGIN_TASK){
 				arrTime = PrevTime;
-				serTime = GenTime(vars.turnOverDists[0], vars.turnOverPms[0]);
+				if(vars.phaseBegin[1] == 0) {
+					serTime = GenTime(vars.turnOverDists[0], vars.turnOverPms[0]);
+					vars.phaseBegin[1] = serTime;
+				}
+				else{
+					serTime = vars.phaseBegin[1];
+				}
 				Priority = 7;
 				Phase = 0;
-				vars.phaseBegin[1] = serTime;
 			}
 			else if(type == vars.TURN_OVER_END_TASK){
-				serTime = GenTime(vars.turnOverDists[1], vars.turnOverPms[1]);
-				arrTime = vars.numHours * 60 - serTime;
+
+				if(vars.phaseBegin[vars.numPhases - 1] == 0){
+					serTime = GenTime(vars.turnOverDists[1], vars.turnOverPms[1]);
+					arrTime = vars.numHours * 60 - serTime;
+					vars.phaseBegin[vars.numPhases - 1] = arrTime;
+				}
+				else{
+					arrTime = vars.phaseBegin[vars.numPhases - 1];
+					serTime = vars.numHours * 60 - arrTime;
+				}
+
 				Priority = 7;
 				Phase = vars.numPhases - 1;
-				vars.phaseBegin[vars.numPhases - 1] = arrTime;
 			}
 
 			if (Phase == vars.numPhases) {
 				arrTime = -1;
 				return;
 			}
-
 
 		}
 
@@ -367,6 +378,7 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 
 	private double GenTime (char type, double[] param) throws Exception{
+
 		switch (type){
 			case 'E':
 				return Exponential(param[0]);
@@ -397,7 +409,7 @@ public class Task implements Comparable<Task> {
 	private double Exponential(double beta) throws Exception{
 
 		if(beta <= 0){
-			throw new Exception("Please offer a positive mean value for the Exponential distribution.");
+			throw new Exception("Exponential distribution: Please offer a positive mean value.");
 		}
 
 		double lambda = 1 / beta;
@@ -415,7 +427,11 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Lognormal(double mean, double stddev){
+	private double Lognormal(double mean, double stddev) throws Exception{
+
+		if(mean <= 0 || stddev < 0){
+			throw new Exception("Lognormal distribution: Please offer positive mean and std value.");
+		}
 
 		double phi = Math.sqrt(stddev * stddev + mean * mean);
 		double mu = Math.log(mean * mean / phi);
@@ -436,7 +452,11 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
-	private double Uniform(double min, double max){
+	private double Uniform(double min, double max) throws Exception{
+
+		if(min > max){
+			throw new Exception("Uniform distribution(Error): min > max.");
+		}
 
 		return min + (max-min) * Math.random();
 
@@ -588,7 +608,8 @@ public class Task implements Comparable<Task> {
 
 		arrivalRate = new double[vars.arrPms[Type].length];
 		if(vars.arrDists[Type] == 'L'){
-			arrivalRate[0] = arrivalRate[0] * num;
+			arrivalRate[0] = vars.arrPms[Type][0] * num;
+			arrivalRate[1] = vars.arrPms[Type][1];
 			return arrivalRate;
 		}
 

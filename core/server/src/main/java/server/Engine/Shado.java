@@ -24,10 +24,10 @@ import java.util.zip.ZipOutputStream;
 
 public class Shado{
     String sessionNum;
-    private String rootDirectory;
+    private String homeDirectory;
 	public Shado(String sess, String directory){
 		sessionNum = sess;
-		rootDirectory = directory;
+		homeDirectory = directory;
     }
 
     private static ZipOutputStream zos;
@@ -48,13 +48,13 @@ public class Shado{
 		sim.run();
 
 		// Generate Output
-		DataWrapper analyze = new DataWrapper(sim, data, rootDirectory);
+		DataWrapper analyze = new DataWrapper(sim, data, homeDirectory);
 		analyze.outputReports();
 
 		//Zipping file and return for simple web service
-		zipOutput(rootDirectory + "repCSV");
-		zipOutput(rootDirectory + "Summary");
-		zipOutput(rootDirectory + "validation");
+		zipOutput(homeDirectory + "repCSV");
+		zipOutput(homeDirectory + "Summary");
+		zipOutput(homeDirectory + "validation");
 
     }
 

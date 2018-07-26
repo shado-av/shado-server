@@ -70,13 +70,46 @@ public class DataWrapper {
         printSummaryReport();
         printTaskRecord();
 //        printErrorReport();
+        externalTest(u);
 
         u.removeEmptyTask(vars);
         t.removeEmptyTask(vars);
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
+
+
     }
+
+    void externalTest(Utilization u) throws IOException{
+
+        String file_name = "/Users/zhanglian1/Desktop/ExternalTest" + ".csv";
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(file_name, false)), true));
+
+        System.out.println("replication, utilization, waitTime");
+
+        for(int rep = 0; rep < vars.numReps; rep++){
+
+            double utilization = 0;
+            for(int op = 0; op < vars.numRemoteOp; op++) {
+                utilization += u.averageTaskUtilization[op][rep];
+            }
+            utilization /= vars.numRemoteOp;
+
+            double waitTime = 0;
+            for(Task t : vars.allTasksPerRep.get(rep)){
+                waitTime += t.getWaitTime();
+            }
+            waitTime /= vars.allTasksPerRep.get(rep).size();
+
+            System.out.println(rep + ", " + utilization + "," + waitTime);
+        }
+
+        System.setOut(stdout);
+
+    }
+
 
     /****************************************************************************
      *

@@ -68,12 +68,10 @@ public class Replication {
 
     public void puttask(Task task) {
 
-        // Turn Over tasks should be applied to all the operators
+        // Turn Over tasks should be add to its corresponding operator
 
         if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
-            for (Operator op : remoteOps.getRemoteOp()) {
-                op.getQueue().add(task);
-            }
+            remoteOps.getRemoteOp()[task.getTeamType()].getQueue().add(task);
             return;
         }
 
@@ -216,7 +214,6 @@ public class Replication {
      *	Purpose:	    determined whethere the task is failed based on the failed param
      *                  add to a fail task map if fails
      *
-     *                  NOT TOTALLY SURE, MAY BE FAIL TASKS IN HIGHER LEVEL
      ****************************************************************************/
     private void failTask(Operator operator,Task task, double changeRate){
 
@@ -490,13 +487,19 @@ public class Replication {
     private void addTurnOverTask() throws Exception{
 
         if (vars.hasTurnOver[0] == 1) {
-            Task newTask = new Task(vars.TURN_OVER_BEGIN_TASK, 0 , vars, true, 0);
-            globalTasks.add(newTask);
+            for (int i = 0; i < vars.numRemoteOp; i++) {
+                Task newTask = new Task(vars.TURN_OVER_BEGIN_TASK, 0, vars, true, 0);
+                newTask.setTeamType(i);
+                globalTasks.add(newTask);
+            }
         }
 
         if (vars.hasTurnOver[1] == 1) {
-            Task newTask = new Task(vars.TURN_OVER_END_TASK, 0 , vars, true, 0);
-            globalTasks.add(newTask);
+            for (int i = 0; i < vars.numRemoteOp; i++) {
+                Task newTask = new Task(vars.TURN_OVER_END_TASK, 0, vars, true, 0);
+                newTask.setTeamType(i);
+                globalTasks.add(newTask);
+            }
         }
 
     }

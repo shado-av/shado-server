@@ -25,9 +25,9 @@ public class Utilization {
     String[] operatorName;
     String[] taskName;
     Double[][][][] taskUtilization; //[operator][replication][task][time]
+    Double[][][] timeUtilization; //[operator][replication][time]
     Double[][] averageTaskUtilization; //[operator][replication]
     Double[][][][] fleetUtilization; //[operator][replication][fleet][time]
-//    Double[][] averageFleetUtilization; //[operator][fleet]
 
     public Double[][][][] getTaskUtilization() { return taskUtilization; }
 
@@ -60,9 +60,9 @@ public class Utilization {
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
         taskUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
+        timeUtilization = new Double[vars.numRemoteOp][vars.numReps][numColumn];
         averageTaskUtilization = new Double[vars.numRemoteOp][vars.numReps];
         fleetUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.fleetTypes][numColumn];
-//        averageFleetUtilization = new Double[vars.numRemoteOp][vars.fleetTypes];
 
     }
 
@@ -87,6 +87,13 @@ public class Utilization {
                     for (int time = 0; time < numColumn; time++) {
                         double u = currentUtilization.dataget(task, time, 0);
                         taskUtilization[op][rep][task][time] = round(u,2);
+                        if(task == 0) {
+                            timeUtilization[op][rep][time] = round(u,2);
+                        }
+                        else{
+                            timeUtilization[op][rep][time] += round(u,2);
+                        }
+
                         sum += u;
                     }
                 }

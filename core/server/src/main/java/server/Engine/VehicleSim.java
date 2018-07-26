@@ -49,6 +49,7 @@ public class VehicleSim  {
         operators = remoteOps;
         vars = param;
         vehicleID = vehicleid;
+
     }
 
     /****************************************************************************
@@ -93,6 +94,14 @@ public class VehicleSim  {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:			genRegularTask
+     *
+     *	Purpose:		Generate regular tasks.
+     *
+     ****************************************************************************/
+
     private Task genRegularTask(int taskType, ArrayList<Task> indlist, Task preTask) throws Exception{
 
         Task newTask;
@@ -117,6 +126,15 @@ public class VehicleSim  {
         return newTask;
     }
 
+    /****************************************************************************
+     *
+     *	Method:			genLinkedTask
+     *
+     *	Purpose:		When a linked task's lead task is generated, create a
+     *                  corresponding linked task.
+     *
+     ****************************************************************************/
+
     private void genLinkedTask(ArrayList<Task> indlist, Task leadTask) throws Exception{
 
         int leadTaskType = leadTask.getType();
@@ -128,12 +146,10 @@ public class VehicleSim  {
         }
 
         for(int taskType : followedTaskType){
-
             Task newTask = new Task(taskType, prevTime, vars, true, vehicleID);
             if(newTask.getArrTime() < 0) continue;
             newTask.setID(vehicleID);
             indlist.add(newTask);
-
         }
 
     }
