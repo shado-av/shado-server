@@ -34,8 +34,6 @@ public class ProcRep {
 
     private int repID;
 
-    private int numtasktypes;
-
     private double hours;
 
     private Data[] utilization_task;
@@ -67,9 +65,16 @@ public class ProcRep {
         this.rep = rep;
         RemoteOpdata = dis;
         repID = rep.getRepID();
-        numtasktypes = rep.vars.numTaskTypes;
         hours = rep.vars.numHours;
         this.vars = vars;
+
+        utilization_task = new Data[vars.numRemoteOp];
+        utilization_fleet = new Data[vars.numRemoteOp];
+
+        for (int i = 0; i < vars.numRemoteOp; i++){
+            utilization_task[i] = new Data(vars.totalTaskType,(int) hours * 6, 1);
+            utilization_fleet[i] = new Data(vars.fleetTypes, (int) hours * 6, 1);
+        }
 
     }
 
@@ -82,28 +87,26 @@ public class ProcRep {
      ****************************************************************************/
 
     public void run(){
-        tmpData();
         fillRepData();
         appendData();
     }
 
-
     /****************************************************************************
      *
-     *	Method:			tmpData
+     *	Method:			fillRepData
      *
-     *	Purpose:		creating temporary Data object to be appended.
+     *	Purpose:		Call fillRepDataCell on appropriate Data objects.
      *
      ****************************************************************************/
 
-    public void tmpData(){
+    public void fillRepData(){
 
-        utilization_task = new Data[vars.numRemoteOp];
-        utilization_fleet = new Data[vars.numRemoteOp];
+        //SCHEN 11/29/17
+        Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
 
         for (int i = 0; i < vars.numRemoteOp; i++){
-            utilization_task[i] = new Data(vars.totalTaskType,(int) hours * 6, 1);
-            utilization_fleet[i] = new Data(vars.fleetTypes, (int) hours * 6, 1);
+            fillRepDataCell(RemoteOpers[i], utilization_task[i], TASK_RECORD);
+            fillRepDataCell(RemoteOpers[i], utilization_fleet[i], FLEET_RECORD);
         }
 
     }
@@ -118,15 +121,13 @@ public class ProcRep {
 
     public void fillRepDataCell(Operator operator, Data incremented, int recordType){
 
-        // Get Operator's task record.
-
         ArrayList<Task> records = operator.getQueue().records();
-
-        // Cycle through records of each operator in 10 minutes intervals.
 
         for (Task each: records){
 
-            //[ normal task | followed task | special task  ]
+            if(!each.getFail() && !each.getExpired() && recordType == TASK_RECORD) {
+                vars.utilization.getBusyTime()[operator.dpID / 100][each.getVehicleID() / 100] += each.getSerTime();
+            }
 
             int index;
 
@@ -184,25 +185,6 @@ public class ProcRep {
 
     }
 
-    /****************************************************************************
-     *
-     *	Method:			fillRepData
-     *
-     *	Purpose:		Call fillRepDataCell on appropriate Data objects.
-     *
-     ****************************************************************************/
-
-    public void fillRepData(){
-
-        //SCHEN 11/29/17
-        Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
-
-        for (int i = 0; i < vars.numRemoteOp; i++){
-            fillRepDataCell(RemoteOpers[i], utilization_task[i], TASK_RECORD);
-            fillRepDataCell(RemoteOpers[i], utilization_fleet[i], FLEET_RECORD);
-        }
-
-    }
 
     /****************************************************************************
      *

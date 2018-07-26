@@ -28,8 +28,10 @@ public class Utilization {
     Double[][][] timeUtilization; //[operator][replication][time]
     Double[][] averageTaskUtilization; //[operator][replication]
     Double[][][][] fleetUtilization; //[operator][replication][fleet][time]
+    Double[][] busyTime; //[team][fleet]
 
     public Double[][][][] getTaskUtilization() { return taskUtilization; }
+    public Double[][] getBusyTime() { return busyTime; }
 
     /****************************************************************************
      *
@@ -63,6 +65,13 @@ public class Utilization {
         timeUtilization = new Double[vars.numRemoteOp][vars.numReps][numColumn];
         averageTaskUtilization = new Double[vars.numRemoteOp][vars.numReps];
         fleetUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.fleetTypes][numColumn];
+        busyTime = new Double[vars.numTeams][vars.fleetTypes];
+
+        for (int i = 0; i < vars.numTeams; i++) {
+            for (int j = 0; j < vars.fleetTypes; j++) {
+                busyTime[i][j] = 0.0;
+            }
+        }
 
     }
 
@@ -118,6 +127,17 @@ public class Utilization {
                     fleetUtilization[op][rep][fleet][time] = round(u,2);
 
                 }
+            }
+        }
+
+    }
+
+    public void averageBusyTime(loadparam vars){
+
+        for (int i = 0; i < vars.numTeams; i++) {
+            for (int j = 0; j < vars.fleetTypes; j++) {
+                busyTime[i][j] /= vars.numReps;
+                busyTime[i][j] /= vars.teamSize[i];
             }
         }
 

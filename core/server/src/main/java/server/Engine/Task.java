@@ -56,6 +56,8 @@ public class Task implements Comparable<Task> {
 
 	public boolean getFail(){return this.fail;}
 
+	public boolean getExpired(){ return this.expired; }
+
 	public int getPhase(){ return Phase;}
 
 	public int getTeamType() { return teamType; }
