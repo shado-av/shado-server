@@ -34,10 +34,7 @@ public class DataWrapper {
 
     private String outPutDirectory;
 
-    PrintStream stdout;
-
     public DataWrapper(Simulation o, loadparam param, String directory) {
-        stdout = System.out;
         outPutDirectory = directory;
         vars = param;
         sim = o;
@@ -131,21 +128,21 @@ public class DataWrapper {
 
         String file_name = outPutDirectory + "Summary/Simulation_Summary" + ".csv";
 
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(file_name, false)), true));
-        System.out.println("--- Simulation Summary---");
+        PrintStream ps = new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(file_name, false)), true);
+        ps.println("--- Simulation Summary---");
 
         //print total number of tasks in each replication
 
-        System.out.println("Tasks generated:");
+        ps.println("Tasks generated:");
         for (int i = 0; i < vars.numReps; i++) {
-            System.out.println(", Rep_" + i + "," + vars.repNumTasks[i]);
+            ps.println(", Rep_" + i + "," + vars.repNumTasks[i]);
         }
 
         //print summary for each task type
 
         for(int i : vars.allTaskTypes){
-            System.out.println("Task name: " + vars.taskName_all[i]);
+            ps.println("Task name: " + vars.taskName_all[i]);
 
             int expiredTasks = 0;
             int failedTasks = 0;
@@ -163,13 +160,13 @@ public class DataWrapper {
                 }
             }
 
-            System.out.println(",Expired: " + expiredTasks);
-            System.out.println(",Failed: " + failedTasks);
-            System.out.println(",Completed: " + completeTasks);
+            ps.println(",Expired: " + expiredTasks);
+            ps.println(",Failed: " + failedTasks);
+            ps.println(",Completed: " + completeTasks);
         }
 
 
-        System.setOut(stdout);
+        ps.close();
     }
 
     /****************************************************************************
@@ -189,22 +186,22 @@ public class DataWrapper {
 
             String summary_file_name = outPutDirectory + "Summary/Error_Summary_Rep_" + i + ".csv";
 
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(summary_file_name, false)), true));
-            System.out.println("Fail Task Detail: ");
+            PrintStream ps = new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(summary_file_name, false)), true);
+            ps.println("Fail Task Detail: ");
             ArrayList<Pair<Operator, Task>> failList = vars.rep_failTask.get(i);
             for (int k = 0; k < failList.size(); k++) {
                 String opName = failList.get(k).getKey().getName();
                 String tName = failList.get(k).getValue().getName();
-                System.out.print(opName + " Fails " + tName + ",");
+                ps.print(opName + " Fails " + tName + ",");
                 if (failList.get(k).getValue().getFail()) {
-                    System.out.print(" But still proceed by the Operator");
+                     ps.print(" But still proceed by the Operator");
                 }
-                System.out.println();
+                 ps.println();
             }
+            ps.close();
         }
 
-        System.setOut(stdout);
     }
 
 
@@ -233,19 +230,19 @@ public class DataWrapper {
 
         for(int taskType : vars.allTaskTypes) {
             String fileName = outPutDirectory + "task_" + vars.taskName_all[taskType] + ".csv";
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, false)), true));
-            System.out.println("arrTime, beginTime, serveTime, waitTime, finTime, expireTime");
+            PrintStream ps = new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(fileName, false)), true);
+             ps.println("arrTime, beginTime, serveTime, waitTime, finTime, expireTime");
             for(int i = 0; i < vars.numReps; i++){
-                System.out.println("Replication " + i);
+                 ps.println("Replication " + i);
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
-                        System.out.println(t.getArrTime() + "," + t.getBeginTime() + "," +
+                         ps.println(t.getArrTime() + "," + t.getBeginTime() + "," +
                                 t.getSerTime() + "," + t.getWaitTime() + "," + t.getEndTime() + "," + t.getExpTime());
                     }
                 }
             }
-            System.setOut(stdout);
+            ps.close();
         }
 
     }
@@ -285,33 +282,33 @@ public class DataWrapper {
             double max10mins = 0; //max utiliazation in 10 mins across replications
 
             String fileName = outPutDirectory + "repCSV/Utilization_" + op + ".csv";
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, false)), true));
+            PrintStream ps = new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(fileName, false)), true);
 
             // print utilization per repulication
             for (int rep = 0; rep < vars.numReps; rep++) {
 
                 Double[][] utilization = u.timeSectionSum(vars, op, rep, timeSize);
-                printUtilizationLabels(timeSize, rep);
-                max10mins = printUtilizationPerReplication(max10mins, utilization);
+                printUtilizationLabels(timeSize, rep, ps);
+                max10mins = printUtilizationPerReplication(max10mins, utilization, ps);
 
                 // print the sum of timeSectionSum
-                System.out.println(u.averageTaskUtilization[op][rep] + ",");
-                System.out.println(" ");
+                 ps.println(u.averageTaskUtilization[op][rep] + ",");
+                 ps.println(" ");
 
             }
             if (max10mins > 1.02) {
                 throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
             }
-            System.out.println("The max utilization in 10 mins is " + max10mins);
+            ps.println("The max utilization in 10 mins is " + max10mins);
 
+            if (op==vars.numRemoteOp-1) { // If last file
+                averageAll(u.averageTaskUtilization, ps);
+                findMinMax(u.averageTaskUtilization, ps);
+            }
+    
+            ps.close();            
         }
-
-        averageAll(u.averageTaskUtilization);
-        findMinMax(u.averageTaskUtilization);
-
-        System.setOut(stdout);
-
     }
 
     /****************************************************************************
@@ -325,7 +322,7 @@ public class DataWrapper {
      ****************************************************************************/
 
     //Naixin 05/21/18
-    private double printUtilizationPerReplication(double max10mins, Double[][] utilization) {
+    private double printUtilizationPerReplication(double max10mins, Double[][] utilization, PrintStream ps) {
 
         int numColumn = utilization[0].length;
 
@@ -336,23 +333,23 @@ public class DataWrapper {
 
         // one row per task
         for (int task : vars.allTaskTypes) {
-            System.out.print(vars.taskName_all[task] + ",");
+             ps.print(vars.taskName_all[task] + ",");
             for (int time = 0; time < numColumn; time++) {
                 Double percentage = utilization[task][time];
                 timeSectionSum[time] += percentage;
-                System.out.print(percentage + ",");
+                 ps.print(percentage + ",");
             }
-            System.out.println(" ");
+             ps.println(" ");
         }
 
         // print a line for timeSectionSum
-        System.out.print(",");
+         ps.print(",");
 
         for (int time = 0; time < numColumn; time++) {
 
             max10mins = Math.max(timeSectionSum[time], max10mins);
 
-            System.out.print(timeSectionSum[time] + ",");
+             ps.print(timeSectionSum[time] + ",");
         }
 
         return max10mins;
@@ -369,13 +366,13 @@ public class DataWrapper {
      ****************************************************************************/
 
     //Naixin 05/21/18
-    private void printUtilizationLabels(int timeSize, int rep) {
+    private void printUtilizationLabels(int timeSize, int rep, PrintStream ps) {
         int numColumn = (int) Math.ceil((double)vars.numHours * 6 / timeSize);
-        System.out.print("Replication" + rep + ",");
+         ps.print("Replication" + rep + ",");
         for(int col = 0; col < numColumn; col++){
-            System.out.print(String.valueOf(col * 10 * timeSize) + "~" + String.valueOf((col + 1) * 10 * timeSize) + " mins,");
+             ps.print(String.valueOf(col * 10 * timeSize) + "~" + String.valueOf((col + 1) * 10 * timeSize) + " mins,");
         }
-        System.out.println("Average");
+         ps.println("Average");
     }
 
 
@@ -396,8 +393,8 @@ public class DataWrapper {
         for (int op = 0; op < vars.numRemoteOp; op++) {
 
             String fileName = outPutDirectory + "validation/rep_vs_time:operator" + op + ".csv";
-            System.setOut(new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, false)), true));
+            PrintStream ps = new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream(fileName, false)), true);
 
 
             for (int time = 0; time < numColumn; time++) {
@@ -407,13 +404,13 @@ public class DataWrapper {
                     for (int taskType : vars.allTaskTypes) {
                          utilization10min += utilization[op][rep][taskType][time];
                     }
-                    System.out.print(utilization10min + ",");
+                     ps.print(utilization10min + ",");
                 }
-                System.out.println(" ");
+                 ps.println(" ");
             }
 
 
-            System.setOut(stdout);
+            ps.close();
         }
 
     }
@@ -429,7 +426,7 @@ public class DataWrapper {
      ****************************************************************************/
 
     //Naixin Yu 07/06/2018
-    private void findMinMax (Double[][] averageUtilization) {
+    private void findMinMax (Double[][] averageUtilization, PrintStream ps) {
 
         Double max = averageUtilization[0][0];
         Double min = averageUtilization[0][0];
@@ -441,8 +438,8 @@ public class DataWrapper {
             }
         }
 
-        System.out.println("The max average utilization cross replication is " + max);
-        System.out.println("The min average utilization cross replication is " + min);
+        ps.println("The max average utilization cross replication is " + max);
+        ps.println("The min average utilization cross replication is " + min);
 
     }
 
@@ -456,7 +453,7 @@ public class DataWrapper {
      ****************************************************************************/
 
     //Naixin 07/04/2018
-    private void averageAll(Double[][] u){
+    private void averageAll(Double[][] u, PrintStream ps){
 
         int count = 0;
         double sum = 0;
@@ -466,7 +463,7 @@ public class DataWrapper {
                 count++;
             }
         }
-        System.out.println("Average Utilization is " + sum / count);
+        ps.println("Average Utilization is " + sum / count);
 
     }
 
