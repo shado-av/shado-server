@@ -79,8 +79,9 @@ public class Replication {
 
         ArrayList<Queue> proc = new ArrayList<Queue>();
         ArrayList<Operator> working = new ArrayList<>(proc.size());
+        ArrayList<Operator> flexPosition = new ArrayList<>(vars.flexTeamSize);
 
-        findAvaliableOperator(proc, working, task);
+        findAvaliableOperator(proc, working, task, flexPosition);
 
         if (working.size()==0) {
             task.setexpired();
@@ -89,19 +90,23 @@ public class Replication {
 
         Operator optimal_op = findOptimalOperator(working);
 
-        // apply AIs
+        //check if ET AIDA can help
+        if (task.getType() < vars.numTaskTypes && !optimal_op.getQueue().taskqueue.isEmpty()) {
+            int team = vars.ETteam[task.getType()][task.getVehicleID() / 100];
+            if (team > -1){
+                equalTeammateDone(task, team);
+                return;
+            }
+        }
+
+        //check if need flex position operator to help
+        if(vars.hasFlexPosition == 1 && optimal_op.getBusyIn10min(task.getArrTime()) > 7){
+            optimal_op = findOptimalOperator(flexPosition);
+        }
+
+        //AIs and team communication
         double errorChangeRate = 1;
         if(task.getType() < vars.numTaskTypes) {
-
-            //AI feature: If the optimal operator is busy and there is ET AIDA for this task, use ET AIDA to process this task
-            if (!optimal_op.getQueue().taskqueue.isEmpty()) {
-                int team = vars.ETteam[task.getType()][task.getVehicleID() / 100];
-                if (team > -1){
-                    equalTeammateDone(task, team);
-                    return;
-                }
-
-            }
 
             //AI feature: Individual Assistant AIDA
             errorChangeRate = applyIndividualAssistant(optimal_op, task);
@@ -144,14 +149,14 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task){
+    private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task, ArrayList<Operator> flexPosition){
 
         if(task.getType() == vars.TC_SOME_TASK || task.getType() == vars.TC_FULL_TASK){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
                 task.changeServTime(0.5);
             }
-            for(int j = 0; j < remoteOps.getRemoteOp().length; j++ ){
+            for(int j = 0; j < vars.numRemoteOp; j++ ){
                 if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
                     //Put task in appropriate Queue
                     proc.add(remoteOps.getRemoteOp()[j].getQueue());
@@ -177,6 +182,12 @@ public class Replication {
 
             }
 
+        }
+
+        if (vars.hasFlexPosition == 1) {
+            for (int i = vars.numRemoteOp; i < remoteOps.getRemoteOp().length; i++) {
+                flexPosition.add(remoteOps.getRemoteOp()[i]);
+            }
         }
 
     }
@@ -230,7 +241,12 @@ public class Replication {
             affByTeamCoord = 0;
         }
         else {
-            errorCatching = vars.ECC[teamType][taskType];
+            if(operator.dpID / 100 == vars.FLEXTEAM) {
+                errorCatching = 0.5;
+            }
+            else{
+                errorCatching = vars.ECC[teamType][taskType];
+            }
             if (operator.isAI)
                 errorCatching *= vars.ETFailThreshold[teamType];
             affByTeamCoord = vars.teamCoordAff[taskType];

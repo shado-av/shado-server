@@ -25,12 +25,13 @@ public class Operator {
 	public 	loadparam 	vars;
 	public 	boolean		isAI;
 
+
 	// Inspector
 	public Queue 	getQueue()	{ return this.myQueue; }
 	public String 	getName()	{ return this.name; }
 
 	@Override
-	public String toString() { return "This is " + name; }
+	public String toString() { return "This is " + name + "\n"; }
 
 	/****************************************************************************
 	 *
@@ -49,6 +50,8 @@ public class Operator {
 		this.name =  name +" " + Integer.toString(dpid%100);
 		myQueue = new Queue(this);
 		vars = param;
+
+		System.out.println("generate operator: " + name);
 
 	}
 
@@ -77,5 +80,58 @@ public class Operator {
 		return phase - 1;
 
 	}
+
+	public double getBusyIn10min(double timeNow){
+
+		double time = 0;
+
+		//check if there is currently doing task
+		if (!myQueue.taskqueue.isEmpty()){
+
+			Task t = myQueue.taskqueue.peek();
+
+			for(double[] workingTime : t.workSchedule) {
+
+				if (workingTime[1] == 0 && workingTime[0] != 0) {
+					if (workingTime[0] < timeNow - 10)
+						return 10;
+					time += timeNow - workingTime[0];
+					continue;
+				}
+
+				if (workingTime[1] < timeNow - 10) {
+					continue;
+				}
+
+				time += Math.min(timeNow, workingTime[1]) - Math.max(timeNow - 10, workingTime[0]);
+
+			}
+		}
+
+
+		//check finished tasks
+		for (int i = myQueue.records().size() - 1; i >= 0; i--) {
+
+			if (timeNow - myQueue.records().get(i).getEndTime() > 10) {
+				break;
+			}
+
+			Task t =  myQueue.records().get(i);
+
+//			t.printBasicInfo();
+
+			for(double[] workingTime : t.workSchedule) {
+
+				if (workingTime[1] < timeNow - 10) {
+					continue;
+				}
+
+				time += Math.min(timeNow, workingTime[1]) - Math.max(timeNow - 10, workingTime[0]);
+
+			}
+		}
+		return time;
+	}
+
 
 }

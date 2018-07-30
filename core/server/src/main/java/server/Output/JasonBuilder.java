@@ -20,7 +20,7 @@ public class JasonBuilder {
         taskRecord = t;
     }
 
-    public void outputJSON() throws IOException {
+    public synchronized void outputJSON() throws IOException {
         PrintStream stdout = System.out;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();

@@ -40,6 +40,8 @@ public class loadparam {
 
     // Team Variables
     public int          numTeams;
+    public int          hasFlexPosition;
+    public int          flexTeamSize;
     public int[]        teamSize;
     public String[]     opNames;
     public String[]     opStrats;
@@ -106,6 +108,7 @@ public class loadparam {
     public int EXOGENOUS_TASK;
     public int TURN_OVER_BEGIN_TASK;
     public int TURN_OVER_END_TASK;
+    public int FLEXTEAM;
 
 
     // Operator settings
@@ -117,7 +120,7 @@ public class loadparam {
 	public static boolean TRAFFIC_ON = true;
 
 	//SCHEN 11/15/17 test separated replication
-	public double[][][] repUtilOp;
+//	public double[][][] repUtilOp;
 	public int[] repNumTasks;
 	public int processedRepId;
 	public int debugCnt;
@@ -145,6 +148,7 @@ public class loadparam {
         EXOGENOUS_TASK = numTaskTypes + 2;
         TURN_OVER_BEGIN_TASK = numTaskTypes + 3;
         TURN_OVER_END_TASK = numTaskTypes + 4;
+        FLEXTEAM = numTeams;
         totalTaskType = numTaskTypes + 5;
 
         expandEssential();
@@ -167,12 +171,12 @@ public class loadparam {
 		repNumTasks = new int[numReps];
 		humanErrorRate = new double[totalTaskType];
 		//Utilization for each type of operator across replications
-		repUtilOp = new double[numReps][numTeams][];
-		for(int i = 0; i < numReps;i++){
-		    for(int j = 0; j < numTeams;j++){
-		        repUtilOp[i][j] = new double[teamSize[j]];
-            }
-        }
+//		repUtilOp = new double[numReps][numTeams][];
+//		for(int i = 0; i < numReps;i++){
+//		    for(int j = 0; j < numTeams;j++){
+//		        repUtilOp[i][j] = new double[teamSize[j]];
+//            }
+//        }
 		reps = new Replication[numReps];
         rep_failTask = new HashMap<>();
         expiredTasks = new ArrayList<ArrayList<Pair<Operator,Task>>>();

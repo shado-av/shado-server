@@ -50,8 +50,7 @@ public class TaskRecord {
         }
 
         // get operators' name
-
-        operatorName = new String[vars.numRemoteOp];
+        operatorName = new String[vars.numRemoteOp + vars.flexTeamSize];
         int count = 0;
         for (int i = 0; i < vars.opNames.length; i++) {
             for (int j = 0; j < vars.teamSize[i]; j++) {
@@ -59,14 +58,17 @@ public class TaskRecord {
                 count++;
             }
         }
+        for (int i = 0; i < vars.flexTeamSize; i++) {
+            operatorName[count + i] = "FlexPosition_" + Integer.toString(i);
+        }
 
         //create the matrix
 
-        numFailedTask  = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType][4];
-        numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams][vars.totalTaskType];
+        numFailedTask  = new int[vars.numReps][vars.numPhases][vars.numTeams + vars.hasFlexPosition][vars.totalTaskType][4];
+        numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams + vars.hasFlexPosition][vars.totalTaskType];
         numTotalTask   = new int[5];
-        averageFailed  = new double[vars.numTeams][vars.totalTaskType][4];
-        stdFailed      = new double[vars.numTeams][vars.totalTaskType][4];
+        averageFailed  = new double[vars.numTeams + vars.hasFlexPosition][vars.totalTaskType][4];
+        stdFailed      = new double[vars.numTeams + vars.hasFlexPosition][vars.totalTaskType][4];
 
     }
 

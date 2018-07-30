@@ -53,8 +53,8 @@ public class Simulation {
         for (int i = 0; i < param.numTeams; i++) {
             operatoroutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
         }
-        RemoteOpoutput = new Data[vars.numRemoteOp];
-        for (int i = 0; i < vars.numRemoteOp; i++) {
+        RemoteOpoutput = new Data[vars.numRemoteOp + vars.flexTeamSize];
+        for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++) {
             RemoteOpoutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
         }
 

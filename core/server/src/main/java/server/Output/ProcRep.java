@@ -68,10 +68,10 @@ public class ProcRep {
         hours = rep.vars.numHours;
         this.vars = vars;
 
-        utilization_task = new Data[vars.numRemoteOp];
-        utilization_fleet = new Data[vars.numRemoteOp];
+        utilization_task = new Data[vars.numRemoteOp + vars.flexTeamSize];
+        utilization_fleet = new Data[vars.numRemoteOp + vars.flexTeamSize];
 
-        for (int i = 0; i < vars.numRemoteOp; i++){
+        for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++){
             utilization_task[i] = new Data(vars.totalTaskType,(int) hours * 6, 1);
             utilization_fleet[i] = new Data(vars.fleetTypes, (int) hours * 6, 1);
         }
@@ -104,7 +104,7 @@ public class ProcRep {
         //SCHEN 11/29/17
         Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
 
-        for (int i = 0; i < vars.numRemoteOp; i++){
+        for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++){
             fillRepDataCell(RemoteOpers[i], utilization_task[i], TASK_RECORD);
             fillRepDataCell(RemoteOpers[i], utilization_fleet[i], FLEET_RECORD);
         }
@@ -198,7 +198,7 @@ public class ProcRep {
 
         // Process the RemoteOp data
 
-        for (int i = 0; i < vars.numRemoteOp; i++){
+        for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++){
             Data processed = RemoteOpdata[i];
             for (int x = 0; x < processed.data.length; x++){
                 for (int y = 0; y < processed.data[0].length; y++){

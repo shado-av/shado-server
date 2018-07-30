@@ -290,7 +290,7 @@ public class Task implements Comparable<Task> {
 		if(this.getType() >= vars.numTaskTypes)
 			return 1;
 
-		if(vars.opStrats[teamType].equals("PRTY")){
+		if(teamType == vars.FLEXTEAM || vars.opStrats[teamType].equals("PRTY")){
 			if(other.Priority > this.Priority) return 1;
 			else if(other.Priority < this.Priority) return -1;
 			// If two tasks have same priority, use FIFO
@@ -298,7 +298,7 @@ public class Task implements Comparable<Task> {
 			return -1;
 		}
 
-		else if(vars.opStrats[teamType].equals("FIFO")){
+		else if(teamType != vars.FLEXTEAM && vars.opStrats[teamType].equals("FIFO")){
 			if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
 				return 1;
 			} else {
@@ -306,7 +306,7 @@ public class Task implements Comparable<Task> {
 			}
 		}
 
-		else if(vars.opStrats[teamType].equals("STF")){
+		else if(teamType != vars.FLEXTEAM && vars.opStrats[teamType].equals("STF")){
 			if(other.getSerTime() < this.getSerTime() - this.getELSTime()){ //this task needs more serve time, other task should come first
 				return 1;
 			} else {
@@ -654,8 +654,8 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 
 	public void printBasicInfo(){
-		System.out.println("Name : " + name + " Priority : " + Priority);
-		System.out.println("Arrival time : " + arrTime);
+//		System.out.println("Name : " + name + " Priority : " + Priority);
+//		System.out.println("Arrival time : " + arrTime);
 //		System.out.println("Begin Time : " + beginTime);
 //		System.out.println("Service Time : " + serTime);
 //		System.out.println("Expire Time : " + expTime);

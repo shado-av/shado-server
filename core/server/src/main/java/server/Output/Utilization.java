@@ -50,7 +50,7 @@ public class Utilization {
         taskName = vars.taskName_all;
 
         // get operators' name
-        operatorName = new String[vars.numRemoteOp];
+        operatorName = new String[vars.numRemoteOp + vars.flexTeamSize];
         int count = 0;
         for (int i = 0; i < vars.opNames.length; i++) {
             for (int j = 0; j < vars.teamSize[i]; j++) {
@@ -58,16 +58,19 @@ public class Utilization {
                 count++;
             }
         }
+        for (int i = 0; i < vars.flexTeamSize; i++) {
+            operatorName[count + i] = "FlexPosition_" + Integer.toString(i);
+        }
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        taskUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.totalTaskType][numColumn];
-        timeUtilization = new Double[vars.numRemoteOp][vars.numReps][numColumn];
-        averageTaskUtilization = new Double[vars.numRemoteOp][vars.numReps];
-        fleetUtilization = new Double[vars.numRemoteOp][vars.numReps][vars.fleetTypes][numColumn];
-        busyTime = new Double[vars.numTeams][vars.fleetTypes];
+        taskUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps][vars.totalTaskType][numColumn];
+        timeUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps][numColumn];
+        averageTaskUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps];
+        fleetUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps][vars.fleetTypes][numColumn];
+        busyTime = new Double[vars.numTeams + vars.hasFlexPosition][vars.fleetTypes];
 
-        for (int i = 0; i < vars.numTeams; i++) {
+        for (int i = 0; i < vars.numTeams + vars.hasFlexPosition; i++) {
             for (int j = 0; j < vars.fleetTypes; j++) {
                 busyTime[i][j] = 0.0;
             }
@@ -88,7 +91,7 @@ public class Utilization {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
-        for (int op = 0; op < param.numRemoteOp; op++) {
+        for (int op = 0; op < param.numRemoteOp + param.flexTeamSize; op++) {
 
                 double sum = 0;
                 Data currentUtilization = taskU[op];
@@ -116,7 +119,7 @@ public class Utilization {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
-        for (int op = 0; op < param.numRemoteOp; op++) {
+        for (int op = 0; op < param.numRemoteOp + param.flexTeamSize; op++) {
 
             Data currentUtilization = fleetU[op];
 
@@ -134,10 +137,15 @@ public class Utilization {
 
     public void averageBusyTime(loadparam vars){
 
-        for (int i = 0; i < vars.numTeams; i++) {
+        for (int i = 0; i < vars.numTeams + vars.hasFlexPosition; i++) {
             for (int j = 0; j < vars.fleetTypes; j++) {
                 busyTime[i][j] /= vars.numReps;
-                busyTime[i][j] /= vars.teamSize[i];
+                if (i == vars.numTeams) {
+                    busyTime[i][j] /= vars.flexTeamSize;
+                }
+                else {
+                    busyTime[i][j] /= vars.teamSize[i];
+                }
             }
         }
 

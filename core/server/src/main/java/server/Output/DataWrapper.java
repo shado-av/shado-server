@@ -2,11 +2,8 @@ package server.Output;
 
 import java.io.*;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import server.Engine.*;
-import server.Input.FileWizard;
 import server.Input.loadparam;
 import java.util.*;
 import javafx.util.Pair;
@@ -52,7 +49,7 @@ public class DataWrapper {
      ****************************************************************************/
 
     //Naixin 07/06/2018
-    public void outputReports() throws Exception {
+    public synchronized void outputReports() throws Exception {
 
         //Clean previous files in the output directory
 
@@ -66,11 +63,11 @@ public class DataWrapper {
         //Out put the report files
 
         printUtilization(u,1);
-        printValidationReport(u.getTaskUtilization());
+//        printValidationReport(u.getTaskUtilization());
         printSummaryReport();
         printTaskRecord();
-//        printErrorReport();
-//        externalTest(u);
+        printErrorReport();
+        externalTest(u);
 
         u.removeEmptyTask(vars);
         t.removeEmptyTask(vars);
@@ -81,7 +78,7 @@ public class DataWrapper {
 
     }
 
-    void externalTest(Utilization u) throws IOException{
+    private void externalTest(Utilization u) throws IOException{
 
         String file_name = "/Users/zhanglian1/Desktop/ExternalTest" + ".csv";
         System.setOut(new PrintStream(new BufferedOutputStream(
@@ -313,11 +310,11 @@ public class DataWrapper {
     private void printUtilization(Utilization u, int timeSize) throws Exception {
 
         // print utilization per operator
-        for (int op = 0; op < vars.numRemoteOp; op++) {
+        for (int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
 
             double max10mins = 0; //max utiliazation in 10 mins across replications
 
-            String fileName = outPutDirectory + "repCSV/Utilization_" + op + ".csv";
+            String fileName = outPutDirectory + "repCSV/Utilization_" + u.operatorName[op] + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true));
 
@@ -426,7 +423,7 @@ public class DataWrapper {
 
         int numColumn = (int) Math.ceil(vars.numHours * 6);
 
-        for (int op = 0; op < vars.numRemoteOp; op++) {
+        for (int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
 
             String fileName = outPutDirectory + "validation/rep_vs_time:operator" + op + ".csv";
             System.setOut(new PrintStream(new BufferedOutputStream(
