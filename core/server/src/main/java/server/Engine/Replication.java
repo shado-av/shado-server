@@ -112,8 +112,8 @@ public class Replication {
             errorChangeRate = applyIndividualAssistant(optimal_op, task);
 
             //check team communication, change the serve time and error rate
-            task.changeServTime(getTeamComm(optimal_op.dpID));
-            errorChangeRate *= getTeamComm(optimal_op.dpID);
+            task.changeServTime(getTeamComm(optimal_op.dpID, task.getType()));
+            errorChangeRate *= getTeamComm(optimal_op.dpID, task.getType());
 
             // assign task priority according to team and task type
             if (optimal_op.dpID / 100 < vars.numTeams)
@@ -261,7 +261,7 @@ public class Replication {
 
         // Modify the error catching chance according to team coordination
         if (affByTeamCoord == 1) {
-            errorCatching = errorCatching * (2 - getTeamComm(operator.dpID));
+            errorCatching = errorCatching * (2 - getTeamComm(operator.dpID, taskType));
         }
 
         if(Math.random() < humanErrorRate){
@@ -455,17 +455,19 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private double getTeamComm(int dpID){
+    private double getTeamComm(int dpID, int taskType){
 
-        int type = dpID / 100;
+        int team = dpID / 100;
 
-        if (type == vars.numTeams)
+        System.out.println("team type is " + team);
+
+        if (team == vars.numTeams)
             return 1;
 
         double teamComm = 1;
-        if(vars.teamCoordAff[type] == 0) return teamComm;
-        if(vars.teamComm[type] == 'S') teamComm = 0.7;
-        if(vars.teamComm[type] == 'F') teamComm = 0.3;
+        if(vars.teamCoordAff[taskType] == 0) return teamComm;
+        if(vars.teamComm[team] == 'S') teamComm = 0.7;
+        if(vars.teamComm[team] == 'F') teamComm = 0.3;
         return teamComm;
 
     }
