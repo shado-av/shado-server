@@ -51,8 +51,6 @@ public class Operator {
 		myQueue = new Queue(this);
 		vars = param;
 
-		System.out.println("generate operator: " + name);
-
 	}
 
 	/****************************************************************************
