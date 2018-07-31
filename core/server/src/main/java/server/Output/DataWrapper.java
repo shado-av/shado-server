@@ -63,7 +63,7 @@ public class DataWrapper {
         printSummaryReport();
         printTaskRecord();
         printErrorReport();
-        externalTest(u);
+//        externalTest(u);
 
         u.removeEmptyTask(vars);
         t.removeEmptyTask(vars);
