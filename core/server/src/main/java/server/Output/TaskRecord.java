@@ -3,7 +3,7 @@ import server.Input.loadparam;
 
 public class TaskRecord {
 
-    private String[]        operatorName;
+    private String[]        teamName;
     private String[]        taskName;
     private int[][][][][]   numFailedTask; //[replication][phase][team][task type][4 kinds of failed tasks]
     private int [][][][]    numSuccessTask; //[replication][phase][team][task type]
@@ -49,26 +49,23 @@ public class TaskRecord {
             index++;
         }
 
+        int teamCount = vars.numTeams + vars.hasFlexPosition;
         // get operators' name
-        operatorName = new String[vars.numRemoteOp + vars.flexTeamSize];
-        int count = 0;
+        teamName = new String[teamCount];
         for (int i = 0; i < vars.opNames.length; i++) {
-            for (int j = 0; j < vars.teamSize[i]; j++) {
-                operatorName[count] = vars.opNames[i] + "_" + Integer.toString(j);
-                count++;
-            }
+            teamName[i] = vars.opNames[i];
         }
-        for (int i = 0; i < vars.flexTeamSize; i++) {
-            operatorName[count + i] = "FlexPosition_" + Integer.toString(i);
+        if (vars.hasFlexPosition == 1) {
+            teamName[teamCount - 1] = "FlexPosition";
         }
 
         //create the matrix
 
-        numFailedTask  = new int[vars.numReps][vars.numPhases][vars.numTeams + vars.hasFlexPosition][vars.totalTaskType][4];
-        numSuccessTask = new int[vars.numReps][vars.numPhases][vars.numTeams + vars.hasFlexPosition][vars.totalTaskType];
+        numFailedTask  = new int[vars.numReps][vars.numPhases][teamCount][vars.totalTaskType][4];
+        numSuccessTask = new int[vars.numReps][vars.numPhases][teamCount][vars.totalTaskType];
         numTotalTask   = new int[5];
-        averageFailed  = new double[vars.numTeams + vars.hasFlexPosition][vars.totalTaskType][4];
-        stdFailed      = new double[vars.numTeams + vars.hasFlexPosition][vars.totalTaskType][4];
+        averageFailed  = new double[teamCount][vars.totalTaskType][4];
+        stdFailed      = new double[teamCount][vars.totalTaskType][4];
 
     }
 
