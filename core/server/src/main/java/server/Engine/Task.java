@@ -527,8 +527,8 @@ public class Task implements Comparable<Task> {
 		double budget = TimeTaken;
 		double currTime = prevTime;
 		int currHour = (int) currTime/60;
-		double traffLevel = vars.traffic[currHour];
-		double TimeToAdj = (currHour+1)*60 - currTime;
+		double traffLevel = vars.traffic[vehicleID / 100][currHour];
+		double TimeToAdj = (currHour + 1) * 60 - currTime;
 		double adjTime = TimeToAdj * traffLevel;
 
 		while (budget > adjTime) {
@@ -541,14 +541,13 @@ public class Task implements Comparable<Task> {
 				return Double.POSITIVE_INFINITY;
 			}
 
-			traffLevel = vars.traffic[currHour];
+			traffLevel = vars.traffic[vehicleID / 100][currHour];
 			TimeToAdj = (currHour + 1) * 60 - currTime;
 			adjTime = TimeToAdj * traffLevel;
 
 		}
 
-		return currTime + budget/traffLevel;
-
+		return currTime + budget / traffLevel;
 	}
 
 	/****************************************************************************

@@ -29,7 +29,6 @@ public class loadparam {
 	
 	// Global input variables
 	public double       numHours;
-    public double[]     traffic;
     public int          numReps;
     public int          numPhases;
     public double[]     phaseBegin;
@@ -64,19 +63,20 @@ public class loadparam {
     public int[]        numvehicles;
     public char[]       autolvl;
     public int[][]      fleetHetero;
+    public double[][]   traffic;  //[fleet][hours]
 
     // Task Variables
     public int          numTaskTypes;
     public String[]     taskNames;
-    public char[]     arrDists;
-    public double[][] arrPms;
-    public char[]     serDists;
-    public double[][] serPms;
-    public char[]     expDists;
-    public double[][] expPms;
-    public int[]      affByTraff;
+    public char[]       arrDists;
+    public double[][]   arrPms;
+    public char[]       serDists;
+    public double[][]   serPms;
+    public char[]       expDists;
+    public double[][]   expPms;
+    public int[]        affByTraff;
     public int[]        teamCoordAff;
-    public double[][] humanError;
+    public double[][]   humanError;
     public int[]        interruptable;
     public int[]        essential;
     public int[]        leadTask;
