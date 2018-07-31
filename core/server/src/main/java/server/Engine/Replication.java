@@ -459,8 +459,6 @@ public class Replication {
 
         int team = dpID / 100;
 
-        System.out.println("team type is " + team);
-
         if (team == vars.numTeams)
             return 1;
 
