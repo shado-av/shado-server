@@ -40,8 +40,6 @@ public class TaskRecord {
 
     public TaskRecord(loadparam vars){
 
-//        taskName = vars.taskName_all;
-
         taskName = new String[vars.allTaskTypes.size()];
         int index = 0;
         for(int i : vars.allTaskTypes) {
@@ -50,6 +48,7 @@ public class TaskRecord {
         }
 
         int teamCount = vars.numTeams + vars.hasFlexPosition;
+
         // get operators' name
         teamName = new String[teamCount];
         for (int i = 0; i < vars.opNames.length; i++) {
