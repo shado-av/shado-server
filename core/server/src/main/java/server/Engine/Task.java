@@ -525,7 +525,7 @@ public class Task implements Comparable<Task> {
 
 	//SCHEN 12/16/17 Add changing the arrival rate based on the traffic level
 	private double applyTraffic(double TimeTaken){
-		System.out.print("Chang arrival time from " + (TimeTaken + prevTime));
+
 		double budget = TimeTaken;
 		double currTime = prevTime;
 		int currHour = (int) currTime/60;
@@ -548,9 +548,8 @@ public class Task implements Comparable<Task> {
 			adjTime = TimeToAdj * traffLevel;
 
 		}
-
-		System.out.println(" to " + (currTime + budget / traffLevel));
 		return currTime + budget / traffLevel;
+
 	}
 
 	/****************************************************************************
