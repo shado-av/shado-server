@@ -164,6 +164,7 @@ public class loadparam {
 		crossRepCount = new double[numReps][];
 		repNumTasks = new int[numReps];
 		humanErrorRate = new double[totalTaskType];
+		AITasks = new ArrayList<>();
 
 		reps = new Replication[numReps];
         rep_failTask = new HashMap<>();
