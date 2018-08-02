@@ -29,11 +29,12 @@ public class Utilization {
     Double[][] averageTaskUtilization; //[operator][replication]
     Double[][][][] fleetUtilization; //[operator][replication][fleet][time]
 
-    Double[][] averageBusyTime; //[team][fleet]
-    Double[][] stdBusyTime; //[team][fleet]
+    Double[][] averageBusyTimePerFleet; //[team][fleet]
+    Double[][] stdBusyTimePerFleet; //[team][fleet]
+    Double[][] averageBusyTimePerTask; //[team][task]
+    Double[][] stdBusyTimePerTask; //[team][task]
 
-    public Double[][][][] getTaskUtilization() { return taskUtilization; }
-    public Double[][] getBusyTime() { return averageBusyTime; }
+    public Double[][] getBusyTime() { return averageBusyTimePerFleet; }
 
     /****************************************************************************
      *
@@ -48,6 +49,9 @@ public class Utilization {
      ****************************************************************************/
 
     public Utilization(loadparam vars){
+
+        int numOperators = vars.numRemoteOp + vars.flexTeamSize;
+        int numTeams = vars.numTeams + vars.hasFlexPosition;
 
         taskName = vars.taskName_all;
 
@@ -66,18 +70,25 @@ public class Utilization {
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
-        taskUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps][vars.totalTaskType][numColumn];
-        timeUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps][numColumn];
-        averageTaskUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps];
-        fleetUtilization = new Double[vars.numRemoteOp + vars.flexTeamSize][vars.numReps][vars.fleetTypes][numColumn];
+        taskUtilization = new Double[numOperators][vars.numReps][vars.totalTaskType][numColumn];
+        timeUtilization = new Double[numOperators][vars.numReps][numColumn];
+        averageTaskUtilization = new Double[numOperators][vars.numReps];
+        fleetUtilization = new Double[numOperators][vars.numReps][vars.fleetTypes][numColumn];
 
-        averageBusyTime = new Double[vars.numTeams + vars.hasFlexPosition][vars.fleetTypes];
-        stdBusyTime = new Double[vars.numTeams + vars.hasFlexPosition][vars.fleetTypes];
+        averageBusyTimePerFleet = new Double[numTeams][vars.fleetTypes];
+        stdBusyTimePerFleet = new Double[numTeams][vars.fleetTypes];
+        averageBusyTimePerTask = new Double[numTeams][vars.totalTaskType];
+        stdBusyTimePerTask = new Double[numTeams][vars.totalTaskType];
 
-        for (int i = 0; i < vars.numTeams + vars.hasFlexPosition; i++) {
+        for (int i = 0; i < numTeams; i++) {
             for (int j = 0; j < vars.fleetTypes; j++) {
-                averageBusyTime[i][j] = 0.0;
-                stdBusyTime[i][j] = 0.0;
+                averageBusyTimePerFleet[i][j] = 0.0;
+                stdBusyTimePerFleet[i][j] = 0.0;
+            }
+
+            for (int j = 0; j < vars.totalTaskType; j++) {
+                averageBusyTimePerTask[i][j] = 0.0;
+                stdBusyTimePerTask[i][j] = 0.0;
             }
         }
 
@@ -145,6 +156,96 @@ public class Utilization {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:     averageBusyTime
+     *
+     *	Purpose:
+     *
+     ****************************************************************************/
+
+    public void utilizationToBusyTime(loadparam vars, int typeU){
+
+        //define two type of typeU
+        int TASK_RECORD = 1;
+        int FLEET_RECORD = 2;
+        int numOperators = vars.numRemoteOp + vars.flexTeamSize;
+        int numTeams = vars.numTeams + vars.hasFlexPosition;
+
+        Double[][][][] utilization;
+        Double[][] average;
+        Double[][] std;
+        double[][][] rawBusyTime;
+        int length;
+
+        if (typeU == TASK_RECORD) {
+            utilization = taskUtilization;
+            average = averageBusyTimePerTask;
+            std = stdBusyTimePerTask;
+            length = vars.totalTaskType;
+            rawBusyTime = new double[vars.numReps][numOperators][vars.totalTaskType];
+        }
+        else {
+            utilization = fleetUtilization;
+            average = averageBusyTimePerFleet;
+            std = stdBusyTimePerFleet;
+            length = vars.fleetTypes;
+            rawBusyTime = new double[vars.numReps][numOperators][vars.fleetTypes];
+        }
+
+        for(int op = 0; op < numOperators; op++) {
+            for (int rep = 0; rep < vars.numReps; rep++) {
+                for (int i = 0; i < length; i++) {
+                    for (int time = 0; time < utilization[0][0][0].length; time++) {
+                        rawBusyTime[rep][op][i] += utilization[op][rep][i][time] * 10;
+                        int team = findTeam(op, vars.teamSize);
+                        average[team][i] += utilization[op][rep][i][time] * 10;
+                    }
+                }
+            }
+        }
+
+        int[][] count = new int[numTeams][length];
+
+        for (int team = 0; team < numTeams; team++) {
+            for (int i = 0; i < length; i++) {
+                count[team][i] = 0;
+                average[team][i] /= vars.numReps;
+                if (typeU == TASK_RECORD) {
+                    if (team == vars.numTeams) {
+                        average[team][i] /= vars.flexTeamSize;
+                    } else {
+                        average[team][i] /= vars.teamSize[team];
+                    }
+                }
+                else {
+                    average[team][i] /= vars.allTaskTypes.size();
+                }
+            }
+        }
+
+        for (double[][] busyTimeOneRep : rawBusyTime) {
+            for (int op = 0; op < numOperators; op++) {
+                int team = findTeam(op,vars.teamSize);
+                for (int i = 0; i < length; i++) {
+                    std[team][i] += Math.pow(busyTimeOneRep[op][i] - average[team][i], 2);
+                    count[team][i]++;
+                }
+            }
+        }
+
+        for (int team = 0; team < numTeams; team++) {
+            for (int i = 0; i < length; i++) {
+                if (count[team][i] == 1) {
+                    std[team][i] = 0.0;
+                }
+                else{
+                    std[team][i] = round(Math.sqrt(std[team][i] / (count[team][i] - 1)), 2);
+                }
+            }
+        }
+    }
+
     public void averageBusyTime(loadparam vars){
 
         double[][][] rawBusyTime = new double[vars.numReps][vars.numRemoteOp + vars.flexTeamSize][vars.fleetTypes];
@@ -155,7 +256,7 @@ public class Utilization {
                     for (int time = 0; time < fleetUtilization[0][0][0].length; time++) {
                         rawBusyTime[rep][op][fleet] += fleetUtilization[op][rep][fleet][time] * 10;
                         int team = findTeam(op, vars.teamSize);
-                        averageBusyTime[team][fleet] += fleetUtilization[op][rep][fleet][time] * 10;
+                        averageBusyTimePerFleet[team][fleet] += fleetUtilization[op][rep][fleet][time] * 10;
                     }
                 }
             }
@@ -166,12 +267,12 @@ public class Utilization {
         for (int team = 0; team < vars.numTeams + vars.hasFlexPosition; team++) {
             for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
                 count[team][fleet] = 0;
-                averageBusyTime[team][fleet] /= vars.numReps;
+                averageBusyTimePerFleet[team][fleet] /= vars.numReps;
                 if (team == vars.numTeams) {
-                    averageBusyTime[team][fleet] /= vars.flexTeamSize;
+                    averageBusyTimePerFleet[team][fleet] /= vars.flexTeamSize;
                 }
                 else{
-                    averageBusyTime[team][fleet] /= vars.teamSize[team];
+                    averageBusyTimePerFleet[team][fleet] /= vars.teamSize[team];
                 }
             }
         }
@@ -180,7 +281,7 @@ public class Utilization {
             for (int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
                 int team = findTeam(op,vars.teamSize);
                 for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
-                    stdBusyTime[team][fleet] += Math.pow(busyTimeOneRep[op][fleet] - averageBusyTime[team][fleet], 2);
+                    stdBusyTimePerFleet[team][fleet] += Math.pow(busyTimeOneRep[op][fleet] - averageBusyTimePerFleet[team][fleet], 2);
                     count[team][fleet]++;
                 }
             }
@@ -189,10 +290,10 @@ public class Utilization {
         for (int team = 0; team < vars.numTeams + vars.hasFlexPosition; team++) {
             for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
                 if (count[team][fleet] == 1) {
-                    stdBusyTime[team][fleet] = 0.0;
+                    stdBusyTimePerFleet[team][fleet] = 0.0;
                 }
                 else{
-                    stdBusyTime[team][fleet] = Math.sqrt(stdBusyTime[team][fleet] / (count[team][fleet] - 1));
+                    stdBusyTimePerFleet[team][fleet] = Math.sqrt(stdBusyTimePerFleet[team][fleet] / (count[team][fleet] - 1));
                 }
             }
         }
@@ -298,9 +399,13 @@ public class Utilization {
         int numRep = taskUtilization[0].length;
         int numTask = taskUtilization[0][0].length;
         int numColumn = taskUtilization[0][0][0].length;
+        int numTeam = param.numTeams + param.hasFlexPosition;
 
         String[] newTaskName = new String[numTask - 1];
         Double[][][][] newTaskUtilization = new Double[numOp][numRep][numTask - 1][numColumn];
+        Double[][] newAverageBusyTimePerTask = new Double[numTeam][numTask - 1]; //[team][task]
+        Double[][] newStdBusyTimePerTask = new Double[numTeam][numTask - 1]; //[team][task]
+
 
         for (int op = 0; op < numOp; op++) {
             for (int rep = 0; rep < numRep; rep++) {
@@ -308,11 +413,19 @@ public class Utilization {
                     for (int t = 0; t < task; t++) {
                         newTaskName[t] = taskName[t];
                         newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t][col];
+                        for (int team = 0; team < numTeam; team++) {
+                            newAverageBusyTimePerTask[team][t] = averageBusyTimePerTask[team][t];
+                            newStdBusyTimePerTask[team][t] = stdBusyTimePerTask[team][t];
+                        }
                     }
 
                     for (int t = task; t < numTask - 1; t++) {
                         newTaskName[t] = taskName[t + 1];
                         newTaskUtilization[op][rep][t][col] = taskUtilization[op][rep][t + 1][col];
+                        for (int team = 0; team < numTeam; team++) {
+                            newAverageBusyTimePerTask[team][t] = averageBusyTimePerTask[team][t + 1];
+                            newStdBusyTimePerTask[team][t] = stdBusyTimePerTask[team][t + 1];
+                        }
                     }
                 }
             }
@@ -320,6 +433,8 @@ public class Utilization {
 
         taskName = newTaskName;
         taskUtilization = newTaskUtilization;
+        averageBusyTimePerTask = newAverageBusyTimePerTask;
+        stdBusyTimePerTask = newStdBusyTimePerTask;
     }
 
     /****************************************************************************

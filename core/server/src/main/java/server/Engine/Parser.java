@@ -19,13 +19,18 @@ public class Parser {
          System.out.println(g.toJson(person)); // {"name":"John"}
          */
     }
-    public loadparam parseJSON(loadparam in){
+    public loadparam parseJSON(loadparam in) throws Exception{
         Gson g = new Gson();
         System.out.println("PARSING JSON...");
         in = g.fromJson(this.input, loadparam.class);
+        checkInput(in);
 //        printloadparam(in);
         in.setGlobalData();
         return in;
+    }
+
+    private void checkInput(loadparam in) throws Exception{
+
     }
 
     private void printloadparam(loadparam in){

@@ -113,7 +113,9 @@ public class Simulation {
 
         }
 
-        vars.utilization.averageBusyTime(vars);
+//        vars.utilization.averageBusyTime(vars);
+        vars.utilization.utilizationToBusyTime(vars,2);
+        vars.utilization.utilizationToBusyTime(vars,1);
         vars.taskRecord.computeTotalTaskNumber();
         vars.taskRecord.failedAnalysis();
 

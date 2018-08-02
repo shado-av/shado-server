@@ -249,6 +249,7 @@ public class Task implements Comparable<Task> {
 		//shift schedule 1% fatigue increase serve time
 		if(type != vars.TURN_OVER_BEGIN_TASK && type != vars.TURN_OVER_END_TASK)
 			changeServTime(1 + 0.01 * shiftPeriod);
+
 	}
 
 	/****************************************************************************
@@ -514,7 +515,7 @@ public class Task implements Comparable<Task> {
 
 		double newArrTime = TimeTaken + PrevTime;
 
-		if (loadparam.TRAFFIC_ON && vars.affByTraff[type] == 1 ){
+		if (type < vars.numTaskTypes && vars.affByTraff[type] == 1 ){
 			newArrTime = applyTraffic(TimeTaken);
 		}
 
@@ -524,6 +525,7 @@ public class Task implements Comparable<Task> {
 
 	//SCHEN 12/16/17 Add changing the arrival rate based on the traffic level
 	private double applyTraffic(double TimeTaken){
+
 		double budget = TimeTaken;
 		double currTime = prevTime;
 		int currHour = (int) currTime/60;
@@ -546,8 +548,8 @@ public class Task implements Comparable<Task> {
 			adjTime = TimeToAdj * traffLevel;
 
 		}
-
 		return currTime + budget / traffLevel;
+
 	}
 
 	/****************************************************************************
