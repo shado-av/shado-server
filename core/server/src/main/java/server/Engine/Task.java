@@ -48,11 +48,7 @@ public class Task implements Comparable<Task> {
 	private int repeatTimes; // Indicates how many times this task has been redone
 
 
-	// This adds the ability for task to track queue retroactively
-
-	private int queued;
-
-	// Mutators
+	// Inspector functions.
 
 	public boolean getFail(){return this.fail;}
 
@@ -69,6 +65,26 @@ public class Task implements Comparable<Task> {
 	public int getVehicleID() { return vehicleID; }
 
 	public double getWaitTime() { return waitTime; }
+
+	public String getName() {return this.name;}
+
+	public int getType() {return this.Type;}
+
+	public double getArrTime(){return this.arrTime;}
+
+	public double getSerTime(){return this.serTime;}
+
+	public double getEndTime(){return this.endTime;}
+
+	public double getExpTime() {return this.expTime;}
+
+	public double getELSTime() {return this.elapsedTime;}
+
+	public double getBeginTime() {return this.beginTime;}
+
+	public int getShiftTime(double time){ return (int)time/60; }
+
+	// Mutators
 
 	public void setFail(){ this.fail = true; }
 
@@ -94,10 +110,6 @@ public class Task implements Comparable<Task> {
 
 	public void setTeamType(int type) {teamType = type;}
 
-	public void setQueue(int q){
-		queued = q-1;
-	}
-
 	public void setEndTime(double time){
 		endTime = time;
 	}
@@ -122,7 +134,7 @@ public class Task implements Comparable<Task> {
 
 	public Task() { }
 
-	// Copy Constructor ---- build a redo task
+	// Copy Constructor ---- used for creating a redo task
 	// deep copy the original task
 	// and set the arrival time follow the original task
 
@@ -246,6 +258,7 @@ public class Task implements Comparable<Task> {
 		}
 
 		beginTime = arrTime;
+
 		//shift schedule 1% fatigue increase serve time
 		if(type != vars.TURN_OVER_BEGIN_TASK && type != vars.TURN_OVER_END_TASK)
 			changeServTime(1 + 0.01 * shiftPeriod);
@@ -319,24 +332,6 @@ public class Task implements Comparable<Task> {
 
 	}
 
-	// The following are inspector functions.
-
-	public String getName() {return this.name;}
-
-	public int getType() {return this.Type;}
-
-	public double getArrTime(){return this.arrTime;}
-
-	public double getSerTime(){return this.serTime;}
-
-	public double getEndTime(){return this.endTime;}
-
-	public double getExpTime() {return this.expTime;}
-
-	public double getELSTime() {return this.elapsedTime;}
-
-	public double getBeginTime() {return this.beginTime;}
-
 
 	/****************************************************************************
 	 *
@@ -360,17 +355,6 @@ public class Task implements Comparable<Task> {
 		return currentPhase;
 	}
 
-    /****************************************************************************
-     *
-     *	Method:			getShiftTime
-     *
-     *	Purpose:		Return shift period
-     *
-     ****************************************************************************/
-
-    public int getShiftTime(double time){
-        return (int)time/60;
-    }
 
 	/****************************************************************************
 	 *
@@ -655,17 +639,19 @@ public class Task implements Comparable<Task> {
 	 ****************************************************************************/
 
 	public void printBasicInfo(){
-//		System.out.println("Name : " + name + " Priority : " + Priority);
-//		System.out.println("Arrival time : " + arrTime);
-//		System.out.println("Begin Time : " + beginTime);
-//		System.out.println("Service Time : " + serTime);
-//		System.out.println("Expire Time : " + expTime);
-//		System.out.println("Finish Time : " + endTime);
+
+		System.out.println("Name : " + name + " Priority : " + Priority);
+		System.out.println("Arrival time : " + arrTime);
+		System.out.println("Begin Time : " + beginTime);
+		System.out.println("Service Time : " + serTime);
+		System.out.println("Expire Time : " + expTime);
+		System.out.println("Finish Time : " + endTime);
 		System.out.print("Here is my work schedule: ");
 		for(int i = 0; i < workSchedule.size(); i++){
 			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");
 		}
 		System.out.println(" ");
+
 	}
 
 }
