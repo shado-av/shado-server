@@ -60,6 +60,7 @@ public class loadparam {
 
     // Fleet Variables
     public int          fleetTypes;
+    public String[]     fleetNames;
     public int[]        numvehicles;
     public char[]       autolvl;
     public int[][]      fleetHetero;

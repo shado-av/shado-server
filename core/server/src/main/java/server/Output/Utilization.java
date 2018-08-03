@@ -24,6 +24,7 @@ public class Utilization {
 
     String[] operatorName;
     String[] taskName;
+    String[] fleetName;
     Double[][][][] taskUtilization; //[operator][replication][task][time]
     Double[][][] timeUtilization; //[operator][replication][time]
     Double[][] averageTaskUtilization; //[operator][replication]
@@ -67,6 +68,11 @@ public class Utilization {
         for (int i = 0; i < vars.flexTeamSize; i++) {
             operatorName[count + i] = "FlexPosition_" + Integer.toString(i);
         }
+
+        fleetName = vars.fleetNames;
+        // for (int i = 0; i < vars.fleetTypes; i++) {
+        //     fleetName[i] = vars.fleetNames[i];
+        // }
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
