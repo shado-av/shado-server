@@ -21,19 +21,18 @@ public class JasonBuilder {
     }
 
     public synchronized void outputJSON() throws IOException {
-        PrintStream stdout = System.out;
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
 
         String summary_file_name = outputDirectory + "Utilization.json";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(summary_file_name, false)), true));
-        System.out.println(gson.toJson(utilization));
+        PrintStream ps = new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(summary_file_name, false)), true);
+        ps.println(gson.toJson(utilization));
 
         summary_file_name = outputDirectory + "TaskRecord.json";
         System.setOut(new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true));
-        System.out.println(gson.toJson(taskRecord));
-        System.setOut(stdout);
+        ps.println(gson.toJson(taskRecord));
+        ps.close();
     }
 }
