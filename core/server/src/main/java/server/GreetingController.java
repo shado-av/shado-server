@@ -30,7 +30,6 @@ public class GreetingController {
     private static final String template = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
     private Shado shado;
-//    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd-HH:mm:ss");
     DateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmssZ");
     Date date = new Date();
 

@@ -11,35 +11,31 @@ import java.util.stream.IntStream;
  *
  * 	FILE: 			Replication.java
  *
- * 	AUTHOR: 		Erin Song
+ * 	AUTHOR: 		Erin Song, Rocky, Naixin Yu
  *
- * 	DATE:			2017/6/22
+ * 	DATE:			2017/6/22, 2018/8.3
  *
- * 	VER: 			1.1
+ * 	VER: 			2.0
  *
  * 	Purpose: 		A wrapper that execute each replication.
- * 	                Styling and code streamlining are added by Rocky.
+ * 	                Rocky: Add styling and code streamlining.
+ * 	                Naixin: Add turn over task, exogenous task, AI,
+ * 	                team communication functions.
  *
  **************************************************************************/
 
 public class Replication {
 
-    public loadparam vars;
-
-    private int repID;
-
-    private VehicleSim[][] vehicles;
-
-    private RemoteOp remoteOps;
-
-    private ArrayList<Task> globalTasks;
-
+    private loadparam           vars;
+    private int                 repID;
+    private VehicleSim[][]      vehicles;
+    private RemoteOp            remoteOps;
+    private ArrayList<Task>     globalTasks;
     private ArrayList<Pair <Operator,Task>> failedTasks;
 
     // Inspectors:
 
     public RemoteOp getRemoteOp() { return remoteOps; }
-
     public int getRepID() { return repID; }
 
 
@@ -56,6 +52,126 @@ public class Replication {
         this.repID = id;
         failedTasks = new ArrayList<>();
     }
+
+    /****************************************************************************
+     *
+     *	Method:		run
+     *
+     *	Purpose:	Run the simulation once given vars.
+     *
+     ****************************************************************************/
+
+    public void run() throws Exception{
+
+        // Initialize control center.
+
+        globalTasks = new ArrayList<Task>();
+
+        addTurnOverTask();
+
+        remoteOps = new RemoteOp(vars);
+        remoteOps.genRemoteOp();
+
+        int maxLen = 0;
+        for(int i = 0; i < vars.fleetTypes; i++ )
+            if(vars.numvehicles[i] > maxLen)
+                maxLen = vars.numvehicles[i];
+
+        vehicles = new VehicleSim[vars.fleetTypes][maxLen];
+
+        // Generate all the vehicles
+        for (int i = 0; i < vars.fleetTypes; i++) {
+            for(int j = 0; j < vars.numvehicles[i]; j++) {
+                vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
+                vehicles[i][j].taskgen();
+            }
+        }
+
+        //Generate team communication tasks and exogenous task
+        for(int i = 0; i < vars.numTeams; i++){
+            if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
+            if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
+            if(vars.hasExogenous[0] == 1) genExoTask();
+        }
+
+        //Put all tasks in a timely order
+        sortTask();
+
+        vars.allTasksPerRep.add(globalTasks);
+
+        for (Task task : globalTasks) {
+            workingUntilNewTaskArrive(remoteOps,task);
+            puttask(task);
+        }
+        // Finish all remaining tasks
+        workingUntilNewTaskArrive(remoteOps,null);
+
+        vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
+
+    }
+
+
+    /****************************************************************************
+     *
+     *	Method:		    sortTask
+     *
+     *	Purpose:	    Sort the tasks in the globalTask in a timely order
+     *
+     ****************************************************************************/
+
+    public void sortTask() {
+
+        Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
+
+    }
+
+
+    /****************************************************************************
+     *
+     *	Method:		    workingUntilNewTaskArrive
+     *
+     *	Purpose:	    For each operator, complete all the tasks in its queue,
+     *              	which has a end time earlier than the new task's arrival
+     *              	time.
+     *
+     ****************************************************************************/
+
+    public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
+
+        //if no new task arrive, finish the remained tasks in the queue
+        if (task == null){
+            double totaltime = vars.numHours * 60;
+            for (Operator each : remoteOp.getRemoteOp()) {
+                while (each != null && each.getQueue().taskqueue.peek() != null) {
+
+                    if (each.getQueue().getfinTime() < totaltime) {
+                        each.getQueue().done(vars, each);
+                    }
+                    else {
+                        each.getQueue().clearTask(vars, each);
+                    }
+                }
+            }
+            return;
+        }
+
+        //When a new task is added, let operator finish all their tasks
+        for(Operator op: remoteOp.getRemoteOp()) {
+
+            if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
+                if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
+                    op.getQueue().clearTask(vars, op);
+                }
+            }
+
+            while (op.getQueue().taskqueue.size() > 0 &&
+                    op.getQueue().getfinTime() < task.getArrTime()) {
+                op.getQueue().done(vars, op);
+            }
+        }
+
+    }
+
 
     /****************************************************************************
      *
@@ -139,6 +255,7 @@ public class Replication {
         optimal_op.getQueue().add(task);
 
     }
+
 
     /****************************************************************************
      *
@@ -277,128 +394,6 @@ public class Replication {
             vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][teamType][taskType][3]++;
             task.setNeedReDo(true);
         }
-
-    }
-
-
-    /****************************************************************************
-     *
-     *	Method:		    sortTask
-     *
-     *	Purpose:	    Sort the tasks in the globalTask in a timely order
-     *
-     ****************************************************************************/
-
-    public void sortTask() {
-
-        Collections.sort(globalTasks, (o1, o2) -> Double.compare(o1.getArrTime(), o2.getArrTime()));
-
-    }
-
-    /****************************************************************************
-     *
-     *	Method:		    workingUntilNewTaskArrive
-     *
-     *	Purpose:	    For each operator, complete all the tasks in its queue,
-     *              	which has a end time earlier than the new task's arrival
-     *              	time.
-     *
-     ****************************************************************************/
-
-    public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
-
-        //if no new task arrive, finish the remained tasks in the queue
-        if (task == null){
-            double totaltime = vars.numHours * 60;
-            for (Operator each : remoteOp.getRemoteOp()) {
-                while (each != null && each.getQueue().taskqueue.peek() != null) {
-
-                    if (each.getQueue().getfinTime() < totaltime) {
-                        each.getQueue().done(vars, each);
-                    }
-                    else {
-                        each.getQueue().clearTask(vars, each);
-                    }
-                }
-            }
-            return;
-        }
-
-        //When a new task is added, let operator finish all their tasks
-        for(Operator op: remoteOp.getRemoteOp()) {
-//            System.out.println("-------------------------------------------------------");
-//            System.out.print(op.toString() + ", ");
-//            System.out.println(op.getQueue().toString());
-
-            if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
-                if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
-                    op.getQueue().clearTask(vars, op);
-                }
-            }
-
-            while (op.getQueue().taskqueue.size() > 0 &&
-                    op.getQueue().getfinTime() < task.getArrTime()) {
-                op.getQueue().done(vars, op);
-            }
-        }
-
-    }
-    /****************************************************************************
-     *
-     *	Method:		run
-     *
-     *	Purpose:	Run the simulation once given vars.
-     *
-     ****************************************************************************/
-
-    public void run() throws Exception{
-
-        System.out.println("Curr Replication: " + vars.replicationTracker);
-
-        // Initialize control center.
-
-        globalTasks = new ArrayList<Task>();
-
-        addTurnOverTask();
-
-        remoteOps = new RemoteOp(vars);
-        remoteOps.genRemoteOp();
-
-        int maxLen = 0;
-        for(int i = 0; i < vars.fleetTypes; i++ )
-            if(vars.numvehicles[i] > maxLen)
-                maxLen = vars.numvehicles[i];
-
-        vehicles = new VehicleSim[vars.fleetTypes][maxLen];
-
-        // Generate all the vehicles
-        for (int i = 0; i < vars.fleetTypes; i++) {
-            for(int j = 0; j < vars.numvehicles[i]; j++) {
-                vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
-                vehicles[i][j].taskgen();
-            }
-        }
-
-        //Generate team communication tasks and exogenous task
-        for(int i = 0; i < vars.numTeams; i++){
-            if(vars.teamComm[i] == 'S') genTeamCommTask('S',i);
-            if(vars.teamComm[i] == 'F') genTeamCommTask('F',i);
-            if(vars.hasExogenous[0] == 1) genExoTask();
-        }
-
-        //Put all tasks in a timely order
-        sortTask();
-
-        vars.allTasksPerRep.add(globalTasks);
-
-        for (Task task : globalTasks) {
-            workingUntilNewTaskArrive(remoteOps,task);
-            puttask(task);
-        }
-        // Finish all remaining tasks
-        workingUntilNewTaskArrive(remoteOps,null);
-
-        vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
 
     }
 

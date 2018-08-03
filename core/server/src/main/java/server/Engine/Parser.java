@@ -9,25 +9,37 @@ import java.util.Arrays;
  * A JSON Parser for SHADO
  */
 public class Parser {
+
     String input;
+
     public Parser(String input){
         this.input = input;
-        /*
-         Gson g = new Gson();
-         Person person = g.fromJson("{\"name\": \"John\"}", Person.class);
-         System.out.println(person.name); //John
-         System.out.println(g.toJson(person)); // {"name":"John"}
-         */
     }
+
+    /****************************************************************************
+     *
+     *	Method:			parseJSON
+     *
+     *	Purpose:		Use the JSON file to fill a loadparam variable.
+     *
+     ****************************************************************************/
 
     public loadparam parseJSON(loadparam in) throws Exception{
         Gson g = new Gson();
-        System.out.println("PARSING JSON...");
         in = g.fromJson(this.input, loadparam.class);
         checkInput(in);
-        in.setGlobalData();
         return in;
     }
+
+
+    /****************************************************************************
+     *
+     *	Method:			checkInput
+     *
+     *	Purpose:		Check the input format. Throw an exception if there is
+     *                  any error.
+     *
+     ****************************************************************************/
 
     private void checkInput(loadparam in) throws Exception{
         if (in.numHours <= 0)

@@ -7,8 +7,9 @@ import server.Input.loadparam;
  *
  * 	AUTHOR:			ROCKY LI
  *                  Richard Chen
+ *                  Naixin Yu
  *
- * 	DATE:			2017/6/12, 2017/12/3
+ * 	DATE:			2017/6/12, 2017/12/3, 2018/8/3
  *
  * 	VER: 			1.1
  *
@@ -66,7 +67,7 @@ public class RemoteOp {
         }
 
         for (int i = 0; i < vars.flexTeamSize; i++) {
-            RemoteOpers[vars.numRemoteOp + i] = new Operator(vars.numTeams * 100 + i, "flex position", vars);
+            RemoteOpers[vars.numRemoteOp + i] = new Operator(vars.numTeams * 100 + i, "Flex Position", vars);
         }
 
     }

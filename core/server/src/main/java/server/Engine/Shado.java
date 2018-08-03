@@ -1,7 +1,5 @@
 package server.Engine;
 
-
-import server.Input.FileWizard;
 import server.Input.loadparam;
 import server.Output.*;
 import java.io.*;
@@ -15,9 +13,11 @@ import java.util.zip.ZipOutputStream;
  * 	FILE: 			Shado.java
  *
  * 	AUTHOR: 		ROCKY LI, Naixin Yu
+ *
  * 	LATEST_EDIT:	07/06/2018
  *
  * 	VER: 			2.0
+ *
  * 	Purpose: 		Entry point.
  **************************************************************************/
 
@@ -32,19 +32,15 @@ public class Shado{
 
     private static ZipOutputStream zos;
 	public void runShado(String inputJson) throws Exception{
-		String head = FileWizard.getabspath();
 
-        System.out.println("INPUT: "+inputJson);
-        loadparam data = new loadparam();
+	    // Get input data
         Parser parser = new Parser(inputJson);
+        loadparam data = new loadparam();
         data = parser.parseJSON(data);
-
-//        printBasicInfo(data);
-
+        data.setGlobalData();
 
 		// Runs simulation
 		Simulation sim = new Simulation(data);
-
 		sim.run();
 
 		// Generate Output

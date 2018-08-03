@@ -27,11 +27,11 @@ public class Operator {
 
 
 	// Inspector
-	public Queue 	getQueue()	{ return this.myQueue; }
-	public String 	getName()	{ return this.name; }
+	public Queue  getQueue(){ return this.myQueue; }
+	public String getName()	{ return this.name; }
 
 	@Override
-	public String toString() { return "This is " + name + "\n"; }
+	public String toString(){ return "This is " + name + "\n"; }
 
 	/****************************************************************************
 	 *
@@ -47,7 +47,7 @@ public class Operator {
 
 		isAI = false;
 		dpID = dpid;
-		this.name =  name +" " + Integer.toString(dpid%100);
+		this.name =  name +" No." + Integer.toString(dpid%100);
 		myQueue = new Queue(this);
 		vars = param;
 
@@ -79,6 +79,15 @@ public class Operator {
 
 	}
 
+	/****************************************************************************
+	 *
+	 *	Method:		getBusyIn10min
+	 *
+	 *	Purpose:	Return how much time this operator is working in the
+	 *				past 10 mins
+	 *
+	 ****************************************************************************/
+
 	public double getBusyIn10min(double timeNow){
 
 		double time = 0;
@@ -96,11 +105,9 @@ public class Operator {
 					time += timeNow - workingTime[0];
 					continue;
 				}
-
 				if (workingTime[1] < timeNow - 10) {
 					continue;
 				}
-
 				time += Math.min(timeNow, workingTime[1]) - Math.max(timeNow - 10, workingTime[0]);
 
 			}
@@ -115,8 +122,6 @@ public class Operator {
 			}
 
 			Task t =  myQueue.records().get(i);
-
-//			t.printBasicInfo();
 
 			for(double[] workingTime : t.workSchedule) {
 

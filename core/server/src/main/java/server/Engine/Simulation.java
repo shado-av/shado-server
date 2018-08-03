@@ -28,10 +28,6 @@ public class Simulation {
 
     private Data[] RemoteOpoutput;
 
-    public Data getRemoteOpoutput(int i) {
-        return RemoteOpoutput[i];
-    }
-
 
     /****************************************************************************
      *
@@ -89,11 +85,7 @@ public class Simulation {
         for (int i = 0; i < vars.numReps; i++) {
 
             vars.refreshHumanErrorRate();
-
-            //Run simulation
             processReplication(i);
-
-            //Global tracker for current replication
             vars.replicationTracker++;
 
         }
@@ -113,7 +105,6 @@ public class Simulation {
 
         }
 
-//        vars.utilization.averageBusyTime(vars);
         vars.utilization.utilizationToBusyTime(vars,2);
         vars.utilization.utilizationToBusyTime(vars,1);
         vars.taskRecord.computeTotalTaskNumber();

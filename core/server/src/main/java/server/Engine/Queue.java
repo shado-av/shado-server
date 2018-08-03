@@ -133,8 +133,6 @@ public class Queue implements Comparable<Queue>{
             taskqueue.peek().addInterruptTime(finTime);
             taskqueue.peek().setWaitTime(round(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime(),2));
 
-//            taskqueue.peek().printBasicInfo();
-
             Task currentTask = taskqueue.peek();
 
             recordtasks.add(taskqueue.poll());
@@ -204,8 +202,9 @@ public class Queue implements Comparable<Queue>{
     public void clearTask(loadparam vars, Operator op){
 
         blockLastSecondPhase = true;
-        Task onHandTask = taskqueue.peek(); //last task in this phase that has been started, will be recorded as unfinished task
-                                            //other task will be set to missed and clear
+        Task onHandTask = taskqueue.peek();
+
+        //Last task in the queue has been started, if it is non-essential it will be stopped and recorded as unfinished task
 
         if (taskqueue.peek() != null) {
 
@@ -224,6 +223,8 @@ public class Queue implements Comparable<Queue>{
         else {
             return;
         }
+
+        //other task will be set to missed and clear
 
         while (taskqueue.peek() != null) {
 

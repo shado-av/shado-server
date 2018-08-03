@@ -65,7 +65,7 @@ public class ProcRep {
         this.rep = rep;
         RemoteOpdata = dis;
         repID = rep.getRepID();
-        hours = rep.vars.numHours;
+        hours = vars.numHours;
         this.vars = vars;
 
         utilization_task = new Data[vars.numRemoteOp + vars.flexTeamSize];
