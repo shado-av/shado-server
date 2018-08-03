@@ -96,7 +96,7 @@ public class Utilization {
 
     /****************************************************************************
      *
-     *	Method:     fillUtilization
+     *	Method:     fillTaskUtilization, fillFleetUtilization
      *
      *	Purpose:    Filled the utilization and averageUtilization matrix based on
      *              utilizationOutput records.
@@ -158,9 +158,9 @@ public class Utilization {
 
     /****************************************************************************
      *
-     *	Method:     averageBusyTime
+     *	Method:     utilizationToBusyTime
      *
-     *	Purpose:
+     *	Purpose:    Fill the averageBusyTime and stdBusyTime matrix
      *
      ****************************************************************************/
 
@@ -246,62 +246,6 @@ public class Utilization {
         }
     }
 
-    public void averageBusyTime(loadparam vars){
-
-        double[][][] rawBusyTime = new double[vars.numReps][vars.numRemoteOp + vars.flexTeamSize][vars.fleetTypes];
-
-        for(int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
-            for (int rep = 0; rep < vars.numReps; rep++) {
-                for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
-                    for (int time = 0; time < fleetUtilization[0][0][0].length; time++) {
-                        rawBusyTime[rep][op][fleet] += fleetUtilization[op][rep][fleet][time] * 10;
-                        int team = findTeam(op, vars.teamSize);
-                        averageBusyTimePerFleet[team][fleet] += fleetUtilization[op][rep][fleet][time] * 10;
-                    }
-                }
-            }
-        }
-
-        int[][] count = new int[vars.numTeams + vars.hasFlexPosition][vars.fleetTypes];
-
-        for (int team = 0; team < vars.numTeams + vars.hasFlexPosition; team++) {
-            for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
-                count[team][fleet] = 0;
-                averageBusyTimePerFleet[team][fleet] /= vars.numReps;
-                if (team == vars.numTeams) {
-                    averageBusyTimePerFleet[team][fleet] /= vars.flexTeamSize;
-                }
-                else{
-                    averageBusyTimePerFleet[team][fleet] /= vars.teamSize[team];
-                }
-            }
-        }
-
-        for (double[][] busyTimeOneRep : rawBusyTime) {
-            for (int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
-                int team = findTeam(op,vars.teamSize);
-                for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
-                    stdBusyTimePerFleet[team][fleet] += Math.pow(busyTimeOneRep[op][fleet] - averageBusyTimePerFleet[team][fleet], 2);
-                    count[team][fleet]++;
-                }
-            }
-        }
-
-        for (int team = 0; team < vars.numTeams + vars.hasFlexPosition; team++) {
-            for (int fleet = 0; fleet < vars.fleetTypes; fleet++) {
-                if (count[team][fleet] == 1) {
-                    stdBusyTimePerFleet[team][fleet] = 0.0;
-                }
-                else{
-                    stdBusyTimePerFleet[team][fleet] = Math.sqrt(stdBusyTimePerFleet[team][fleet] / (count[team][fleet] - 1));
-                }
-            }
-        }
-
-
-    }
-
-
     private int findTeam(int operator, int[] teamSize){
 
         int team = 0;
@@ -359,6 +303,18 @@ public class Utilization {
         return result;
 
     }
+
+    /****************************************************************************
+     *
+     *	Method:     removeEmptyTask
+     *
+     *	Purpose:    There are 5 types of special task. No matter whether they
+     *              are exist in this simulation, they hold positions in those
+     *              record matrx. This method is used to remove these position
+     *              holder if this simulation doesn't have a certain type of
+     *              special task.
+     *
+     ****************************************************************************/
 
     public void removeEmptyTask(loadparam param){
 

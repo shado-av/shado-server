@@ -63,20 +63,18 @@ public class DataWrapper {
         printSummaryReport();
         printTaskRecord();
         printErrorReport();
-//        externalTest(u);
+        externalTest(u);
 
         u.removeEmptyTask(vars);
         t.removeEmptyTask(vars);
         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
-
-
     }
 
     private void externalTest(Utilization u) throws IOException{
 
-        String file_name = "/Users/zhanglian1/Desktop/ExternalTest" + ".csv";
+        String file_name = System.getProperty("user.home") + "/Desktop/out/ExternalTest" + ".csv";
         PrintStream ps = new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true);
 
