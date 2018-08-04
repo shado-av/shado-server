@@ -28,10 +28,11 @@ public class JasonBuilder {
         PrintStream ps = new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(summary_file_name, false)), true);
         ps.println(gson.toJson(utilization));
+        ps.close();
 
         summary_file_name = outputDirectory + "TaskRecord.json";
-        System.setOut(new PrintStream(new BufferedOutputStream(
-                new FileOutputStream(summary_file_name, false)), true));
+        ps = new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(summary_file_name, false)), true);
         ps.println(gson.toJson(taskRecord));
         ps.close();
     }

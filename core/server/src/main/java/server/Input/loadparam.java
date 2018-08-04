@@ -104,6 +104,7 @@ public class loadparam {
     public String[]     taskName_all;  //taskNames + special task name
     public int          totalTaskType; //numTaskTypes + #special tasks
     public Set<Integer> allTaskTypes;  //task types + special task type
+    public String[]     teamName_all;  //teamNames + flexPosition
     public int          numRemoteOp;   //# of operators except for flex position
     public int[][]      ETteam; //[taks][fleet]: which team has ET for this task type this fleet
     public boolean      hasET = false;
@@ -162,6 +163,7 @@ public class loadparam {
         expandInterruptable();
         getNumRemoteOp();
         collectTaskNames();
+        collectTeamNames();
         collectTaskTypes();
         setPhase();
 
@@ -275,6 +277,27 @@ public class loadparam {
         }
     }
 
+    /****************************************************************************
+     *
+     *	Method:	        collectTeamNames
+     *
+     *	Purpose:		Put the team name, flex position team name
+     *
+     ****************************************************************************/
+
+    private void collectTeamNames(){
+
+        String[] specialTeamName = {"Flex Position"};
+        teamName_all = new String[numTeams + hasFlexPosition];
+        for (int i = 0; i < numTeams + hasFlexPosition; i++) {
+            if (i < numTeams) {
+                teamName_all[i] = opNames[i];
+            }
+            else {
+                teamName_all[i] = specialTeamName[i - numTeams];
+            }
+        }
+    }
 
     /****************************************************************************
      *

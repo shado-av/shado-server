@@ -22,9 +22,12 @@ import java.util.Set;
 
 public class Utilization {
 
+    String[] teamName;
+    int[]    teamSize;
     String[] operatorName;
     String[] taskName;
     String[] fleetName;
+    
     Double[][][][] taskUtilization; //[operator][replication][task][time]
     Double[][][] timeUtilization; //[operator][replication][time]
     Double[][] averageTaskUtilization; //[operator][replication]
@@ -58,21 +61,26 @@ public class Utilization {
 
         // get operators' name
         operatorName = new String[vars.numRemoteOp + vars.flexTeamSize];
+        teamSize = new int[numTeams];
+
         int count = 0;
         for (int i = 0; i < vars.opNames.length; i++) {
+            teamSize[i] = vars.teamSize[i];
             for (int j = 0; j < vars.teamSize[i]; j++) {
-                operatorName[count] = vars.opNames[i] + "_" + Integer.toString(j);
+                operatorName[count] = vars.opNames[i] + " No." + Integer.toString(j+1);
                 count++;
             }
         }
+        if (vars.hasFlexPosition>0) {
+            teamSize[vars.opNames.length] = vars.flexTeamSize;
+        }
+
         for (int i = 0; i < vars.flexTeamSize; i++) {
-            operatorName[count + i] = "FlexPosition_" + Integer.toString(i);
+            operatorName[count + i] = "FlexPosition No." + Integer.toString(i+1);            
         }
 
         fleetName = vars.fleetNames;
-        // for (int i = 0; i < vars.fleetTypes; i++) {
-        //     fleetName[i] = vars.fleetNames[i];
-        // }
+        teamName = vars.teamName_all;
 
         //create the utilization matrix and averageUtilization matrix
         int numColumn = (int) Math.ceil(vars.numHours * 6);
