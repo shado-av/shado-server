@@ -5,3 +5,8 @@ bin/
 .idea/
 .settings/
 src/Engine/Main.java
+*.class
+createdFiles.lst
+fileHashes.*
+las-build.bin
+.gradle/
