@@ -11,7 +11,7 @@ import java.util.zip.*;
  * Created by siyuchen on 3/15/18.
  */
 public class ZipDir extends  SimpleFileVisitor<Path> {
-    private static ZipOutputStream zos;
+    private ZipOutputStream zos;
 
     private Path sourceDir;
 

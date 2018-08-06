@@ -116,7 +116,7 @@ public class loadparam {
     // Records variables
 
     public Replication[]                                reps;
-    public HashMap<Integer,ArrayList>                   rep_failTask;
+    public HashMap<Integer,ArrayList<Pair <Operator,Task>>> rep_failTask;
     public TaskRecord                                   taskRecord;
     public Utilization                                  utilization;
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
