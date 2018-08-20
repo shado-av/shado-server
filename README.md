@@ -4,7 +4,7 @@ SHADO-server web service is built on Java Spring Boot.
 Spring Boot Tutorial: https://spring.io/guides/gs/spring-boot/
 
 ### Build the project locally
-To Run the Simulation locally, Go to **DataWrapper.java, GreetingController.java** and comment out all remote server paths, uncommen local paths and change the local path to your current directory. (The **DataWrapper.java** is under "shado-server/core/server/src/main/java/server/Output" folder. The **GreetingController.java** is under "shado-server/core/server/src/main/java/server" folder.)
+To Run the Simulation locally, Go to **DataWrapper.java, GreetingController.java** and comment out all remote server paths, uncomment local paths and change the local path to your current directory. (The **DataWrapper.java** is under "shado-server/core/server/src/main/java/server/Output" folder. The **GreetingController.java** is under "shado-server/core/server/src/main/java/server" folder.)
 
 
 ```
@@ -30,7 +30,7 @@ to get a .jar runnable and clone/pull the repo in to the server.
 Check out the tutorial here: https://spring.io/blog/2014/03/07/deploying-spring-boot-applications to setup the systemd service.
 Finally, use the following command to start the service.
 ```
-sudo systemctl start shado_server.service
+sudo systemctl restart shado_server.service
 ```
 ### Test the SHADO-server
 
