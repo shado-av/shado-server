@@ -74,7 +74,7 @@ public class DataWrapper {
 
     private void externalTest(Utilization u) throws IOException{
 
-        String file_name = System.getProperty("user.home") + "/Desktop/out/ExternalTest" + ".csv";
+        String file_name = System.getProperty("user.home") + "/out/ExternalTest" + ".csv";
         PrintStream ps = new PrintStream(new BufferedOutputStream(
                 new FileOutputStream(file_name, false)), true);
 
