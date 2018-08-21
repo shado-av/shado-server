@@ -17,6 +17,10 @@ public class JasonBuilder {
     public JasonBuilder(String output, Utilization u, TaskRecord t){
         outputDirectory = output;
         utilization = u;
+        // simplify utilization (no need for visualization)
+        utilization.taskUtilization = null;
+        utilization.fleetUtilization = null;
+        
         taskRecord = t;
     }
 
