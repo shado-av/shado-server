@@ -4,9 +4,6 @@ import java.io.*;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import server.Engine.*;
 import server.Input.loadparam;
-import java.util.*;
-import javafx.util.Pair;
-
 
 /***************************************************************************
  *
@@ -17,6 +14,7 @@ import javafx.util.Pair;
  * 	VER: 			1.0                     Rocky Li
  * 	                1.?                     Richard Chen
  * 	                2.0     07/17/2018      Naixin Yu
+ *                  2.1     08/27/2018      Hanwiz
  *
  * 	Purpose: 		Wrapping the data field for analysis.
  *
@@ -62,12 +60,12 @@ public class DataWrapper {
 //        printValidationReport(u.getTaskUtilization());
         printSummaryReport();
         printTaskRecord();
+        t.removeEmptyTask(vars);
         printErrorReport();
         externalTest(u);
 
         u.removeEmptyTask(vars);
-        t.removeEmptyTask(vars);
-        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
+         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
     }
@@ -215,17 +213,34 @@ public class DataWrapper {
             PrintStream ps = new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(summary_file_name, false)), true);
 
-            ps.println("Fail Task Detail: ");
-            ArrayList<Pair<Operator, Task>> failList = vars.rep_failTask.get(i);
-            for (int k = 0; k < failList.size(); k++) {
-                String opName = failList.get(k).getKey().getName();
-                String tName = failList.get(k).getValue().getName();
-                ps.print(opName + " Fails " + tName + ",");
-                if (failList.get(k).getValue().getFail()) {
-                    ps.print(" But still proceed by the Operator");
+            //vars.taskRecord.getNumFailedTask()[rep][phase][team][i][0];
+            int[][][] failTask = vars.taskRecord.getNumFailedTask()[i][0]; // no need for phase...
+            for (int k = 0; k < failTask.length; k++) { // for each team
+                String opName = vars.taskRecord.getTeamName()[k];
+                ps.print(opName);
+                ps.print(", Missed Tasks, Incomplete Tasks, Failed Tasks and Not Caught, Failed Tasks and Caught\n");
+                for(int l = 0; l < failTask[k].length; l++) {
+                    String tName = vars.taskName_all[l];
+                    ps.print(tName);
+                    for(int f=0; f<4;f++) {
+                        ps.print(", ");
+                        ps.print(failTask[k][l][f]);
+                    }
+                    ps.println();
                 }
                 ps.println();
             }
+
+            // ArrayList<Pair<Operator, Task>> failList = vars.rep_failTask.get(i);
+            // for (int k = 0; k < failList.size(); k++) {
+            //     String opName = failList.get(k).getKey().getName();
+            //     String tName = failList.get(k).getValue().getName();
+            //     ps.print(opName + " Fails " + tName + ",");
+            //     if (failList.get(k).getValue().getFail()) {
+            //         ps.print(" But still proceed by the Operator");
+            //     }
+            //     ps.println();
+            // }
             ps.close();
         }
 

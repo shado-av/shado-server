@@ -16,7 +16,7 @@ public class TaskRecord {
      *
      *	Shado Object:	TaskRecods
      *
-     *  Author: Naixin 07/17/2018
+     *  Author: Naixin, Hanwiz 07/17/2018
      *
      *	Purpose:	Create a object to record the number of task
      *                  1. per replication
@@ -67,6 +67,10 @@ public class TaskRecord {
         stdFailed      = new double[teamCount][vars.totalTaskType][4];
 
     }
+
+    public String[] getTeamName() { return teamName; }
+
+    public String[] getTaskName() { return taskName; }
 
     public int[][][][][] getNumFailedTask() { return numFailedTask; }
 
