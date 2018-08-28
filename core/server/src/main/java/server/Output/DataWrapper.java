@@ -220,7 +220,7 @@ public class DataWrapper {
                 ps.print(opName);
                 ps.print(", Missed Tasks, Incomplete Tasks, Failed Tasks and Not Caught, Failed Tasks and Caught\n");
                 for(int l = 0; l < failTask[k].length; l++) {
-                    String tName = vars.taskName_all[l];
+                    String tName = vars.taskRecord.getTaskName()[l];
                     ps.print(tName);
                     for(int f=0; f<4;f++) {
                         ps.print(", ");
