@@ -65,7 +65,8 @@ public class DataWrapper {
         externalTest(u);
 
         u.removeEmptyTask(vars);
-         JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
+
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
         builder.outputJSON();
 
     }
@@ -169,24 +170,28 @@ public class DataWrapper {
         for(int i : vars.allTaskTypes){
             ps.println("Task name: " + vars.taskName_all[i]);
 
-            int expiredTasks = 0;
-            int failedTasks = 0;
+            int missedTasks = 0;
+            int incompleteTasks = 0;
+            int failedNotCaughtTasks = 0;
+            int failedCaughtTasks = 0;
             int completeTasks = 0;
 
             for (int rep = 0; rep < vars.numReps; rep++) {
                 for (int phase = 0; phase < vars.numPhases; phase++) {
                     for (int team = 0; team < vars.numTeams; team++) {
-                        expiredTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][0];
-                        expiredTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][1];
-                        failedTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][2];
-                        failedTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][3];
+                        missedTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][0];
+                        incompleteTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][1];
+                        failedNotCaughtTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][2];
+                        failedCaughtTasks += vars.taskRecord.getNumFailedTask()[rep][phase][team][i][3];
                         completeTasks += vars.taskRecord.getNumSuccessTask()[rep][phase][team][i];
                     }
                 }
             }
-
-            ps.println(",Expired: " + expiredTasks);
-            ps.println(",Failed: " + failedTasks);
+            // Missed Tasks, Incomplete Tasks, Failed Tasks and Not Caught, Failed Tasks and Caught
+            ps.println(",Missed: " + missedTasks);
+            ps.println(",Incomplete: " + incompleteTasks);
+            ps.println(",Failed and Not Caught: " + failedNotCaughtTasks);
+            ps.println(",Failed and Caught: " + failedCaughtTasks);
             ps.println(",Completed: " + completeTasks);
         }
 
@@ -214,8 +219,9 @@ public class DataWrapper {
                     new FileOutputStream(summary_file_name, false)), true);
 
             //vars.taskRecord.getNumFailedTask()[rep][phase][team][i][0];
-            int[][][] failTask = vars.taskRecord.getNumFailedTask()[i][0]; // no need for phase...
-            for (int k = 0; k < failTask.length; k++) { // for each team
+            int[][][][] failTask = vars.taskRecord.getNumFailedTask()[i];
+            int count = 0;
+            for (int k = 0; k < vars.numTeams; k++) { // for each team
                 String opName = vars.taskRecord.getTeamName()[k];
                 ps.print(opName);
                 ps.print(", Missed Tasks, Incomplete Tasks, Failed Tasks and Not Caught, Failed Tasks and Caught\n");
@@ -223,14 +229,19 @@ public class DataWrapper {
                     String tName = vars.taskRecord.getTaskName()[l];
                     ps.print(tName);
                     for(int f=0; f<4;f++) {
+                        count = 0;
+                        for (int phase = 0; phase < vars.numPhases; phase++) {
+                            count += failTask[phase][k][l][f];
+                        }
+
                         ps.print(", ");
-                        ps.print(failTask[k][l][f]);
+                        ps.print(count);
                     }
                     ps.println();
                 }
                 ps.println();
             }
-
+            
             // ArrayList<Pair<Operator, Task>> failList = vars.rep_failTask.get(i);
             // for (int k = 0; k < failList.size(); k++) {
             //     String opName = failList.get(k).getKey().getName();
