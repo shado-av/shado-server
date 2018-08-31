@@ -53,6 +53,7 @@ public class DataWrapper {
 
         Utilization u = vars.utilization;
         TaskRecord t = vars.taskRecord;
+        WaitTime w = vars.waitTime;
 
         //Out put the report files
 
@@ -65,8 +66,9 @@ public class DataWrapper {
         externalTest(u);
 
         u.removeEmptyTask(vars);
+        w.removeEmptyTask(vars);
 
-        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t);
+        JasonBuilder builder = new JasonBuilder(outPutDirectory, u, t, w);
         builder.outputJSON();
 
     }
@@ -225,7 +227,7 @@ public class DataWrapper {
                 String opName = vars.taskRecord.getTeamName()[k];
                 ps.print(opName);
                 ps.print(", Missed Tasks, Incomplete Tasks, Failed Tasks and Not Caught, Failed Tasks and Caught\n");
-                for(int l = 0; l < failTask[k].length; l++) {
+                for(int l = 0; l < failTask[0][k].length; l++) {
                     String tName = vars.taskRecord.getTaskName()[l];
                     ps.print(tName);
                     for(int f=0; f<4;f++) {

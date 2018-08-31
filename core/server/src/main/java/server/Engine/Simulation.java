@@ -2,7 +2,6 @@ package server.Engine;
 
 import server.Input.loadparam;
 import server.Output.ProcRep;
-import java.io.*;
 
 
 /***************************************************************************
@@ -99,6 +98,8 @@ public class Simulation {
             process.run();
             vars.utilization.fillTaskUtilization(i, process.getUtilization_task(), vars);
             vars.utilization.fillFleetUtilization(i, process.getUtilization_fleet(), vars);
+            vars.waitTime.fillTaskWaitTime(i, process.getWaitTime_task(), vars);
+            vars.waitTime.fillFleetWaitTime(i, process.getWaitTime_fleet(), vars);
 
             //Global Tracker for replication processed
             vars.replicationTracker++;
@@ -107,6 +108,8 @@ public class Simulation {
 
         vars.utilization.utilizationToBusyTime(vars,2);
         vars.utilization.utilizationToBusyTime(vars,1);
+        vars.waitTime.computeWaitTime(vars,2);
+        vars.waitTime.computeWaitTime(vars,1);        
         vars.taskRecord.computeTotalTaskNumber();
         vars.taskRecord.failedAnalysis();
 

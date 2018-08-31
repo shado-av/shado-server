@@ -145,7 +145,7 @@ public class GreetingController {
             int iRead;
             byte[] data = new byte[1024];
             while ((iRead = inputStream.read(data, 0, data.length)) != -1) {
-                //System.out.println("Writing some bytes for WaitTime's report...");
+                System.out.println("Writing some bytes for WaitTime's report...");
                 outputStream.write(data, 0, iRead);
             }
             inputStream.close();               

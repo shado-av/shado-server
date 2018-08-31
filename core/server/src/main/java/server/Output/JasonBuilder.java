@@ -13,15 +13,20 @@ public class JasonBuilder {
     String outputDirectory;
     Utilization utilization;
     TaskRecord taskRecord;
+    WaitTime waitTime;
 
-    public JasonBuilder(String output, Utilization u, TaskRecord t){
+    public JasonBuilder(String output, Utilization u, TaskRecord t, WaitTime w){
         outputDirectory = output;
         utilization = u;
         // simplify utilization (no need for visualization)
         utilization.taskUtilization = null;
-        utilization.fleetUtilization = null;
+        utilization.fleetUtilization = null;        
         
         taskRecord = t;
+
+        waitTime = w;
+        waitTime.taskWaitTime = null;
+        waitTime.fleetWaitTime = null;
     }
 
     public synchronized void outputJSON() throws IOException {
@@ -39,5 +44,11 @@ public class JasonBuilder {
                 new FileOutputStream(summary_file_name, false)), true);
         ps.println(gson.toJson(taskRecord));
         ps.close();
+
+        summary_file_name = outputDirectory + "WaitTime.json";
+        ps = new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(summary_file_name, false)), true);
+        ps.println(gson.toJson(waitTime));
+        ps.close();        
     }
 }
