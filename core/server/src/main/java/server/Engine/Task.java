@@ -626,6 +626,11 @@ public class Task implements Comparable<Task> {
 	}
 
 	public void addInterruptTime(double time){
+
+		if (workSchedule.isEmpty()) {
+			return;
+		}
+
 		int lastOne = workSchedule.size() - 1;
 		workSchedule.get(lastOne)[1] = time;
 	}

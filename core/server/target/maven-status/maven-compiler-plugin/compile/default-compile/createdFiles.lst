@@ -10,9 +10,9 @@ server/Output/JasonBuilder.class
 server/Input/FileWizard.class
 server/Input/loadparam.class
 server/Output/Utilization.class
+server/Input/testLoadParam.class
 server/Engine/Replication.class
 server/Engine/Shado.class
-server/Input/testLoadParam.class
 server/Output/ProcRep.class
 server/Output/ZipDir.class
 server/Engine/Operator.class
