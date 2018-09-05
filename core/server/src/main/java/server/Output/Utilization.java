@@ -134,6 +134,9 @@ public class Utilization {
                         }
                         else{
                             timeUtilization[op][rep][time] += round(u,4);
+                            // to fix over 100% with float point error 1.0001
+                            if (timeUtilization[op][rep][time] > 1.00)
+                                timeUtilization[op][rep][time] = 1.00;
                         }
 
                         sum += u;
