@@ -651,6 +651,8 @@ public class Task implements Comparable<Task> {
 		System.out.println("Service Time : " + serTime);
 		System.out.println("Expire Time : " + expTime);
 		System.out.println("Finish Time : " + endTime);
+		System.out.println("Wait Time : " + waitTime);
+		System.out.println("Wait Time(Calc) : " + Queue.round(endTime - arrTime - serTime, 2));
 		System.out.print("Here is my work schedule: ");
 		for(int i = 0; i < workSchedule.size(); i++){
 			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");

@@ -37,13 +37,13 @@ public class GreetingController {
 //    private String homeDirectory = System.getProperty("user.home") + "/Desktop/out/";
     private String directory = homeDirectory;
 
-    @RequestMapping("/shado/hello")
-    public Greeting greeting(@RequestParam(value="name", defaultValue="This is Shado") String name) {
-        return new Greeting(counter.incrementAndGet(),
-                String.format(template, name));
-    }
+    // @RequestMapping("/shado/hello")
+    // public Greeting greeting(@RequestParam(value="name", defaultValue="This is Shado") String name) {
+    //     return new Greeting(counter.incrementAndGet(),
+    //             String.format(template, name));
+    // }
 
-    @RequestMapping(value= "/shado/testpost",method = RequestMethod.POST)
+    @RequestMapping(value= "/shado/runShado",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
         //TODO: Sanity Check and pass to Shado Object
         String sessionNum = dateFormat.format(date)+"_"+counter.incrementAndGet();
@@ -114,7 +114,7 @@ public class GreetingController {
     }
 
     @RequestMapping(value = "/shado/getTaskJSON", method = RequestMethod.GET)
-    public StreamingResponseBody getFailed(@RequestParam(value="sessionN", defaultValue="") String sessionN, HttpServletResponse response) throws IOException{
+    public StreamingResponseBody getTaskRecord(@RequestParam(value="sessionN", defaultValue="") String sessionN, HttpServletResponse response) throws IOException{
 
         String fileName = homeDirectory + sessionN + "/TaskRecord.json";
 
@@ -125,6 +125,26 @@ public class GreetingController {
             int iRead;
             byte[] data = new byte[1024];
             while ((iRead = inputStream.read(data, 0, data.length)) != -1) {
+                //System.out.println("Writing some bytes for Task Record's report...");
+                outputStream.write(data, 0, iRead);
+            }
+            inputStream.close();               
+        };
+    }
+
+    @RequestMapping(value = "/shado/getWaitTimeJSON", method = RequestMethod.GET)
+    public StreamingResponseBody getWaitTime(@RequestParam(value="sessionN", defaultValue="") String sessionN, HttpServletResponse response) throws IOException{
+
+        String fileName = homeDirectory + sessionN + "/WaitTime.json";
+
+        response.setContentType("application/json");
+        response.setHeader("Content-Disposition", "attachment; filename=\"WaitTime.json\"");
+        InputStream inputStream = new FileInputStream(new File(fileName));
+        return outputStream -> {
+            int iRead;
+            byte[] data = new byte[1024];
+            while ((iRead = inputStream.read(data, 0, data.length)) != -1) {
+                System.out.println("Writing some bytes for WaitTime's report...");
                 outputStream.write(data, 0, iRead);
             }
             inputStream.close();               

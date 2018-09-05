@@ -5,6 +5,7 @@ import server.Engine.Task;
 import javafx.util.Pair;
 import server.Output.TaskRecord;
 import server.Output.Utilization;
+import server.Output.WaitTime;
 
 import java.util.*;
 
@@ -119,6 +120,7 @@ public class loadparam {
     public HashMap<Integer,ArrayList<Pair <Operator,Task>>> rep_failTask;
     public TaskRecord                                   taskRecord;
     public Utilization                                  utilization;
+    public WaitTime                                     waitTime;
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
     public ArrayList<Task>                              AITasks;
     public ArrayList<ArrayList<Pair<Operator,Task>>>    expiredTasks;
@@ -171,6 +173,7 @@ public class loadparam {
 
         taskRecord = new TaskRecord(this);
         utilization = new Utilization(this);
+        waitTime = new WaitTime(this);
         replicationTracker = 0;
         allTasksPerRep = new ArrayList<>();
         crossRepCount = new double[numReps][];

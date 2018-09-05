@@ -1,15 +1,8 @@
 package server.Output;
 
 import server.Engine.*;
-
 import server.Input.loadparam;
-
-import java.io.*;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /***************************************************************************
  *
@@ -40,6 +33,10 @@ public class ProcRep {
 
     private Data[] utilization_fleet;
 
+    private Data[] waittime_task;
+
+    private Data[] waittime_fleet;
+
     private loadparam vars;
 
     private int TASK_RECORD = 1;
@@ -51,7 +48,11 @@ public class ProcRep {
 
     public Data[] getUtilization_fleet() { return utilization_fleet; }
 
-    /****************************************************************************
+    public Data[] getWaitTime_task() { return waittime_task; }
+
+    public Data[] getWaitTime_fleet() { return waittime_fleet; }
+
+     /****************************************************************************
      *
      *	Shado Object:	ProcRep
      *
@@ -70,12 +71,15 @@ public class ProcRep {
 
         utilization_task = new Data[vars.numRemoteOp + vars.flexTeamSize];
         utilization_fleet = new Data[vars.numRemoteOp + vars.flexTeamSize];
+        waittime_task = new Data[vars.numRemoteOp + vars.flexTeamSize];
+        waittime_fleet = new Data[vars.numRemoteOp + vars.flexTeamSize];
 
         for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++){
             utilization_task[i] = new Data(vars.totalTaskType,(int) hours * 6, 1);
             utilization_fleet[i] = new Data(vars.fleetTypes, (int) hours * 6, 1);
+            waittime_task[i] = new Data(vars.totalTaskType,(int) hours * 6, 1);
+            waittime_fleet[i] = new Data(vars.fleetTypes, (int) hours * 6, 1);
         }
-
     }
 
     /****************************************************************************
@@ -103,10 +107,59 @@ public class ProcRep {
 
         //SCHEN 11/29/17
         Operator[] RemoteOpers = rep.getRemoteOp().getRemoteOp();
-
+ 
         for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++){
             fillRepDataCell(RemoteOpers[i], utilization_task[i], TASK_RECORD);
             fillRepDataCell(RemoteOpers[i], utilization_fleet[i], FLEET_RECORD);
+            fillRepDataCellWaitTime(RemoteOpers[i], waittime_task[i], TASK_RECORD);
+            fillRepDataCellWaitTime(RemoteOpers[i], waittime_fleet[i], FLEET_RECORD);
+        }
+
+    }
+
+    /****************************************************************************
+     *
+     *	Method:			fillRepDataCellWaitTime
+     *
+     *	Purpose:		Fill the Rep Data object with simulated wait time data.
+     *
+     ****************************************************************************/
+
+    public void fillRepDataCellWaitTime(Operator operator, Data incremented, int recordType){
+
+        ArrayList<Task> records = operator.getQueue().records();
+
+        for (Task each: records){
+
+            // easy way to calculate total wait time... using this for verification
+            if(!each.getFail() && !each.getExpired()) {
+                if (recordType == TASK_RECORD) {
+                    vars.waitTime.getWaitTime()[operator.dpID / 100][each.getVehicleID() / 100] += each.getWaitTime();
+                } else {
+                    vars.waitTime.getWaitTimePerTask()[operator.dpID / 100][each.getType()] += each.getWaitTime();
+                }
+            }
+
+            int index;
+
+            if (recordType == TASK_RECORD) {
+                index = each.getType();
+            }
+            else { //recordType == FLEET_RECORD
+                index = each.getVehicleID() / 100;
+            }
+            
+            // Reverse for the wait time
+            double beginscale = each.getArrTime() / 10;
+            for(int i = 0; i < each.workSchedule.size(); i++){
+                double endscale = each.workSchedule.get(i)[0] / 10;
+                if (beginscale < endscale) {
+                    fill(beginscale, endscale, incremented, index);
+                }
+                double candidate = each.workSchedule.get(i)[1] / 10;
+                if (endscale < candidate)
+                    beginscale = endscale;
+            }
         }
 
     }
