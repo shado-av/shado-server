@@ -96,7 +96,7 @@ public class Queue implements Comparable<Queue>{
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
                 taskqueue.peek().addInterruptTime(time);
-                taskqueue.peek().setELStime(task.getArrTime() - taskqueue.peek().getBeginTime());
+                taskqueue.peek().addELSTime(time - taskqueue.peek().getBeginTime());
             }
         }
 
