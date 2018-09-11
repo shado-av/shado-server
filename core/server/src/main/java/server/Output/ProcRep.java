@@ -178,10 +178,6 @@ public class ProcRep {
 
         for (Task each: records){
 
-            if(!each.getFail() && !each.getExpired() && recordType == TASK_RECORD) {
-                vars.utilization.getBusyTime()[operator.dpID / 100][each.getVehicleID() / 100] += each.getSerTime();
-            }
-
             int index;
 
             if (recordType == TASK_RECORD) {

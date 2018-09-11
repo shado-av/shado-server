@@ -27,21 +27,13 @@ import javax.servlet.http.HttpServletResponse;
 @RestController
 public class GreetingController {
 
-    private static final String template = "Hello, %s!";
     private final AtomicLong counter = new AtomicLong();
     private Shado shado;
     DateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmssZ");
     Date date = new Date();
 
     private String homeDirectory = System.getProperty("user.home") + "/out/";
-//    private String homeDirectory = System.getProperty("user.home") + "/Desktop/out/";
     private String directory = homeDirectory;
-
-    // @RequestMapping("/shado/hello")
-    // public Greeting greeting(@RequestParam(value="name", defaultValue="This is Shado") String name) {
-    //     return new Greeting(counter.incrementAndGet(),
-    //             String.format(template, name));
-    // }
 
     @RequestMapping(value= "/shado/runShado",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
