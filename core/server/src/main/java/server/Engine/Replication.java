@@ -67,11 +67,14 @@ public class Replication {
 
         globalTasks = new ArrayList<Task>();
 
+        // add turn over task
         addTurnOverTask();
 
+        // generate all the operators
         remoteOps = new RemoteOp(vars);
         remoteOps.genRemoteOp();
 
+        // get the maximum array size among each fleet types
         int maxLen = 0;
         for(int i = 0; i < vars.fleetTypes; i++ )
             if(vars.numvehicles[i] > maxLen)
@@ -158,12 +161,14 @@ public class Replication {
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
 
+            // When the current phase ends before fin time, clear tasks
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
                 if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
                     op.getQueue().clearTask(vars, op);
                 }
             }
 
+            // While finTime is under new task arrival time, complete the tasks
             while (op.getQueue().taskqueue.size() > 0 &&
                     op.getQueue().getfinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
@@ -238,7 +243,6 @@ public class Replication {
 
         //If we have turn over task at the end, non-essential tasks will be removed to finish the turn over task
         if (vars.hasTurnOver[1] == 1 && vars.essential[task.getType()] == 0) {
-
             if ((task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) ||
                     (task.getPhase() == vars.numPhases - 1 && vars.interruptable[task.getType()] == 0)) {
                 task.setexpired();

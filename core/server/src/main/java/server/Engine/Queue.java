@@ -67,6 +67,7 @@ public class Queue implements Comparable<Queue>{
     @Override
     public String toString() {
         System.out.println("My queue has " + taskqueue.size() + " tasks: ");
+        System.out.println("The time is " + time + " , the finTime is " + finTime);
 
         Iterator<Task> it = taskqueue.iterator();
         while (it.hasNext()) {
@@ -126,31 +127,37 @@ public class Queue implements Comparable<Queue>{
     public void done(loadparam vars,Operator op) {
 
         // This if statement avoids error when calling done on an empty queue.
+        Task currentTask = taskqueue.peek();
+        double totalTime = vars.numHours * 60;
+        if (currentTask != null) {
 
-        if (taskqueue.peek() != null) {
+            if (finTime <= totalTime) {
+                currentTask.setDone(finTime);
 
-            taskqueue.peek().setEndTime(finTime);
-            taskqueue.peek().addInterruptTime(finTime);
-            taskqueue.peek().setWaitTime(round(finTime - taskqueue.peek().getArrTime() - taskqueue.peek().getSerTime(),2));
-
-            Task currentTask = taskqueue.peek();
-
-            recordtasks.add(taskqueue.poll());
-            if (!currentTask.getFail()) {
-                vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][currentTask.getType()]++;
-            }
-            SetTime(finTime);
-
-            if(currentTask.getNeedReDo()){
-                Task redoTask = new Task(currentTask);
-                if (redoTask.getArrTime() > 0) {
-                    redoTask.setArrTime(finTime);
-                    add(redoTask);
+                recordtasks.add(taskqueue.poll());
+                if (!currentTask.getFail()) {
+                    vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][currentTask.getType()]++;
                 }
-                else {
-                    // This redo task cannot be complete within the shift hours, add it to expired task.
-                    vars.taskRecord.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
+                SetTime(finTime);
+
+                if(currentTask.getNeedReDo()){
+                    Task redoTask = new Task(currentTask);
+                    if (redoTask.getArrTime() > 0) {
+                        redoTask.setArrTime(finTime);
+                        add(redoTask);
+                    }
+                    else {
+                        // This redo task cannot be complete within the shift hours, add it to expired task.
+                        vars.taskRecord.getNumFailedTask()[vars.replicationTracker][vars.numPhases - 1][op.dpID / 100][currentTask.getType()][0]++;
+                    }
                 }
+            } else { // Current task is last task, but incomplete because of total hours(including essential)
+                currentTask.setDone(totalTime);
+
+                // add it to incomplete task
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][1]++;
+                recordtasks.add(taskqueue.poll());
+                SetTime(totalTime);
             }
         }
 
@@ -171,7 +178,6 @@ public class Queue implements Comparable<Queue>{
             vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
             vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,taskqueue.peek()));
             recordtasks.add(taskqueue.poll());
-
         }
 
         if (taskqueue.peek() != null) {
@@ -203,6 +209,7 @@ public class Queue implements Comparable<Queue>{
 
         blockLastSecondPhase = true;
         Task onHandTask = taskqueue.peek();
+        Task currentTask;
 
         //Last task in the queue has been started, if it is non-essential it will be stopped and recorded as unfinished task
 
@@ -212,13 +219,10 @@ public class Queue implements Comparable<Queue>{
                 done(vars, op);
             }
             else {
-                onHandTask.addInterruptTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
-                onHandTask.setEndTime(vars.phaseBegin[onHandTask.getPhase() + 1]);
-                onHandTask.setWaitTime(vars.phaseBegin[onHandTask.getPhase() + 1] - onHandTask.getBeginTime() - onHandTask.getSerTime());
+                onHandTask.setDone(vars.phaseBegin[onHandTask.getPhase() + 1]);
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
                 recordtasks.add(taskqueue.poll());
             }
-
         }
         else {
             return;
@@ -226,21 +230,27 @@ public class Queue implements Comparable<Queue>{
 
         //other task will be set to missed and clear
 
-        while (taskqueue.peek() != null) {
+        while ((currentTask = taskqueue.peek()) != null) {
 
-            if (vars.essential[taskqueue.peek().getType()] == 1) {
+            if (vars.essential[currentTask.getType()] == 1) {
+
+                // add begin time as the task not yet started
+                currentTask.setBeginTime(time);
+                currentTask.addBeginTime(time);
+
+                // adjust fin time for the task
+                finTime();
+
                 done(vars, op);
             }
             else {
-                taskqueue.peek().setexpired();
-                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
+                currentTask.setexpired();
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
                 recordtasks.add(taskqueue.poll());
             }
-
         }
 
         SetTime(Math.max(vars.phaseBegin[onHandTask.getPhase() + 1], time));
-
     }
 
     /****************************************************************************

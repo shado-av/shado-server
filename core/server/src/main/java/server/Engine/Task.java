@@ -637,6 +637,19 @@ public class Task implements Comparable<Task> {
 
 	/****************************************************************************
 	 *
+	 *	Method:			setDone
+	 *
+	 *	Purpose:		To end a task wheter it's finished or expired.
+	 *
+	 ****************************************************************************/	
+	public void setDone(double finTime) {
+		setEndTime(finTime);
+		addInterruptTime(finTime);
+		setWaitTime(Queue.round(finTime - getArrTime() - getSerTime(),2));
+	}
+
+	/****************************************************************************
+	 *
 	 *	Method:			printBasicInfo
 	 *
 	 *	Purpose:		Print the basic information for a task. Used for debugging.
