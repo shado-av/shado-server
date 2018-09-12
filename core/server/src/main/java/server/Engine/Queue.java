@@ -66,7 +66,7 @@ public class Queue implements Comparable<Queue>{
 
     @Override
     public String toString() {
-        System.out.println("My queue has " + taskqueue.size() + " tasks: ");
+        System.out.println("My queue has " + taskqueue.size() + " tasks and op is " + operator.name + " and dpID is " + operator.dpID);
         System.out.println("The time is " + time + " , the finTime is " + finTime);
 
         Iterator<Task> it = taskqueue.iterator();

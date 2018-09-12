@@ -2,7 +2,6 @@ package server.Engine;
 
 import server.Input.loadparam;
 import java.util.*;
-import java.lang.*;
 import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
@@ -163,7 +162,8 @@ public class Replication {
 
             // When the current phase ends before fin time, clear tasks
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
-                if (op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
+                // should check the size of queue, otherwise its infinity value always trigger
+                if (op.getQueue().taskqueue.size() > 0 && op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
                     op.getQueue().clearTask(vars, op);
                 }
             }
@@ -245,7 +245,6 @@ public class Replication {
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
                 return;
             }
-
         }
 
         // check if the task is failed
