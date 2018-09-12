@@ -171,7 +171,7 @@ public class Queue implements Comparable<Queue>{
             }
 
             // Add expired tasks to the record
-            taskqueue.peek().setexpired();
+            taskqueue.peek().setExpired();
 
             int taskType = taskqueue.peek().getType();
 
@@ -244,7 +244,7 @@ public class Queue implements Comparable<Queue>{
                 done(vars, op);
             }
             else {
-                currentTask.setexpired();
+                currentTask.setExpired();
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
                 recordtasks.add(taskqueue.poll());
             }

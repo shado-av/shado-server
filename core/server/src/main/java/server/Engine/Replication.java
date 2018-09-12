@@ -205,7 +205,7 @@ public class Replication {
         findAvaliableOperator(proc, working, task, flexPosition);
 
         if (working.size()==0) {
-            task.setexpired();
+            task.setExpired();
             return;
         }
 
@@ -241,7 +241,7 @@ public class Replication {
         if (vars.hasTurnOver[1] == 1 && vars.essential[task.getType()] == 0) {
             if ((task.getPhase() == vars.numPhases - 2 && optimal_op.getQueue().checkBlock()) ||
                     (task.getPhase() == vars.numPhases - 1 && vars.interruptable[task.getType()] == 0)) {
-                task.setexpired();
+                task.setExpired();
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][task.getPhase()][optimal_op.dpID / 100][task.getType()][0]++;
                 return;
             }
