@@ -159,6 +159,11 @@ public class loadparam {
         FLEXTEAM = numTeams;
         totalTaskType = numTaskTypes + 5;
 
+        // Add teamSize if it has equal operator
+        for(int i = 0; i < teamSize.length; i++){
+            teamSize[i] += + AIDAtype[i][0];
+        }
+
         // Expand matrixes to include special tasks
 
         expandEssential();
@@ -275,8 +280,8 @@ public class loadparam {
 
     private void getNumRemoteOp(){
         numRemoteOp = 0;
-        for(int i : teamSize){
-            numRemoteOp += i;
+        for(int i=0; i<numTeams;i++){
+            numRemoteOp += teamSize[i];
         }
     }
 
@@ -374,7 +379,7 @@ public class loadparam {
      *
      ****************************************************************************/
     private void checkET(){
-
+        //TODO: Check whether it's overriding teams if the team has same task/fleet expertise
         ETteam = new int[numTaskTypes][fleetTypes];
 
         //set hasET default to false
@@ -440,12 +445,9 @@ public class loadparam {
             humanErrorRate[taskType] = getTriangularDistribution(humanError[taskType]);
         }
 
-        double[] specialTaskHumanError = new double[3];
-        specialTaskHumanError[0] = 0.002;
-        specialTaskHumanError[1] = 0.003;
-        specialTaskHumanError[2] = 0.004;
+        double[] specialTaskHumanError = { 0.002, 0.003, 0.004 };
 
-        for(int i = 0; i < 3; i++) {
+        for(int i = 0; i < totalTaskType - numTaskTypes; i++) {
             humanErrorRate[numTaskTypes + i] = getTriangularDistribution(specialTaskHumanError);
         }
 

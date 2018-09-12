@@ -211,15 +211,6 @@ public class Replication {
 
         Operator optimal_op = findOptimalOperator(working);
 
-        //check if ET AIDA can help
-        if (task.getType() < vars.numTaskTypes && !optimal_op.getQueue().taskqueue.isEmpty()) {
-            int team = vars.ETteam[task.getType()][task.getVehicleID() / 100];
-            if (team > -1){
-                equalTeammateDone(task, team);
-                return;
-            }
-        }
-
         //check if need flex position operator to help
         if(vars.hasFlexPosition == 1 && optimal_op.getBusyIn10min(task.getArrTime()) > 7){
             optimal_op = findOptimalOperator(flexPosition);
@@ -228,6 +219,11 @@ public class Replication {
         //AIs and team communication
         double errorChangeRate = 1;
         if(task.getType() < vars.numTaskTypes) {
+
+            //AI feature: Equal Operator AI
+            if (optimal_op.isAI) {
+                task.changeServTime(vars.ETServiceTime[optimal_op.dpID / 100]);
+            }
 
             //AI feature: Individual Assistant AIDA
             errorChangeRate = applyIndividualAssistant(optimal_op, task);
@@ -357,7 +353,6 @@ public class Replication {
         int affByTeamCoord;
 
         if (taskType >= vars.numTaskTypes) {//settings for special tasks
-            //TODO: add human error rate here
             errorCatching = 0.5;
             affByTeamCoord = 0;
         }
@@ -399,29 +394,6 @@ public class Replication {
             task.setNeedReDo(true);
         }
 
-    }
-
-
-    /****************************************************************************
-     *
-     *	Method:		    equalTeammateDone
-     *
-     *	Purpose:	    A record for the tasks done by equal teammate AIDA
-     *
-     ****************************************************************************/
-
-    private void equalTeammateDone(Task task, int team){
-
-        //Create an ET operator
-        Operator dummyOperator = new Operator(team * 100, "Equal Teammate", vars);
-        dummyOperator.isAI = true;
-        failTask(dummyOperator, task, vars.ETErrorRate[team]);
-        //TODO: if AI failed task, add it to its own queue?
-        task.setBeginTime(task.getArrTime());
-        task.changeServTime(vars.ETServiceTime[team]);
-        task.setEndTime(task.getArrTime() + task.getSerTime());
-        vars.AITasks.add(task);
-        vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][task.getPhase()][team][task.getType()]++;
     }
 
 

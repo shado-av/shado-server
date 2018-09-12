@@ -58,11 +58,16 @@ public class RemoteOp {
         RemoteOpers = new Operator[vars.numRemoteOp + vars.flexTeamSize];
 
         int cnt = 0;
-        for (int i = 0; i < vars.numTeams; i++) {
+        for (int i = 0, j; i < vars.numTeams; i++) {
             //generate Operator base on different types of remote Ops
-            for (int j = 0; j < vars.teamSize[i]; j++) {
+            for (j = 0; j < vars.teamSize[i]; j++) {
                 RemoteOpers[cnt++] = new Operator(i * 100 + j, vars.opNames[i], vars);
+            }
 
+            if (vars.AIDAtype[i][0]==1) { // Equal Operator AI
+                //Change Last Operator to Equal Operator AI
+                RemoteOpers[cnt-1].name = "Equal Operator";
+                RemoteOpers[cnt-1].isAI = true;
             }
         }
 

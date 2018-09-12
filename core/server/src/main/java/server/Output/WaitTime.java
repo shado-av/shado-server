@@ -72,6 +72,9 @@ public class WaitTime {
                 operatorName[count] = vars.opNames[i] + " No." + Integer.toString(j+1);
                 count++;
             }
+            if (vars.AIDAtype[i][0] == 1) { // if equal operator
+                operatorName[count-1] = "Equal Operator";
+            }
         }
         if (vars.hasFlexPosition>0) {
             teamSize[vars.opNames.length] = vars.flexTeamSize;
