@@ -28,7 +28,7 @@ public class Task implements Comparable<Task> {
 	private int shiftPeriod;
 	public loadparam vars;
 	private int vehicleID;
-	private double lvl_SOME = 0.7;
+	private double lvl_SOME = 0.7; //fleet autonomy level multipliers lvl_SOME _FULL _None
 	private double lvl_FULL = 0.3;
 	private double lvl_None = 1.0;
 
@@ -209,7 +209,7 @@ public class Task implements Comparable<Task> {
 
 			expTime = Double.POSITIVE_INFINITY;
 			Priority = 0;
-
+//team coordination TC_SOME _FULL communication tasks timing
 			if(type == vars.TC_SOME_TASK){
 				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
@@ -219,13 +219,13 @@ public class Task implements Comparable<Task> {
 				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
 				Phase = getPhase(arrTime);
-			}
+			} //medical emergency or train derailment task timing
 			else if(type == vars.EXOGENOUS_TASK){
 				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
 				Priority = 7;
 				Phase = getPhase(arrTime);
-			}
+			} //shift transfer-of-duty period at the beginning of shift
 			else if(type == vars.TURN_OVER_BEGIN_TASK){
 				arrTime = PrevTime;
 				if(vars.phaseBegin[1] == 0) {
@@ -237,7 +237,7 @@ public class Task implements Comparable<Task> {
 				}
 				Priority = 7;
 				Phase = 0;
-			}
+			} //shift transfer-of-duty period at the ending of shift
 			else if(type == vars.TURN_OVER_END_TASK){
 
 				if(vars.phaseBegin[vars.numPhases - 1] == 0){
@@ -263,7 +263,7 @@ public class Task implements Comparable<Task> {
 
 		beginTime = arrTime;
 
-		//shift schedule 1% fatigue increase serve time
+		//shift schedule 1% fatigue increase in service time on all tasks, except shift transfers-of-duty
 		if(type != vars.TURN_OVER_BEGIN_TASK && type != vars.TURN_OVER_END_TASK)
 			changeServTime(1 + 0.01 * shiftPeriod);
 
