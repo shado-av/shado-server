@@ -355,11 +355,11 @@ public class loadparam {
                 allTaskTypes.add(TC_FULL_TASK);
         }
 
-        int sum = 0;
-        for (int i : hasExogenous) {
-            sum += i;
-        }
-        if (sum != 0)
+        // int sum = 0;
+        // for (int i : hasExogenous) {
+        //     sum += i;
+        // }
+        if (hasExogenous[0] == 1)
             allTaskTypes.add(EXOGENOUS_TASK);
 
         if (hasTurnOver[0] == 1)

@@ -352,12 +352,23 @@ public class WaitTime {
 
     public void removeEmptyTask(loadparam param){
 
-        //Check if there is any exogenous task
-        int sum = 0;
-        for (int i : param.hasExogenous) {
-            sum += i;
+        // order of removing tasks should be in reverse order
+        if (param.hasTurnOver[1] == 0) {
+            removeTask(param.TURN_OVER_END_TASK, param);
+            param.totalTaskType--;
         }
-        if (sum == 0) {
+
+        if (param.hasTurnOver[0] == 0) {
+            removeTask(param.TURN_OVER_BEGIN_TASK, param);
+            param.totalTaskType--;
+        }
+
+        //Check if there is any exogenous task
+        // int sum = 0;
+        // for (int i : param.hasExogenous) {
+        //     sum += i;
+        // }
+        if (param.hasExogenous[0] == 0) {
             removeTask(param.EXOGENOUS_TASK, param);
             param.totalTaskType--;
         }
