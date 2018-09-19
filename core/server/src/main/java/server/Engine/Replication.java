@@ -269,8 +269,11 @@ public class Replication {
 
         if(task.getType() == vars.TC_SOME_TASK || task.getType() == vars.TC_FULL_TASK){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
-            if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 50%
-                task.changeServTime(0.5);
+            if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 70%(F) or 30%(S)
+                if (vars.TCALevel[operatorType] == 'F')
+                    task.changeServTime(0.3);
+                else
+                    task.changeServTime(0.7);
             }
             for(int j = 0; j < vars.numRemoteOp; j++ ){
                 if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
