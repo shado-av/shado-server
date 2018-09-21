@@ -272,7 +272,7 @@ public class Replication {
             if(vars.AIDAtype[operatorType][2] == 1){ //If this team has Team Coordination Assistant, reduce the serve time by 70%(F) or 30%(S)
                 if (vars.TCALevel[operatorType] == 'F')
                     task.changeServTime(0.3);
-                else
+                else if (vars.TCALevel[operatorType] == 'S')
                     task.changeServTime(0.7);
             }
             for(int j = 0; j < vars.numRemoteOp; j++ ){
