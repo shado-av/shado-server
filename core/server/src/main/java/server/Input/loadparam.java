@@ -96,6 +96,7 @@ public class loadparam {
     public int          TURN_OVER_BEGIN_TASK;
     public int          TURN_OVER_END_TASK;
     public int          FLEXTEAM;
+    public int          OTHER_SOURCES;
 
 
     // Other parameters
@@ -158,6 +159,11 @@ public class loadparam {
         TURN_OVER_END_TASK = numTaskTypes + 4;
         FLEXTEAM = numTeams;
         totalTaskType = numTaskTypes + 5;
+
+        if (fleetNames[fleetTypes - 1].equals("Other Sources"))
+            OTHER_SOURCES = (fleetTypes - 1) * 100;
+        else
+            OTHER_SOURCES = -1;
 
         // Add teamSize if it has equal operator
         for(int i = 0; i < teamSize.length; i++){

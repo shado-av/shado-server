@@ -81,7 +81,7 @@ public class Replication {
 
         vehicles = new VehicleSim[vars.fleetTypes][maxLen];
 
-        // Generate all the vehicles
+        // Generate all the vehicles and their tasks
         for (int i = 0; i < vars.fleetTypes; i++) {
             for(int j = 0; j < vars.numvehicles[i]; j++) {
                 vehicles[i][j] = new VehicleSim(vars,i*100 + j,remoteOps.getRemoteOp(),globalTasks);
@@ -294,16 +294,21 @@ public class Replication {
 
                 Operator eachOperator = remoteOps.getRemoteOp()[j];
                 if (eachOperator != null && vars.opExpertise[eachOperator.dpID / 100][task.getType()][task.getVehicleID() / 100] == 1) {
-                    //Put task in appropriate Queue
-                    proc.add(eachOperator.getQueue());
-                    working.add(eachOperator);
+
+                    // if the task is not coming from other sources or operator is not AI
+                    if (task.getVehicleID() != vars.OTHER_SOURCES || !eachOperator.isAI) {
+                        //Put task in appropriate Queue
+                        proc.add(eachOperator.getQueue());
+                        working.add(eachOperator);
+                    }
                 }
 
             }
 
         }
 
-        if (vars.hasFlexPosition == 1) {
+        // If task is not comping from other sources and there is a flex team
+        if (task.getVehicleID() != vars.OTHER_SOURCES && vars.hasFlexPosition == 1) {
             for (int i = vars.numRemoteOp; i < remoteOps.getRemoteOp().length; i++) {
                 flexPosition.add(remoteOps.getRemoteOp()[i]);
             }
