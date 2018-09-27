@@ -527,7 +527,7 @@ public class Task implements Comparable<Task> {
 			currTime += TimeToAdj;
 			currHour ++;
 
-			if (currHour >= vars.traffic.length) {
+			if (currHour >= vars.traffic[vehicleID / 100].length) {
 				return Double.POSITIVE_INFINITY;
 			}
 
