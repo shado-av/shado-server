@@ -188,7 +188,7 @@ public class Utilization {
 
         //define two type of typeU
         int TASK_RECORD = 1;
-        int FLEET_RECORD = 2;
+        //int FLEET_RECORD = 2;
         int numOperators = vars.numRemoteOp + vars.flexTeamSize;
         int numTeams = vars.numTeams + vars.hasFlexPosition;
 
@@ -238,9 +238,9 @@ public class Utilization {
                         average[team][i] /= vars.teamSize[team];
                     }
                 }
-                else {
-                    average[team][i] /= vars.allTaskTypes.size();
-                }
+                //else { Average busy time for fleets doesn't need to be divided by task size
+                    //average[team][i] /= vars.allTaskTypes.size();
+                //}
             }
         }
 

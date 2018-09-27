@@ -129,6 +129,7 @@ public class WaitTime {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
+        System.out.println("fillTaskWaitTime Rep " + rep);
         for (int op = 0; op < param.numRemoteOp + param.flexTeamSize; op++) {
 
             Data currentWaitTime = taskU[op];
@@ -142,7 +143,9 @@ public class WaitTime {
                     else{
                         timeWaitTime[op][rep][time] += round(u,4);
                     }
+                    System.out.print(taskWaitTime[op][rep][task][time] + " ");
                 }
+                System.out.println("");
             }
         }
     }
@@ -151,6 +154,7 @@ public class WaitTime {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
+        System.out.println("fillFleetWaitTime Rep " + rep);
         for (int op = 0; op < param.numRemoteOp + param.flexTeamSize; op++) {
 
             Data currentWaitTime = fleetU[op];
@@ -160,13 +164,11 @@ public class WaitTime {
 
                     double u = currentWaitTime.dataget(fleet, time, 0);
 
-                    //if (u > 1.02) {
-                    //    throw new Exception("Simulation or Computation Error: max 10 mins WaitTime is greater than 1");
-                    // }
+                    fleetWaitTime[op][rep][fleet][time] = round(u,4);
 
-                    fleetWaitTime[op][rep][fleet][time] = Math.min(round(u,4),1);
-
+                    System.out.print(fleetWaitTime[op][rep][fleet][time] + " ");
                 }
+                System.out.println("");
             }
         }
 
@@ -209,7 +211,7 @@ public class WaitTime {
                         avgWaitTimePerTask[team][i] /= vars.teamSize[team];
                     }
                 }
-            }            
+            }
         }
         else {
             WaitTime = fleetWaitTime;
@@ -222,7 +224,7 @@ public class WaitTime {
             for (int team = 0; team < numTeams; team++) {
                 for (int i = 0; i < length; i++) {
                     avgWaitTimePerFleet[team][i] /= vars.numReps;
-                    avgWaitTimePerFleet[team][i] /= vars.allTaskTypes.size();
+                    //avgWaitTimePerFleet[team][i] /= vars.allTaskTypes.size();
                 }
             }
         }
@@ -252,9 +254,9 @@ public class WaitTime {
                         average[team][i] /= vars.teamSize[team];
                     }
                 }
-                else {
-                    average[team][i] /= vars.allTaskTypes.size();
-                }
+                //else {
+                //    average[team][i] /= vars.allTaskTypes.size();
+                //}
             }
         }
 
