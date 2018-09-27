@@ -23,9 +23,9 @@ public class Simulation {
 
 	private loadparam vars;
 
-    private Data[] operatoroutput;
+    //private Data[] operatorOutput;
 
-    private Data[] RemoteOpoutput;
+    private Data[] RemoteOpOutput;
 
 
     /****************************************************************************
@@ -44,13 +44,13 @@ public class Simulation {
 
         // Generate overall data field
 
-        operatoroutput = new Data[param.numTeams];
-        for (int i = 0; i < param.numTeams; i++) {
-            operatoroutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
-        }
-        RemoteOpoutput = new Data[vars.numRemoteOp + vars.flexTeamSize];
+        // operatorOutput = new Data[param.numTeams];
+        // for (int i = 0; i < param.numTeams; i++) {
+        //     operatorOutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
+        // }
+        RemoteOpOutput = new Data[vars.numRemoteOp + vars.flexTeamSize];
         for (int i = 0; i < vars.numRemoteOp + vars.flexTeamSize; i++) {
-            RemoteOpoutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
+            RemoteOpOutput[i] = new Data(param.totalTaskType, (int) param.numHours * 6, param.numReps);
         }
 
     }
@@ -94,7 +94,7 @@ public class Simulation {
 
         //Data Processing for Replications
         for(int i = 0; i < vars.numReps; i++){
-            ProcRep process = new ProcRep(RemoteOpoutput, vars.reps[i], vars);
+            ProcRep process = new ProcRep(RemoteOpOutput, vars.reps[i], vars);
             process.run();
             vars.utilization.fillTaskUtilization(i, process.getUtilization_task(), vars);
             vars.utilization.fillFleetUtilization(i, process.getUtilization_fleet(), vars);
@@ -113,12 +113,12 @@ public class Simulation {
         vars.taskRecord.computeTotalTaskNumber();
         vars.taskRecord.failedAnalysis();
 
-        for (Data each: RemoteOpoutput){
+        for (Data each: RemoteOpOutput){
             each.avgdata();
         }
-        for (Data each: operatoroutput){
-            each.avgdata();
-        }
+        // for (Data each: operatorOutput){
+        //     each.avgdata();
+        // }
     }
 
 

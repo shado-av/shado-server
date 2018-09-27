@@ -194,7 +194,7 @@ public class DataWrapper {
             ps.println(",Incomplete: " + incompleteTasks);
             ps.println(",Failed and Not Caught: " + failedNotCaughtTasks);
             ps.println(",Failed and Caught: " + failedCaughtTasks);
-            ps.println(",Completed: " + completeTasks);
+            ps.println(",Successfully Completed: " + completeTasks);
         }
 
         ps.close();
