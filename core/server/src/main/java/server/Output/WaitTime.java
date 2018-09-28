@@ -129,7 +129,6 @@ public class WaitTime {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
-        System.out.println("fillTaskWaitTime Rep " + rep);
         for (int op = 0; op < param.numRemoteOp + param.flexTeamSize; op++) {
 
             Data currentWaitTime = taskU[op];
@@ -143,9 +142,7 @@ public class WaitTime {
                     else{
                         timeWaitTime[op][rep][time] += round(u,4);
                     }
-                    System.out.print(taskWaitTime[op][rep][task][time] + " ");
                 }
-                System.out.println("");
             }
         }
     }
@@ -154,7 +151,6 @@ public class WaitTime {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
-        System.out.println("fillFleetWaitTime Rep " + rep);
         for (int op = 0; op < param.numRemoteOp + param.flexTeamSize; op++) {
 
             Data currentWaitTime = fleetU[op];
@@ -165,10 +161,7 @@ public class WaitTime {
                     double u = currentWaitTime.dataget(fleet, time, 0);
 
                     fleetWaitTime[op][rep][fleet][time] = round(u,4);
-
-                    System.out.print(fleetWaitTime[op][rep][fleet][time] + " ");
                 }
-                System.out.println("");
             }
         }
 
@@ -186,7 +179,7 @@ public class WaitTime {
 
         //define two type of typeU
         int TASK_RECORD = 1;
-        int FLEET_RECORD = 2;
+        //int FLEET_RECORD = 2;
         int numOperators = vars.numRemoteOp + vars.flexTeamSize;
         int numTeams = vars.numTeams + vars.hasFlexPosition;
 
