@@ -370,7 +370,7 @@ public class Replication {
             else{
                 errorCatching = vars.ECC[teamType][taskType];
             }
-            if (operator.isAI)
+            if (operator.isAI)  // Equal Operator ECC
                 errorCatching *= vars.ETFailThreshold[teamType];
             affByTeamCoord = vars.teamCoordAff[taskType];
         }
@@ -381,6 +381,9 @@ public class Replication {
         }
         humanErrorRate *= changeRate;
         humanErrorRate = Math.max(humanErrorRate, 0.0001);//0.0001 is the minimum human error rate
+
+        if (operator.isAI)  // Equal Operator Error Rate
+            humanErrorRate *= vars.ETErrorRate[teamType];
 
         // Modify the error catching chance according to team coordination
         if (affByTeamCoord == 1) {
