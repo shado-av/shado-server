@@ -626,9 +626,9 @@ public class Task implements Comparable<Task> {
 
 		double[] arrivalRate;
 
-		//check if it has type 2 exogenous factor (increasing arrival rate)
+		//check if it has type 2 exogenous factor (increasing arrival rate) like poor weather
 		if(vars.hasExogenous[1] == 1 && vars.exoType2Aff[type] == 1){
-			num *= 1.1;
+			num *= 1/1.1; //interarrival time input requires inverse multiplier
 		}
 
 		arrivalRate = new double[vars.arrPms[taskType].length];
