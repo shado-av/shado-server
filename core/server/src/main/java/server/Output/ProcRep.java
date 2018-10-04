@@ -193,6 +193,9 @@ public class ProcRep {
                 }
                 double beginscale = each.workSchedule.get(i)[0] / 10;
                 double endscale = each.workSchedule.get(i)[1] / 10;
+
+                //System.out.println("Rep " + this.rep.getRepID() + " index " + index + " BeginTime: " + beginscale + " EndTime: " + endscale);
+
                 fill(beginscale, endscale, incremented, index);
             }
         }
@@ -230,8 +233,10 @@ public class ProcRep {
                     break;
                 }
             }
+            // if (incremented.dataget(taskType, i - 1, 0) > 1.02) {
+            //    System.out.println("Fill index " + taskType + " BeginTime: " + beginscale + " EndTime: " + endscale + " time: " + (i-1) + " val: " + incremented.dataget(taskType, i - 1, 0));
+            // }
         }
-
     }
 
 

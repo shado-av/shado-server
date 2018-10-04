@@ -192,7 +192,7 @@ public class Replication {
         // Turn Over tasks should be add to its corresponding operator
 
         if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
-            remoteOps.getRemoteOp()[task.getTeamType()].getQueue().add(task);
+            remoteOps.getRemoteOp()[task.getTeamType()].getQueue().add(task, false);
             return;
         }
 
@@ -251,7 +251,7 @@ public class Replication {
         failTask(optimal_op, task, errorChangeRate);
 
         task.setTeamType(optimal_op.dpID / 100);
-        optimal_op.getQueue().add(task);
+        optimal_op.getQueue().add(task, false);
 
     }
 

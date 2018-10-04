@@ -8,12 +8,13 @@ import server.Input.loadparam;
  *
  * 	AUTHOR:			ROCKY LI
  *
- * 	LATEST EDIT:	07/09/2018
+ * 	LATEST EDIT:	10/03/2018
  *
  * 	VER: 			1.1		Rocky Li
  * 					2.0		Naixin Yu
+ * 					2.1		Hanwiz
  *
- * 	Purpose: 		generate task objects.
+ * 	Purpose: 		generate task objects and provide comparison
  *
  **************************************************************************/
 
@@ -21,10 +22,10 @@ public class Task implements Comparable<Task> {
 
 	//General task input params.
 	private String name;
-	private int Type;
-	private int Priority;
+	private int taskType;
+	private int priority;
 	private int teamType;
-	private int Phase;
+	private int phase;
 	private int shiftPeriod;
 	public loadparam vars;
 	private int vehicleID;
@@ -33,6 +34,7 @@ public class Task implements Comparable<Task> {
 	private double lvl_None = 1.0;
 
 	//Task specific variables.
+	private int essential;	// Task specific essential, usually comes from TaskTypes, but also effective when a task is on hand as non-interruptible
 	private double prevTime; 	//Time last task in same type arrived
 	private double arrTime;
 	private double beginTime;
@@ -49,12 +51,13 @@ public class Task implements Comparable<Task> {
 
 
 	// Inspector functions.
+	public boolean isEssential(){ return essential > 0; }
 
 	public boolean getFail(){return this.fail;}
 
 	public boolean getExpired(){ return this.expired; }
 
-	public int getPhase(){ return Phase;}
+	public int getPhase(){ return phase;}
 
 	public int getTeamType() { return teamType; }
 
@@ -68,9 +71,11 @@ public class Task implements Comparable<Task> {
 
 	public String getName() {return this.name;}
 
-	public int getType() {return this.Type;}
+	public int getType() {return this.taskType;}
 
 	public double getArrTime(){return this.arrTime;}
+
+	public int getPriority(){ return this.priority; }
 
 	public double getSerTime(){return this.serTime;}
 
@@ -92,7 +97,7 @@ public class Task implements Comparable<Task> {
 
 	public void setArrTime(double time) { this.arrTime = time; }
 
-	public void setPriority(int Priority){ this.Priority = Priority; }
+	public void setPriority(int priority){ this.priority = priority; }
 
 	public void setExpired() {
 		expired = true;
@@ -120,6 +125,11 @@ public class Task implements Comparable<Task> {
 
 	public void setBeginTime(double time){
 		beginTime = time;
+
+		// non-interruptible into active! or already essential?
+		if (essential == 0  && vars.interruptable[taskType] == 0) {
+			essential = 1;
+		}
 	}
 
 	@Override
@@ -144,12 +154,12 @@ public class Task implements Comparable<Task> {
 
 	public Task(Task t){
 		vehicleID = t.vehicleID;
-		Type = t.getType();
+		taskType = t.getType();
 		vars = t.vars;
-		Priority = t.Priority;
+		priority = t.priority;
 		prevTime = t.getEndTime();
-		Phase = getPhase(prevTime);
-		if (Phase == vars.numPhases) {
+		phase = getPhase(prevTime);
+		if (phase == vars.numPhases) {
 			arrTime = -1;
 			return;
 		}
@@ -165,66 +175,69 @@ public class Task implements Comparable<Task> {
 		expTime = t.expTime;
 		name = t.name;
 		repeatTimes = t.repeatTimes + 1;
+		essential = vars.essential[t.getType()];
+
 	}
 
 	// Constructor
 
 	public Task(int type, double PrevTime, loadparam Param, boolean fromPrev, int vehicle) throws Exception{
 
-		Type = type;
+		taskType = type;
 		vehicleID = vehicle;
 		vars = Param;
 		prevTime = PrevTime;
-		Phase = getPhase(PrevTime);
+		phase = getPhase(PrevTime);
 		shiftPeriod = getShiftTime(PrevTime);
 		this.fail = false;
 		elapsedTime = 0;
 		waitTime = 0;
 		expired = false;
-		Priority = 0;
+		priority = 0;
 		workSchedule = new ArrayList<>();
 		repeatTimes = 0;
 		name = vars.taskName_all[type];
+		essential = vars.essential[type];
 
 		if(type < vars.numTaskTypes){
 
 			if (fromPrev == true) {
-				arrTime = genArrTime(PrevTime, Type);
+				arrTime = genArrTime(PrevTime, taskType);
 			} else {
 				arrTime = PrevTime;
 			}
 
-			Phase = getPhase(arrTime);
+			phase = getPhase(arrTime);
 
-			if (Phase == vars.numPhases) {
+			if (phase == vars.numPhases) {
 				arrTime = -1;
 				return;
 			}
 
 			expTime = genExpTime();
-			serTime = GenTime(vars.serDists[Type], vars.serPms[Type]);
+			serTime = GenTime(vars.serDists[taskType], vars.serPms[taskType]);
 
 		}
 		else {
 
 			expTime = Double.POSITIVE_INFINITY;
-			Priority = 0;
+			priority = 0;
 //team coordination TC_SOME _FULL communication tasks timing
 			if(type == vars.TC_SOME_TASK){
 				arrTime = PrevTime + Exponential(10);
 				serTime = Exponential(0.1667);
-				Phase = getPhase(arrTime);
+				phase = getPhase(arrTime);
 			}
 			else if(type == vars.TC_FULL_TASK){
 				arrTime = PrevTime + Exponential(5);
 				serTime = Exponential(0.1667);
-				Phase = getPhase(arrTime);
+				phase = getPhase(arrTime);
 			} //medical emergency or train derailment task timing
 			else if(type == vars.EXOGENOUS_TASK){
 				arrTime = PrevTime + Exponential(480);
 				serTime = Uniform(20,40);
-				Priority = 7;
-				Phase = getPhase(arrTime);
+				priority = 7;
+				phase = getPhase(arrTime);
 			} //shift transfer-of-duty period at the beginning of shift
 			else if(type == vars.TURN_OVER_BEGIN_TASK){
 				arrTime = PrevTime;
@@ -235,8 +248,8 @@ public class Task implements Comparable<Task> {
 				else{
 					serTime = vars.phaseBegin[1];
 				}
-				Priority = 7;
-				Phase = 0;
+				priority = 7;
+				phase = 0;
 			} //shift transfer-of-duty period at the ending of shift
 			else if(type == vars.TURN_OVER_END_TASK){
 
@@ -250,11 +263,11 @@ public class Task implements Comparable<Task> {
 					serTime = vars.numHours * 60 - arrTime;
 				}
 
-				Priority = 7;
-				Phase = vars.numPhases - 1;
+				priority = 7;
+				phase = vars.numPhases - 1;
 			}
 
-			if (Phase == vars.numPhases) {
+			if (phase == vars.numPhases) {
 				arrTime = -1;
 				return;
 			}
@@ -278,62 +291,83 @@ public class Task implements Comparable<Task> {
 	 *  Notes:  		When using the priority queue: "this" is the new task;
 	 *  				"other" is the original top task. Return positive value
 	 *  				means put the new task behind the original top task.
+	 * 					1  means Old task > New task
+	 * 					-1 means New task > Old task
 	 *
 	 ****************************************************************************/
 
 	@Override
 	public int compareTo(Task other){
+		int oType = other.getType();
+		int type = this.getType();
 
-		//the followed task should always behind the lead task
-		if(this.getType() < vars.numTaskTypes && vars.leadTask[this.getType()] >= 0){
-			int leadType = vars.leadTask[this.getType()];
-			if(other.getType() == leadType){
-				if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
-					return 1;
-				} else {
-					return -1;
-				}
+		// following task order (is this needed? yes this overrides if followed task is essential)
+		// The followed task should always behind the lead task
+		if(type < vars.numTaskTypes && vars.leadTask[type] == oType){ 	// if followed task
+			if (this.arrTime > other.arrTime){ //if other task arrives first, it should come first
+				return 1;
+			} else {
+				return -1;
+			}
+		}
+		// the other way around... oType is followed task and type is lead task...
+		if(oType < vars.numTaskTypes && vars.leadTask[oType] == type){ 	// if followed task
+			if (this.arrTime < other.arrTime){
+				return 1;
+			} else {
+				return -1;
 			}
 		}
 
-		// If the old task cannot be interrupted
-		if(vars.interruptable[other.getType()] == 0 || vars.essential[other.getType()] == 1)
-			return 1;
+		// Essential Task Processing
+		// non-interruptible task will be essential task when in action...
+		if(other.isEssential() != this.isEssential()) {
+			// If the old task is essential task, just leave the task at the top
+			if (other.isEssential()) {
+				//System.out.println(other.getName() + " Essential Old Task Win");
+				return 1;
+			}
 
-		// If the new task is essential task, which can interrupt any other task
-		if(vars.essential[this.getType()] == 1)
+			// If the new task is essential task, which can interrupt any other task
+			//System.out.println(this.getName() + " Essential New Task Win");
+			return -1;
+		}
+
+		// If same special tasks, essential tasks already treated above, only common tasks remained here
+		// the special tasks lags behind the normal tasks
+		if(type >= vars.numTaskTypes && oType < vars.numTaskTypes)
+			return 1;
+		else if (type < vars.numTaskTypes && oType >= vars.numTaskTypes)
 			return -1;
 
-		// If the new task is one of the special tasks
-		if(this.getType() >= vars.numTaskTypes)
-			return 1;
-
+		// TODO Check if FLEXTEAM has priority?
+		// PRTY priority
 		if(teamType == vars.FLEXTEAM || vars.opStrats[teamType].equals("PRTY")){
-			if(other.Priority > this.Priority) return 1;
-			else if(other.Priority < this.Priority) return -1;
-			// If two tasks have same priority, use FIFO
-			if (this.arrTime > other.arrTime) return 1;
+			//System.out.println("PRTY priority");
+			if(other.getPriority() > this.getPriority()) return 1;
+			else if(other.getPriority() < this.getPriority()) return -1;
+
+			// If two tasks have same priority, use FIFO at the end
+		}
+		else if(teamType != vars.FLEXTEAM && vars.opStrats[teamType].equals("STF")){
+			if(other.getSerTime() - other.getELSTime() < this.getSerTime() - this.getELSTime()){ //this task needs more serve time, other task should come first
+				return 1;
+			} else if (other.getSerTime() - other.getELSTime() < this.getSerTime() - this.getELSTime()){
+				return -1;
+			}
+			// If two tasks have same priority, use FIFO at the end
+		}
+
+		// If all fails, use FIFO
+		//System.out.println("FIFO priority");
+		if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
+			return 1;
+		} else if (this.arrTime < other.arrTime) {
 			return -1;
 		}
 
-		else if(teamType != vars.FLEXTEAM && vars.opStrats[teamType].equals("FIFO")){
-			if (this.arrTime > other.arrTime){ //the old task(other) arrives first, it should come first
-				return 1;
-			} else {
-				return -1;
-			}
-		}
-
-		else if(teamType != vars.FLEXTEAM && vars.opStrats[teamType].equals("STF")){
-			if(other.getSerTime() < this.getSerTime() - this.getELSTime()){ //this task needs more serve time, other task should come first
-				return 1;
-			} else {
-				return -1;
-			}
-		}
-
-		return 1;
-
+		// If arrived at the same time, no definitive answer!!!
+		return 0;
 	}
 
 
@@ -551,7 +585,7 @@ public class Task implements Comparable<Task> {
 	private double genExpTime() throws Exception{
 
 		double expiration;
-		expiration = GenTime(vars.expDists[Type], vars.expPms[Type]);
+		expiration = GenTime(vars.expDists[taskType], vars.expPms[taskType]);
 		return arrTime + serTime + expiration;
 
 	}
@@ -597,15 +631,15 @@ public class Task implements Comparable<Task> {
 			num *= 1.1;
 		}
 
-		arrivalRate = new double[vars.arrPms[Type].length];
-		if(vars.arrDists[Type] == 'L'){
-			arrivalRate[0] = vars.arrPms[Type][0] * num;
-			arrivalRate[1] = vars.arrPms[Type][1];
+		arrivalRate = new double[vars.arrPms[taskType].length];
+		if(vars.arrDists[taskType] == 'L'){
+			arrivalRate[0] = vars.arrPms[taskType][0] * num;
+			arrivalRate[1] = vars.arrPms[taskType][1];
 			return arrivalRate;
 		}
 
 		int count = 0;
-		for(double d : vars.arrPms[Type]){
+		for(double d : vars.arrPms[taskType]){
 			arrivalRate[count] = d * num;
 			count++;
 		}
@@ -650,7 +684,13 @@ public class Task implements Comparable<Task> {
 		setEndTime(finTime);
 		addInterruptTime(finTime);
 		addELSTime(finTime - getBeginTime());
-		setWaitTime(Queue.round(finTime - getArrTime() - getELSTime(),2));
+		double waitTime = Queue.round(finTime - getArrTime() - getELSTime(),2);
+		setWaitTime(waitTime);
+
+		//if (waitTime < 0.00) {
+		//	System.out.println("!!!!A task is done!!!!!");
+		// 	printBasicInfo();
+		//}
 	}
 
 	/****************************************************************************
@@ -663,9 +703,10 @@ public class Task implements Comparable<Task> {
 
 	public void printBasicInfo(){
 
-		System.out.println("Name : " + name + " Priority : " + Priority);
+		System.out.println("Name : " + name + " Priority : " + priority);
 		System.out.println("Arrival time : " + arrTime);
 		System.out.println("Begin Time : " + beginTime);
+		System.out.println("Elapsed Time : " + elapsedTime);
 		System.out.println("Service Time : " + serTime);
 		System.out.println("Expire Time : " + expTime);
 		System.out.println("Finish Time : " + endTime);

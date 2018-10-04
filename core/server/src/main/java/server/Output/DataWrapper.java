@@ -287,12 +287,12 @@ public class DataWrapper {
             String fileName = outPutDirectory + "task_" + vars.taskName_all[taskType] + ".csv";
             PrintStream ps = new PrintStream(new BufferedOutputStream(
                     new FileOutputStream(fileName, false)), true);
-            ps.println("arrTime, beginTime, serveTime, waitTime, finTime, expireTime");
+            ps.println("arrTime, beginTime, elsTime, serveTime, waitTime, finTime, expireTime");
             for(int i = 0; i < vars.numReps; i++){
                 ps.println("Replication " + i);
                 for(Task t : vars.allTasksPerRep.get(i)){
                     if(t.getType() == taskType){
-                        ps.println(t.getArrTime() + "," + t.getBeginTime() + "," +
+                        ps.println(t.getArrTime() + "," + t.getBeginTime() + "," + t.getELSTime() + "," +
                                 t.getSerTime() + "," + t.getWaitTime() + "," + t.getEndTime() + "," + t.getExpTime());
                     }
                 }
@@ -352,9 +352,9 @@ public class DataWrapper {
                 ps.println(" ");
 
             }
-            if (max10mins > 1.02) {
-                throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
-            }
+            // if (max10mins > 1.02) {
+            //     throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
+            // }
             ps.println("The max utilization in 10 mins is " + max10mins);
 
             averageAll(u.averageTaskUtilization[op], ps);
@@ -362,9 +362,6 @@ public class DataWrapper {
 
             ps.close();
         }
-
-
-
     }
 
     /****************************************************************************

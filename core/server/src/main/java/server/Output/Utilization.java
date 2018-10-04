@@ -120,7 +120,7 @@ public class Utilization {
      *
      ****************************************************************************/
 
-    public void fillTaskUtilization(int rep, Data[] taskU, loadparam param){
+    public void fillTaskUtilization(int rep, Data[] taskU, loadparam param) throws Exception {
 
         int numColumn = (int) Math.ceil(param.numHours * 6);
 
@@ -138,8 +138,12 @@ public class Utilization {
                         else{
                             timeUtilization[op][rep][time] += round(u,4);
                             // to fix over 100% with float point error 1.0001
-                            if (timeUtilization[op][rep][time] > 1.00)
-                                timeUtilization[op][rep][time] = 1.00;
+                            if (timeUtilization[op][rep][time] > 1.02) {
+                                // System.out.println("Rep: " + rep + " OP: " + op + " Task: " + task + " Time: " + time + " Val: " + timeUtilization[op][rep][time]);
+                                throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
+                            }
+                            // cutting small 1.0001 to 1.000
+                            timeUtilization[op][rep][time] = Math.min(timeUtilization[op][rep][time], 1.00);
                         }
 
                         sum += u;
@@ -165,6 +169,7 @@ public class Utilization {
                     double u = currentUtilization.dataget(fleet, time, 0);
 
                     if (u > 1.02) {
+                        //System.out.println("Rep: " + rep + " OP: " + op + " Fleet: " + fleet + " Time: " + time + " Val: " + u);
                         throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
                     }
 
@@ -173,7 +178,6 @@ public class Utilization {
                 }
             }
         }
-
     }
 
     /****************************************************************************

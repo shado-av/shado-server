@@ -3,6 +3,7 @@ package server.Engine;
 import server.Input.loadparam;
 import javafx.util.Pair;
 import java.util.*;
+import java.io.*;
 
 /***************************************************************************
  *
@@ -50,7 +51,16 @@ public class Queue implements Comparable<Queue>{
 
     public Queue(Operator op) {
 
-        taskqueue = new PriorityQueue<>();
+        // Only for Debugging log...
+        // String filename = System.getProperty("user.home") + "/out/log.txt";
+
+        // try {
+        //     System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream(filename))));
+        // } catch(Exception e) {
+        //     e.printStackTrace();
+        // }
+
+        taskqueue = new PriorityQueue<Task>();
         operator = op;
         time = 0;
         finTime = Double.POSITIVE_INFINITY;
@@ -87,7 +97,9 @@ public class Queue implements Comparable<Queue>{
      *
      ****************************************************************************/
 
-    public void add(Task task) {
+    public void add(Task task, boolean redoTask) {
+
+        boolean switchOut = false;
 
         // Set the time of the queue to the arrival time of the task.
 
@@ -95,20 +107,38 @@ public class Queue implements Comparable<Queue>{
 
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
-                taskqueue.peek().addInterruptTime(time);
-                taskqueue.peek().addELSTime(time - taskqueue.peek().getBeginTime());
+                //System.out.println("Task is switched out at " + time + " finTime: "  + finTime);
+
+                if (!redoTask) {
+                    Task top = taskqueue.peek();
+                //    top.printBasicInfo();
+                    top.addInterruptTime(time);
+                    top.addELSTime(time - top.getBeginTime());
+                //    top.printBasicInfo();
+                //    System.out.println("");
+                }
+
+                switchOut = true;
             }
         }
 
-        taskqueue.add(task);
-
         // If the task is processed as first priority, i.e. began immediately, then:
 
-        if (taskqueue.peek().equals(task)) {
-            taskqueue.peek().setBeginTime(time);
-            taskqueue.peek().addBeginTime(time);
-            finTime();
+        if (taskqueue.peek() == null || switchOut) {
+            task.setBeginTime(time);
+            task.addBeginTime(time);
+
+            //System.out.println(task.getName() + " new task is at " + time);
         }
+
+        taskqueue.add(task);
+        taskqueue.toString();
+        //if (switchOut && taskqueue.peek() != task) {
+            // debugging point!...
+            // switchOut = false;
+            //throw new Exception("Simulation Error: Task ordering doens't work correctly!");
+        //}
+        finTime();
 
         // Else since the task is put behind in the queue, no other queue attribute need to change
 
@@ -127,14 +157,14 @@ public class Queue implements Comparable<Queue>{
     public void done(loadparam vars,Operator op) {
 
         // This if statement avoids error when calling done on an empty queue.
-        Task currentTask = taskqueue.peek();
+        Task currentTask = taskqueue.poll();    // remove current task from queue
         double totalTime = vars.numHours * 60;
         if (currentTask != null) {
 
             if (finTime <= totalTime) {
                 currentTask.setDone(finTime);
 
-                recordtasks.add(taskqueue.poll());
+                recordtasks.add(currentTask);
                 if (!currentTask.getFail()) {
                     vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][currentTask.getType()]++;
                 }
@@ -144,7 +174,8 @@ public class Queue implements Comparable<Queue>{
                     Task redoTask = new Task(currentTask);
                     if (redoTask.getArrTime() > 0) {
                         redoTask.setArrTime(finTime);
-                        add(redoTask);
+
+                        add(redoTask, true);
                     }
                     else {
                         // This redo task cannot be complete within the shift hours, add it to expired task.
@@ -156,7 +187,7 @@ public class Queue implements Comparable<Queue>{
 
                 // add it to incomplete task
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][1]++;
-                recordtasks.add(taskqueue.poll());
+                recordtasks.add(currentTask);
                 SetTime(totalTime);
             }
         }
@@ -170,27 +201,27 @@ public class Queue implements Comparable<Queue>{
                 break;
             }
 
+            currentTask = taskqueue.poll();
+
             // Add expired tasks to the record
-            taskqueue.peek().setExpired();
+            currentTask.setExpired();
 
-            int taskType = taskqueue.peek().getType();
+            int taskType = currentTask.getType();
 
-            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][taskqueue.peek().getPhase()][op.dpID / 100][taskType][0]++;
-            vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,taskqueue.peek()));
-            recordtasks.add(taskqueue.poll());
+            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][taskType][0]++;
+            vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,currentTask));
+            recordtasks.add(currentTask);
         }
 
-        if (taskqueue.peek() != null) {
+        currentTask = taskqueue.peek();
+        if (currentTask != null) {
 
             // Begin working on this task.
-
-            taskqueue.peek().setBeginTime(time);
-            taskqueue.peek().addBeginTime(time);
-
+            currentTask.setBeginTime(time); // make it essential doesn't change queue order...no side effect
+            currentTask.addBeginTime(time);
         }
 
         // Generate a new finTime for the Queue.
-
         finTime();
 
     }
@@ -213,15 +244,21 @@ public class Queue implements Comparable<Queue>{
 
         //Last task in the queue has been started, if it is non-essential it will be stopped and recorded as unfinished task
 
-        if (taskqueue.peek() != null) {
+        if (onHandTask != null) {
 
             if (vars.essential[onHandTask.getType()] == 1) {
                 done(vars, op);
             }
             else {
-                onHandTask.setDone(vars.phaseBegin[onHandTask.getPhase() + 1]);
-                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][onHandTask.getPhase()][operator.dpID / 100][onHandTask.getType()][1]++;
-                recordtasks.add(taskqueue.poll());
+                currentTask = taskqueue.poll();
+                double phaseTime = vars.phaseBegin[currentTask.getPhase() + 1];
+
+                currentTask.setDone(phaseTime);
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][1]++;
+                recordtasks.add(currentTask);
+
+                // BugFix - setDone should be completed with setTime
+                SetTime(phaseTime);
             }
         }
         else {
@@ -233,7 +270,9 @@ public class Queue implements Comparable<Queue>{
         while ((currentTask = taskqueue.peek()) != null) {
 
             if (vars.essential[currentTask.getType()] == 1) {
-
+                if (time < currentTask.getArrTime()) {
+                    time = currentTask.getArrTime();
+                }
                 // add begin time as the task not yet started
                 currentTask.setBeginTime(time);
                 currentTask.addBeginTime(time);
@@ -245,7 +284,7 @@ public class Queue implements Comparable<Queue>{
             }
             else {
                 currentTask.setExpired();
-                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][taskqueue.peek().getType()][0]++;
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][0]++;
                 recordtasks.add(taskqueue.poll());
             }
         }
