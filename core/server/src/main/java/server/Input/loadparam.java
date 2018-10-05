@@ -205,9 +205,6 @@ public class loadparam {
             }
         }
 
-        // create the ET team matrix
-        checkET();
-
         // create the followed task matrx
         checkFollowedTask();
     }
@@ -372,41 +369,6 @@ public class loadparam {
             allTaskTypes.add(TURN_OVER_BEGIN_TASK);
         if (hasTurnOver[1] == 1)
             allTaskTypes.add(TURN_OVER_END_TASK);
-
-    }
-
-
-    /****************************************************************************
-     *
-     *	Method:	        checkET
-     *
-     *	Purpose:		Build the checkET matrix to record the Equal Teammate AIDA
-     *                  for each task.
-     *
-     ****************************************************************************/
-    private void checkET(){
-        //TODO: Check whether it's overriding teams if the team has same task/fleet expertise
-        ETteam = new int[numTaskTypes][fleetTypes];
-
-        //set hasET default to false
-        for (int i = 0; i < numTaskTypes; i++) {
-            for (int j = 0; j < fleetTypes; j++) {
-                ETteam[i][j] = -1;
-            }
-        }
-
-        for(int team = 0; team < numTeams; team++){
-            //if this team has equal teammate AIDA
-            if(AIDAtype[team][0] == 1){
-                hasET = true;
-                for (int i = 0; i < numTaskTypes; i++) {
-                    for (int j = 0; j < fleetTypes; j++) {
-                        if (opExpertise[team][i][j] == 1)
-                            ETteam[i][j] = team;
-                    }
-                }
-            }
-        }
 
     }
 
