@@ -1,6 +1,7 @@
 package server.Output;
 import server.Engine.Data;
 import server.Input.loadparam;
+import server.Util.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -135,12 +136,12 @@ public class WaitTime {
             for (int task = 0; task < param.totalTaskType; task++) {
                 for (int time = 0; time < numColumn; time++) {
                     double u = currentWaitTime.dataget(task, time, 0);
-                    taskWaitTime[op][rep][task][time] = round(u,4);
+                    taskWaitTime[op][rep][task][time] = Util.round(u,4);
                     if(task == 0) {
-                        timeWaitTime[op][rep][time] = round(u,4);
+                        timeWaitTime[op][rep][time] = Util.round(u,4);
                     }
                     else{
-                        timeWaitTime[op][rep][time] += round(u,4);
+                        timeWaitTime[op][rep][time] += Util.round(u,4);
                     }
                 }
             }
@@ -160,7 +161,7 @@ public class WaitTime {
 
                     double u = currentWaitTime.dataget(fleet, time, 0);
 
-                    fleetWaitTime[op][rep][fleet][time] = round(u,4);
+                    fleetWaitTime[op][rep][fleet][time] = Util.round(u,4);
                 }
             }
         }
@@ -269,7 +270,7 @@ public class WaitTime {
                     std[team][i] = 0.0;
                 }
                 else{
-                    std[team][i] = round(Math.sqrt(std[team][i] / (count[team][i] - 1)), 2);
+                    std[team][i] = Util.round(Math.sqrt(std[team][i] / (count[team][i] - 1)), 2);
                 }
             }
         }
@@ -325,7 +326,7 @@ public class WaitTime {
                 for (int offset = 0; offset < size; offset++) {
                     result[task][time] += rawData[task][time * size + offset];
                 }
-                result[task][time] = round(result[task][time] / size, 4);
+                result[task][time] = Util.round(result[task][time] / size, 4);
             }
         }
 
@@ -431,22 +432,6 @@ public class WaitTime {
         taskWaitTime = newTaskWaitTime;
         averageWaitTimePerTask = newAverageWaitTimePerTask;
         stdWaitTimePerTask = newStdWaitTimePerTask;
-    }
-
-    /****************************************************************************
-     *
-     *	Method:     round
-     *
-     *	Purpose:    Round double numbers
-     *
-     ****************************************************************************/
-
-    public static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
     }
 
 }

@@ -1,6 +1,7 @@
 package server.Output;
 import server.Engine.Data;
 import server.Input.loadparam;
+import server.Util.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -131,12 +132,12 @@ public class Utilization {
                 for (int task = 0; task < param.totalTaskType; task++) {
                     for (int time = 0; time < numColumn; time++) {
                         double u = currentUtilization.dataget(task, time, 0);
-                        taskUtilization[op][rep][task][time] = round(u,4);
+                        taskUtilization[op][rep][task][time] = Util.round(u,4);
                         if(task == 0) {
-                            timeUtilization[op][rep][time] = round(u,4);
+                            timeUtilization[op][rep][time] = Util.round(u,4);
                         }
                         else{
-                            timeUtilization[op][rep][time] += round(u,4);
+                            timeUtilization[op][rep][time] += Util.round(u,4);
                             // to fix over 100% with float point error 1.0001
                             if (timeUtilization[op][rep][time] > 1.02) {
                                 // System.out.println("Rep: " + rep + " OP: " + op + " Task: " + task + " Time: " + time + " Val: " + timeUtilization[op][rep][time]);
@@ -173,7 +174,7 @@ public class Utilization {
                         throw new Exception("Simulation or Computation Error: max 10 mins utilization is greater than 1");
                     }
 
-                    fleetUtilization[op][rep][fleet][time] = Math.min(round(u,4),1);
+                    fleetUtilization[op][rep][fleet][time] = Math.min(Util.round(u,4),1);
 
                 }
             }
@@ -264,7 +265,7 @@ public class Utilization {
                     std[team][i] = 0.0;
                 }
                 else{
-                    std[team][i] = round(Math.sqrt(std[team][i] / (count[team][i] - 1)), 2);
+                    std[team][i] = Util.round(Math.sqrt(std[team][i] / (count[team][i] - 1)), 2);
                 }
             }
         }
@@ -320,7 +321,7 @@ public class Utilization {
                 for (int offset = 0; offset < size; offset++) {
                     result[task][time] += rawData[task][time * size + offset];
                 }
-                result[task][time] = round(result[task][time] / size, 4);
+                result[task][time] = Util.round(result[task][time] / size, 4);
             }
         }
 
@@ -425,22 +426,6 @@ public class Utilization {
         taskUtilization = newTaskUtilization;
         averageBusyTimePerTask = newAverageBusyTimePerTask;
         stdBusyTimePerTask = newStdBusyTimePerTask;
-    }
-
-    /****************************************************************************
-     *
-     *	Method:     round
-     *
-     *	Purpose:    Round double numbers
-     *
-     ****************************************************************************/
-
-    public static double round(double value, int places) {
-        if (places < 0) throw new IllegalArgumentException();
-        long factor = (long) Math.pow(10, places);
-        value = value * factor;
-        long tmp = Math.round(value);
-        return (double) tmp / factor;
     }
 
 }

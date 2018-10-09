@@ -1,6 +1,7 @@
 package server.Engine;
 import java.util.*;
 import server.Input.loadparam;
+import server.Util.*;
 
 /***************************************************************************
  *
@@ -570,8 +571,9 @@ public class Task implements Comparable<Task> {
 			adjTime = TimeToAdj * traffLevel;
 
 		}
-		return currTime + budget / traffLevel;
 
+		//High traffic should decrease the rate to increase tasks
+		return currTime + budget / traffLevel;
 	}
 
 	/****************************************************************************
@@ -584,10 +586,9 @@ public class Task implements Comparable<Task> {
 
 	private double genExpTime() throws Exception{
 
-		double expiration;
-		expiration = GenTime(vars.expDists[taskType], vars.expPms[taskType]);
-		return arrTime + serTime + expiration;
+		double expiration = GenTime(vars.expDists[taskType], vars.expPms[taskType]);
 
+		return arrTime + expiration; // Victoria comments that the expiration time should be regardless of the service time.
 	}
 
 	/****************************************************************************
@@ -679,12 +680,12 @@ public class Task implements Comparable<Task> {
 	 *
 	 *	Purpose:		To end a task wheter it's finished or expired.
 	 *
-	 ****************************************************************************/	
+	 ****************************************************************************/
 	public void setDone(double finTime) {
 		setEndTime(finTime);
 		addInterruptTime(finTime);
 		addELSTime(finTime - getBeginTime());
-		double waitTime = Queue.round(finTime - getArrTime() - getELSTime(),2);
+		double waitTime = Util.round(finTime - getArrTime() - getELSTime(),2);
 		setWaitTime(waitTime);
 
 		//if (waitTime < 0.00) {
@@ -711,7 +712,7 @@ public class Task implements Comparable<Task> {
 		System.out.println("Expire Time : " + expTime);
 		System.out.println("Finish Time : " + endTime);
 		System.out.println("Wait Time : " + waitTime);
-		System.out.println("Wait Time(Calc) : " + Queue.round(endTime - arrTime - elapsedTime, 2));
+		System.out.println("Wait Time(Calc) : " + Util.round(endTime - arrTime - elapsedTime, 2));
 		System.out.print("Here is my work schedule: ");
 		for(int i = 0; i < workSchedule.size(); i++){
 			System.out.print(workSchedule.get(i)[0] + "~" + workSchedule.get(i)[1] + "|");
