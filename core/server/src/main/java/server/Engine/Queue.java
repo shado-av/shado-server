@@ -113,7 +113,6 @@ public class Queue implements Comparable<Queue>{
                     Task top = taskqueue.peek();
                 //    top.printBasicInfo();
                     top.addInterruptTime(time);
-                    top.addELSTime(time - top.getBeginTime());
                 //    top.printBasicInfo();
                 //    System.out.println("");
                 }
@@ -125,14 +124,12 @@ public class Queue implements Comparable<Queue>{
         // If the task is processed as first priority, i.e. began immediately, then:
 
         if (taskqueue.peek() == null || switchOut) {
-            task.setBeginTime(time);
             task.addBeginTime(time);
 
             //System.out.println(task.getName() + " new task is at " + time);
         }
 
         taskqueue.add(task);
-        taskqueue.toString();
         //if (switchOut && taskqueue.peek() != task) {
             // debugging point!...
             // switchOut = false;
@@ -217,8 +214,7 @@ public class Queue implements Comparable<Queue>{
         if (currentTask != null) {
 
             // Begin working on this task.
-            currentTask.setBeginTime(time); // make it essential doesn't change queue order...no side effect
-            currentTask.addBeginTime(time);
+            currentTask.addBeginTime(time); // make it essential doesn't change queue order...no side effect
         }
 
         // Generate a new finTime for the Queue.
@@ -274,7 +270,6 @@ public class Queue implements Comparable<Queue>{
                     time = currentTask.getArrTime();
                 }
                 // add begin time as the task not yet started
-                currentTask.setBeginTime(time);
                 currentTask.addBeginTime(time);
 
                 // adjust fin time for the task

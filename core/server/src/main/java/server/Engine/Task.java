@@ -104,14 +104,6 @@ public class Task implements Comparable<Task> {
 		expired = true;
 	}
 
-	public void setELSTime (double time){
-		elapsedTime = time;
-	}
-
-	public void addELSTime (double time){
-		elapsedTime += time;
-	}
-
 	public void setWaitTime(double time){waitTime = time; }
 
 	public void setID(int id){
@@ -122,15 +114,6 @@ public class Task implements Comparable<Task> {
 
 	public void setEndTime(double time){
 		endTime = time;
-	}
-
-	public void setBeginTime(double time){
-		beginTime = time;
-
-		// non-interruptible into active! or already essential?
-		if (essential == 0  && vars.interruptable[taskType] == 0) {
-			essential = 1;
-		}
 	}
 
 	@Override
@@ -657,13 +640,22 @@ public class Task implements Comparable<Task> {
 	 *
 	 ****************************************************************************/
 
+	// set begin time and add schedule with that time
 	public void addBeginTime(double beginTime){
+		this.beginTime = beginTime;
+
+		// non-interruptible into active! or already essential?
+		if (essential == 0  && vars.interruptable[taskType] == 0) {
+			essential = 1;
+		}
+
 		double[] newSchedule = new double[2];
 		newSchedule[0] = beginTime;
 		newSchedule[1] = 0;
 		workSchedule.add(newSchedule);
 	}
 
+	// add interrupt time and calculate the elapsed time
 	public void addInterruptTime(double time){
 
 		if (workSchedule.isEmpty()) {
@@ -672,6 +664,9 @@ public class Task implements Comparable<Task> {
 
 		int lastOne = workSchedule.size() - 1;
 		workSchedule.get(lastOne)[1] = time;
+
+		// calculate current elapsed time
+		this.elapsedTime += time - this.beginTime;
 	}
 
 	/****************************************************************************
@@ -684,7 +679,6 @@ public class Task implements Comparable<Task> {
 	public void setDone(double finTime) {
 		setEndTime(finTime);
 		addInterruptTime(finTime);
-		addELSTime(finTime - getBeginTime());
 		double waitTime = Util.round(finTime - getArrTime() - getELSTime(),2);
 		setWaitTime(waitTime);
 
