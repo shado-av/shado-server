@@ -32,12 +32,12 @@ public class Queue implements Comparable<Queue>{
 
     // inspectors:
     public ArrayList<Task>  records()      { return recordtasks; }
-    public double           getfinTime()   { return finTime; }
+    public double           getFinTime()   { return finTime; }
     public double           getTime()      { return time; }
     public boolean          checkBlock()   { return blockLastSecondPhase; }
 
     // Mutator:
-    public void SetTime(double Time) {
+    public void setTime(double Time) {
         this.time = Time;
     }
 
@@ -103,13 +103,13 @@ public class Queue implements Comparable<Queue>{
 
         // Set the time of the queue to the arrival time of the task.
 
-        SetTime(Math.max(task.getArrTime(), time));
+        setTime(Math.max(task.getArrTime(), time));
 
         if(!taskqueue.isEmpty()){
             if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
                 //System.out.println("Task is switched out at " + time + " finTime: "  + finTime);
 
-                if (!redoTask) {
+                if (!redoTask) {    // redoTask is already interrupted
                     Task top = taskqueue.peek();
                 //    top.printBasicInfo();
                     top.addInterruptTime(time);
@@ -165,7 +165,7 @@ public class Queue implements Comparable<Queue>{
                 if (!currentTask.getFail()) {
                     vars.taskRecord.getNumSuccessTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][currentTask.getType()]++;
                 }
-                SetTime(finTime);
+                setTime(finTime);
 
                 if(currentTask.getNeedReDo()){
                     Task redoTask = new Task(currentTask);
@@ -185,7 +185,7 @@ public class Queue implements Comparable<Queue>{
                 // add it to incomplete task
                 vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][1]++;
                 recordtasks.add(currentTask);
-                SetTime(totalTime);
+                setTime(totalTime);
             }
         }
 
@@ -200,13 +200,16 @@ public class Queue implements Comparable<Queue>{
 
             currentTask = taskqueue.poll();
 
-            // Add expired tasks to the record
-            currentTask.setExpired();
-
             int taskType = currentTask.getType();
+            if (currentTask.getELSTime() > 0) { // incomplete
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][taskType][1]++;
+            } else {
+                // Add expired tasks to the record
+                currentTask.setExpired();
+                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][taskType][0]++;
+                //vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,currentTask));
+            }
 
-            vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][op.dpID / 100][taskType][0]++;
-            vars.expiredTasks.get(vars.replicationTracker).add(new Pair<>(op,currentTask));
             recordtasks.add(currentTask);
         }
 
@@ -254,7 +257,7 @@ public class Queue implements Comparable<Queue>{
                 recordtasks.add(currentTask);
 
                 // BugFix - setDone should be completed with setTime
-                SetTime(phaseTime);
+                setTime(phaseTime);
             }
         }
         else {
@@ -278,13 +281,17 @@ public class Queue implements Comparable<Queue>{
                 done(vars, op);
             }
             else {
-                currentTask.setExpired();
-                vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][0]++;
+                if (currentTask.getELSTime() > 0) { // incomplete
+                    vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][1]++;
+                } else { // expired
+                    currentTask.setExpired();
+                    vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][0]++;
+                }
                 recordtasks.add(taskqueue.poll());
             }
         }
 
-        SetTime(Math.max(vars.phaseBegin[onHandTask.getPhase() + 1], time));
+        setTime(Math.max(vars.phaseBegin[onHandTask.getPhase() + 1], time));
     }
 
     /****************************************************************************

@@ -46,13 +46,13 @@ public class Data {
 
     // INSPECTORS
 
-    public double dataget(int i, int j, int k) {
+    public double dataGet(int i, int j, int k) {
         return data[i][j][k];
     }
 
     // MUTATOR
 
-    public void datainc(int i, int j, int k, double inc) {
+    public void dataInc(int i, int j, int k, double inc) {
         data[i][j][k] += inc;
     }
 
@@ -64,7 +64,7 @@ public class Data {
      *
      ****************************************************************************/
 
-    public void avgdata() {
+    public void avgData() {
 
         double delta;
 

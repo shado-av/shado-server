@@ -118,13 +118,13 @@ public class loadparam {
     // Records variables
 
     public Replication[]                                reps;
-    public HashMap<Integer,ArrayList<Pair <Operator,Task>>> rep_failTask;
+    //public HashMap<Integer,ArrayList<Pair <Operator,Task>>> rep_failTask;
     public TaskRecord                                   taskRecord;
     public Utilization                                  utilization;
     public WaitTime                                     waitTime;
     public ArrayList<ArrayList<Task>>                   allTasksPerRep;
     public ArrayList<Task>                              AITasks;
-    public ArrayList<ArrayList<Pair<Operator,Task>>>    expiredTasks;
+    //public ArrayList<ArrayList<Pair<Operator,Task>>>    expiredTasks;
     public double[][]                                   crossRepCount;
     public int[]                                        repNumTasks;
 
@@ -192,11 +192,11 @@ public class loadparam {
         humanErrorRate = new double[totalTaskType];
         AITasks = new ArrayList<>();
         reps = new Replication[numReps];
-        rep_failTask = new HashMap<>();
-        expiredTasks = new ArrayList<ArrayList<Pair<Operator,Task>>>();
-        for(int i = 0; i < numReps; i++){
-            expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
-        }
+        //rep_failTask = new HashMap<>();
+        //expiredTasks = new ArrayList<ArrayList<Pair<Operator,Task>>>();
+        // for(int i = 0; i < numReps; i++){
+        //     expiredTasks.add(new ArrayList<Pair<Operator, Task>>());
+        // }
 
         int maxTeamSize = 0;
         for(int i = 0; i < teamSize.length; i++){

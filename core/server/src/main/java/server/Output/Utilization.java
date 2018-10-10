@@ -131,7 +131,7 @@ public class Utilization {
                 Data currentUtilization = taskU[op];
                 for (int task = 0; task < param.totalTaskType; task++) {
                     for (int time = 0; time < numColumn; time++) {
-                        double u = currentUtilization.dataget(task, time, 0);
+                        double u = currentUtilization.dataGet(task, time, 0);
                         taskUtilization[op][rep][task][time] = Util.round(u,4);
                         if(task == 0) {
                             timeUtilization[op][rep][time] = Util.round(u,4);
@@ -167,7 +167,7 @@ public class Utilization {
             for (int fleet = 0; fleet < param.fleetTypes; fleet++) {
                 for (int time = 0; time < numColumn; time++) {
 
-                    double u = currentUtilization.dataget(fleet, time, 0);
+                    double u = currentUtilization.dataGet(fleet, time, 0);
 
                     if (u > 1.02) {
                         //System.out.println("Rep: " + rep + " OP: " + op + " Fleet: " + fleet + " Time: " + time + " Val: " + u);

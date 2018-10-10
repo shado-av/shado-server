@@ -30,7 +30,7 @@ public class Replication {
     private VehicleSim[][]      vehicles;
     private RemoteOp            remoteOps;
     private ArrayList<Task>     globalTasks;
-    private ArrayList<Pair <Operator,Task>> failedTasks;
+    //private ArrayList<Pair <Operator,Task>> failedTasks;
 
     // Inspectors:
 
@@ -49,7 +49,7 @@ public class Replication {
     public Replication(loadparam param, int id) {
         vars = param;
         this.repID = id;
-        failedTasks = new ArrayList<>();
+        //failedTasks = new ArrayList<>();
     }
 
     /****************************************************************************
@@ -108,7 +108,7 @@ public class Replication {
         // Finish all remaining tasks
         workingUntilNewTaskArrive(remoteOps,null);
 
-        vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
+        //vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
 
     }
 
@@ -146,7 +146,7 @@ public class Replication {
             for (Operator each : remoteOp.getRemoteOp()) {
                 while (each != null && each.getQueue().taskqueue.peek() != null) {
 
-                    if (each.getQueue().getfinTime() < totaltime) {
+                    if (each.getQueue().getFinTime() < totaltime) {
                         each.getQueue().done(vars, each);
                     }
                     else {
@@ -163,14 +163,14 @@ public class Replication {
             // When the current phase ends before fin time, clear tasks
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
                 // should check the size of queue, otherwise its infinity value always trigger
-                if (op.getQueue().taskqueue.size() > 0 && op.getQueue().getfinTime() > vars.phaseBegin[vars.numPhases - 1]) {
+                if (op.getQueue().taskqueue.size() > 0 && op.getQueue().getFinTime() > vars.phaseBegin[vars.numPhases - 1]) {
                     op.getQueue().clearTask(vars, op);
                 }
             }
 
             // While finTime is under new task arrival time, complete the tasks
             while (op.getQueue().taskqueue.size() > 0 &&
-                    op.getQueue().getfinTime() < task.getArrTime()) {
+                    op.getQueue().getFinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
             }
         }
@@ -192,6 +192,7 @@ public class Replication {
         // Turn Over tasks should be add to its corresponding operator
 
         if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
+            // TODO - task.getTeamType for remoteOp index => mixed variable using => bug prone
             remoteOps.getRemoteOp()[task.getTeamType()].getQueue().add(task, false);
             return;
         }

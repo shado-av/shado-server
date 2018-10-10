@@ -114,7 +114,7 @@ public class Simulation {
         vars.taskRecord.failedAnalysis();
 
         for (Data each: RemoteOpOutput){
-            each.avgdata();
+            each.avgData();
         }
         // for (Data each: operatorOutput){
         //     each.avgdata();

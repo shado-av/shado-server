@@ -135,7 +135,7 @@ public class WaitTime {
             Data currentWaitTime = taskU[op];
             for (int task = 0; task < param.totalTaskType; task++) {
                 for (int time = 0; time < numColumn; time++) {
-                    double u = currentWaitTime.dataget(task, time, 0);
+                    double u = currentWaitTime.dataGet(task, time, 0);
                     taskWaitTime[op][rep][task][time] = Util.round(u,4);
                     if(task == 0) {
                         timeWaitTime[op][rep][time] = Util.round(u,4);
@@ -159,7 +159,7 @@ public class WaitTime {
             for (int fleet = 0; fleet < param.fleetTypes; fleet++) {
                 for (int time = 0; time < numColumn; time++) {
 
-                    double u = currentWaitTime.dataget(fleet, time, 0);
+                    double u = currentWaitTime.dataGet(fleet, time, 0);
 
                     fleetWaitTime[op][rep][fleet][time] = Util.round(u,4);
                 }

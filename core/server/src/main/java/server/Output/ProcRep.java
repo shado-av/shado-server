@@ -219,17 +219,17 @@ public class ProcRep {
 
             if (endscale > i) {
                 if (!startcheck) {
-                    incremented.datainc(taskType, i - 1, 0, i - beginscale);
+                    incremented.dataInc(taskType, i - 1, 0, i - beginscale);
                     startcheck = true;
                 } else {
-                    incremented.datainc(taskType, i - 1, 0, 1);
+                    incremented.dataInc(taskType, i - 1, 0, 1);
                 }
             } else {
                 if (!startcheck) {
-                    incremented.datainc(taskType, i - 1, 0, endscale - beginscale);
+                    incremented.dataInc(taskType, i - 1, 0, endscale - beginscale);
                     break;
                 } else {
-                    incremented.datainc(taskType, i - 1, 0, endscale - i + 1);
+                    incremented.dataInc(taskType, i - 1, 0, endscale - i + 1);
                     break;
                 }
             }
@@ -256,7 +256,7 @@ public class ProcRep {
             Data processed = RemoteOpdata[i];
             for (int x = 0; x < processed.data.length; x++){
                 for (int y = 0; y < processed.data[0].length; y++){
-                    processed.datainc(x, y, repID, utilization_task[i].dataget(x, y, 0));
+                    processed.dataInc(x, y, repID, utilization_task[i].dataGet(x, y, 0));
                 }
             }
         }
