@@ -117,11 +117,11 @@ public class Operator {
 		//check finished tasks
 		for (int i = myQueue.records().size() - 1; i >= 0; i--) {
 
-			if (timeNow - myQueue.records().get(i).getEndTime() > 10) {
+			Task t =  myQueue.records().get(i);
+
+			if (timeNow - t.getEndTime() > 10) {
 				break;
 			}
-
-			Task t =  myQueue.records().get(i);
 
 			for(double[] workingTime : t.workSchedule) {
 

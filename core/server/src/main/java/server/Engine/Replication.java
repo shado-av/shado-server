@@ -2,7 +2,6 @@ package server.Engine;
 
 import server.Input.loadparam;
 import java.util.*;
-import javafx.util.Pair;
 import java.util.ArrayList;
 import java.util.stream.IntStream;
 
@@ -487,6 +486,7 @@ public class Replication {
         if (vars.hasTurnOver[0] == 1) {
             for (int i = 0; i < vars.numRemoteOp; i++) {
                 Task newTask = new Task(vars.TURN_OVER_BEGIN_TASK, 0, vars, true, 0);
+                //TODO: team member... not teamtype
                 newTask.setTeamType(i);
                 globalTasks.add(newTask);
             }

@@ -37,7 +37,6 @@ public class GreetingController {
 
     @RequestMapping(value= "/shado/runShado",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
-        //TODO: Sanity Check and pass to Shado Object
         String sessionNum = dateFormat.format(date)+"_"+counter.incrementAndGet();
         directory = homeDirectory + sessionNum + "/";
         shado = new Shado(sessionNum, directory);
