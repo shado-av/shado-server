@@ -206,7 +206,7 @@ public class loadparam {
         }
 
         // create the followed task matrx
-        checkFollowedTask();
+        // checkFollowedTask();
     }
 
     /****************************************************************************
@@ -373,29 +373,29 @@ public class loadparam {
     }
 
 
-    /****************************************************************************
-     *
-     *	Method:	        checkFollowedTask
-     *
-     *	Purpose:		Build the followedTask matrix to record the followed tasks'
-     *                  type for each task.
-     *
-     ****************************************************************************/
-    private void checkFollowedTask(){
+    // /****************************************************************************
+    //  *
+    //  *	Method:	        checkFollowedTask
+    //  *
+    //  *	Purpose:		Build the followedTask matrix to record the followed tasks'
+    //  *                  type for each task.
+    //  *
+    //  ****************************************************************************/
+    // private void checkFollowedTask(){
 
-        followedTask = new ArrayList<>();
-        for(int i = 0; i < leadTask.length; i++){
-            ArrayList<Integer> n = new ArrayList<>();
-            followedTask.add(n);
-        }
+    //     followedTask = new ArrayList<>();
+    //     for(int i = 0; i < leadTask.length; i++){
+    //         ArrayList<Integer> n = new ArrayList<>();
+    //         followedTask.add(n);
+    //     }
 
-        for (int i = 0; i < leadTask.length; i++) {
-            if (leadTask[i] >= 0) {
-                followedTask.get(leadTask[i]).add(i);
-            }
-        }
+    //     for (int i = 0; i < leadTask.length; i++) {
+    //         if (leadTask[i] >= 0) {
+    //             followedTask.get(leadTask[i]).add(i);
+    //         }
+    //     }
 
-    }
+    // }
 
 
 

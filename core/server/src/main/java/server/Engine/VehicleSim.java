@@ -1,9 +1,6 @@
 package server.Engine;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.stream.*;
 import server.Input.loadparam;
-import javafx.util.Pair;
 
 /***************************************************************************
  *
@@ -34,6 +31,8 @@ public class VehicleSim  {
     // This is an arraylist of ALL tasks in the order that they're arriving.
     public ArrayList<Task> globalTasks;
 
+    private int fleetType;
+
 
     /****************************************************************************
      *
@@ -43,13 +42,14 @@ public class VehicleSim  {
      *
      ****************************************************************************/
 
-    public VehicleSim(loadparam param, int vehicleid,  Operator[] remoteOps, ArrayList<Task> list) {
+    public VehicleSim(loadparam param, int vehicleID,  Operator[] remoteOps, ArrayList<Task> list) {
 
         globalTasks = list;
         operators = remoteOps;
         vars = param;
-        vehicleID = vehicleid;
+        this.vehicleID = vehicleID;
 
+        fleetType = vehicleID/100;
     }
 
     /****************************************************************************
@@ -62,15 +62,14 @@ public class VehicleSim  {
 
     public synchronized void taskgen() throws Exception{
 
-        // For each type of tasks:
-        int fleetType = this.vehicleID/100;
-
         //If teamCoord Presents task number = total tasknum -1
         for (int i = 0; i < vars.fleetHetero[fleetType].length; i++) {
 
+            int taskType = vars.fleetHetero[fleetType][i];
+            if (vars.leadTask[i] >= 0) continue;    // only lead tasks can be created here
+
             // Create a new empty list of Tasks
             ArrayList<Task> indlist = new ArrayList<Task>();
-            int taskType = vars.fleetHetero[fleetType][i];
 
             // Start a new task with PrevTime = 0
             Task newTask = genRegularTask(taskType, indlist, null);
@@ -119,9 +118,16 @@ public class VehicleSim  {
 
         indlist.add(newTask);
 
-        if (!vars.followedTask.get(taskType).isEmpty()) {
-            genLinkedTask(indlist, newTask);
+        // if any followed task is available and that task is belonged to this vehicle
+        for (int i = 0; i < vars.fleetHetero[fleetType].length; i++) {
+            if (vars.leadTask[vars.fleetHetero[fleetType][i]] == taskType) { // Followed Task
+                genLinkedTask(i, indlist, newTask);      // add it
+            }
         }
+
+        // if (!vars.followedTask.get(taskType).isEmpty()) {
+        //     genLinkedTask(indlist, newTask);
+        // }
 
         return newTask;
     }
@@ -135,23 +141,18 @@ public class VehicleSim  {
      *
      ****************************************************************************/
 
-    private void genLinkedTask(ArrayList<Task> indlist, Task leadTask) throws Exception{
+    private void genLinkedTask(int taskType, ArrayList<Task> indlist, Task leadTask) throws Exception{
 
-        int leadTaskType = leadTask.getType();
         double prevTime = leadTask.getArrTime();
-        ArrayList<Integer> followedTaskType = vars.followedTask.get(leadTaskType);
 
-        if (followedTaskType.isEmpty()) {
-            return;
-        }
+        Task newTask = new Task(taskType, prevTime, vars, true, vehicleID);
 
-        for(int taskType : followedTaskType){
-            Task newTask = new Task(taskType, prevTime, vars, true, vehicleID);
-            if(newTask.getArrTime() < 0) continue;
+        if(newTask.getArrTime() >= 0) {
             newTask.setID(vehicleID);
             indlist.add(newTask);
+
+            //TODO: Followed task should have its lead task as a reference, which should be used at sorting.
+            // newTask.setLeadTask(leadTask);
         }
-
     }
-
 }
