@@ -192,26 +192,23 @@ public class Replication {
     public void puttask(Task task) {
 
         // Turn Over tasks should be add to its corresponding operator
-
         if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
             remoteOps.getRemoteOp()[task.getOpNum()].getQueue().add(task, false);
             return;
         }
 
         // Create a new arraylist of queue:
-
-        ArrayList<Queue> proc = new ArrayList<Queue>();
-        ArrayList<Operator> working = new ArrayList<>(proc.size());
+        ArrayList<Operator> availableWorkers = new ArrayList<>();
         ArrayList<Operator> flexPosition = new ArrayList<>(vars.flexTeamSize);
 
-        findAvaliableOperator(proc, working, task, flexPosition);
+        findAvaliableOperator(availableWorkers, task, flexPosition);
 
-        if (working.size()==0) {
+        if (availableWorkers.size()==0) {
             task.setExpired();
             return;
         }
 
-        Operator optimal_op = findOptimalOperator(working);
+        Operator optimal_op = findOptimalOperator(availableWorkers);
 
         //check if need flex position operator to help
         if(vars.hasFlexPosition == 1 && optimal_op.getBusyIn10min(task.getArrTime()) > 7){
@@ -267,7 +264,7 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private void findAvaliableOperator(ArrayList<Queue> proc, ArrayList<Operator> working, Task task, ArrayList<Operator> flexPosition){
+    private void findAvaliableOperator(ArrayList<Operator> availableWorkers, Task task, ArrayList<Operator> flexPosition){
 
         if(task.getType() == vars.TC_SOME_TASK || task.getType() == vars.TC_FULL_TASK){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
@@ -277,21 +274,20 @@ public class Replication {
                 else if (vars.TCALevel[operatorType] == 'S')
                     task.changeServTime(0.7);
             }
-            for(int j = 0; j < vars.numRemoteOp; j++ ){
+            for(int j = 0; j < vars.numRemoteOp; j++ ){ // team communication can be handled only by the team members
                 if(remoteOps.getRemoteOp()[j] != null && remoteOps.getRemoteOp()[j].dpID / 100 == operatorType) {
-                    //Put task in appropriate Queue
-                    proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                    working.add(remoteOps.getRemoteOp()[j]);
+                    //Put operator in the available list
+                    availableWorkers.add(remoteOps.getRemoteOp()[j]);
                 }
             }
         }
-        else if(task.getType() == vars.EXOGENOUS_TASK){ // exogenous task can be handled by all the operator
+        else if(task.getType() == vars.EXOGENOUS_TASK){ // exogenous task can be handled by all the operators
             for(int j = 0; j < remoteOps.getRemoteOp().length; j++){
-                proc.add(remoteOps.getRemoteOp()[j].getQueue());
-                working.add(remoteOps.getRemoteOp()[j]);
+                //Put operator in the available list
+                availableWorkers.add(remoteOps.getRemoteOp()[j]);
             }
         }
-        else { // regular task. If the task can be operated by this operator, get his queue.
+        else { // regular task. If the task can be operated by this operator, add to the available ops.
             for (int j = 0; j < vars.numRemoteOp; j++) {
 
                 Operator eachOperator = remoteOps.getRemoteOp()[j];
@@ -299,9 +295,8 @@ public class Replication {
 
                     // if the task is not coming from other sources or operator is not AI
                     if (task.getVehicleID() != vars.OTHER_SOURCES || !eachOperator.isAI) {
-                        //Put task in appropriate Queue
-                        proc.add(eachOperator.getQueue());
-                        working.add(eachOperator);
+                        //Put operator in the available list
+                        availableWorkers.add(eachOperator);
                     }
                 }
 
@@ -323,17 +318,17 @@ public class Replication {
      *	Method:		    findOptimalOperator
      *
      *	Purpose:	    Return the operator who has the shortest queue in the
-     *                  working list
+     *                  availableWorkers list
      *
      ****************************************************************************/
     //SCHEN 2/7
-    private Operator findOptimalOperator(ArrayList<Operator> working){
+    private Operator findOptimalOperator(ArrayList<Operator> availableWorkers){
 
-        Operator optimal_op = working.get(0);
-        for(Operator op: working){
+        Operator optimal_op = availableWorkers.get(0);
+        for(Operator op: availableWorkers){
             if(op.getQueue().size() <= optimal_op.getQueue().size()){
                 if(op.getQueue().size() == optimal_op.getQueue().size()) {
-                    if (Math.random() > 0.5)
+                    if (Math.random() > 0.5)    // if same availableWorkers size, assign random
                         optimal_op = op;
                 }
                 else
