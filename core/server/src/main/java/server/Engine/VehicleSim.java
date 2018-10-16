@@ -148,7 +148,8 @@ public class VehicleSim  {
         Task newTask = new Task(taskType, prevTime, vars, true, vehicleID);
 
         if(newTask.getArrTime() >= 0) {
-            newTask.setID(vehicleID);
+            //no need it's already assigned at new
+            //newTask.setID(vehicleID);
             indlist.add(newTask);
 
             //TODO: Followed task should have its lead task as a reference, which should be used at sorting.

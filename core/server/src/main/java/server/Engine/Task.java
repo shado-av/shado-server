@@ -25,20 +25,24 @@ public class Task implements Comparable<Task> {
 	private String name;
 	private int taskType;
 	private int priority;
-	private int teamType;
+	private int teamType;	// operator team type to be used for Team Communication tasks
+							// This can be used for team specific tasks
+	private int opNum = -1;	// operator index of remoteOps to be used for turn over tasks
+							// This may be used for operator specific tasks
 	private int phase;
 	private int shiftPeriod;
 	public loadparam vars;
 	private int vehicleID;
-	private double lvl_SOME = 0.7; //fleet autonomy level multipliers lvl_SOME _FULL _None
-	private double lvl_FULL = 0.3;
-	private double lvl_None = 1.0;
+	private final static double lvl_SOME = 0.7; //fleet autonomy level multipliers lvl_SOME _FULL _None
+	private final static double lvl_FULL = 0.3;
+	private final static double lvl_None = 1.0;
 
 	//Task specific variables.
-	private int essential;	// Task specific essential, usually comes from TaskTypes, but also effective when a task is on hand as non-interruptible
-	private double prevTime; 	//Time last task in same type arrived
+	private int essential;		// Task specific essential, usually comes from TaskTypes, but also effective when a task is on hand as non-interruptible
+	private double prevTime; 	// Time last task of the same type arrived
 	private double arrTime;
-	private double beginTime;
+	private double beginTime;	// current start time of workSchedule
+								// ex) For workSchedule 1~5 and 6~10, current beginTime is 6.
 	private double serTime;		// total service time required
 	private double endTime;
 	private double expTime;
@@ -61,6 +65,7 @@ public class Task implements Comparable<Task> {
 	public int getPhase(){ return phase;}
 
 	public int getTeamType() { return teamType; }
+	public int getOpNum() { return opNum; }
 
 	public boolean getNeedReDo() { return needReDo; }
 
@@ -111,6 +116,7 @@ public class Task implements Comparable<Task> {
 	}
 
 	public void setTeamType(int type) {teamType = type;}
+	public void setOpNum(int num) {opNum = num;}
 
 	public void setEndTime(double time){
 		endTime = time;
@@ -481,7 +487,7 @@ public class Task implements Comparable<Task> {
 
 	private double Triangular(double min, double mode, double max) throws Exception{
 
-		if (!(min < mode && mode < max)) {
+		if (!(min <= mode && mode <= max)) {
 			throw new Exception("For the triangular distribution: please offer min < mode < max.");
 		}
 

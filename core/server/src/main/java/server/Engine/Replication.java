@@ -32,9 +32,9 @@ public class Replication {
     //private ArrayList<Pair <Operator,Task>> failedTasks;
 
     // Inspectors:
-
     public RemoteOp getRemoteOp() { return remoteOps; }
     public int getRepID() { return repID; }
+    public ArrayList<Task> getTasks() { return globalTasks; }
 
 
     /****************************************************************************
@@ -45,24 +45,12 @@ public class Replication {
      *
      ****************************************************************************/
 
-    public Replication(loadparam param, int id) {
+    public Replication(loadparam param, int id) throws Exception {
         vars = param;
         this.repID = id;
         //failedTasks = new ArrayList<>();
-    }
 
-    /****************************************************************************
-     *
-     *	Method:		run
-     *
-     *	Purpose:	Run the simulation once given vars.
-     *
-     ****************************************************************************/
-
-    public void run() throws Exception{
-
-        // Initialize control center.
-
+        // Initialize tasks array
         globalTasks = new ArrayList<Task>();
 
         // add turn over task
@@ -99,16 +87,26 @@ public class Replication {
         sortTask();
 
         vars.allTasksPerRep.add(globalTasks);
+    }
+
+    /****************************************************************************
+     *
+     *	Method:		run
+     *
+     *	Purpose:	Run the simulation once given vars.
+     *
+     ****************************************************************************/
+
+    public void run() throws Exception{
 
         for (Task task : globalTasks) {
             workingUntilNewTaskArrive(remoteOps,task);
             puttask(task);
         }
         // Finish all remaining tasks
-        workingUntilNewTaskArrive(remoteOps,null);
+        workingRemainedTasks(remoteOps);
 
         //vars.rep_failTask.put(vars.replicationTracker,this.failedTasks);
-
     }
 
 
@@ -129,6 +127,31 @@ public class Replication {
 
     /****************************************************************************
      *
+     *	Method:		    workingRemainedTasks
+     *
+     *	Purpose:	    When there are no more tasks arriving, finish tasks in the queue
+     *
+     ****************************************************************************/
+
+    public void workingRemainedTasks(RemoteOp remoteOp) throws NullPointerException{
+
+        //if no new task arrive, finish the remained tasks in the queue
+        double totaltime = vars.numHours * 60;
+        for (Operator each : remoteOp.getRemoteOp()) {
+            while (each != null && each.getQueue().peek() != null) {
+
+                if (each.getQueue().getFinTime() < totaltime) {
+                    each.getQueue().done(vars, each);
+                }
+                else {
+                    each.getQueue().clearTask(vars, each);
+                }
+            }
+        }
+    }
+
+    /****************************************************************************
+     *
      *	Method:		    workingUntilNewTaskArrive
      *
      *	Purpose:	    For each operator, complete all the tasks in its queue,
@@ -136,44 +159,24 @@ public class Replication {
      *              	time.
      *
      ****************************************************************************/
-
     public void workingUntilNewTaskArrive(RemoteOp remoteOp,Task task) throws NullPointerException{
-
-        //if no new task arrive, finish the remained tasks in the queue
-        if (task == null){
-            double totaltime = vars.numHours * 60;
-            for (Operator each : remoteOp.getRemoteOp()) {
-                while (each != null && each.getQueue().taskqueue.peek() != null) {
-
-                    if (each.getQueue().getFinTime() < totaltime) {
-                        each.getQueue().done(vars, each);
-                    }
-                    else {
-                        each.getQueue().clearTask(vars, each);
-                    }
-                }
-            }
-            return;
-        }
-
         //When a new task is added, let operator finish all their tasks
         for(Operator op: remoteOp.getRemoteOp()) {
 
             // When the current phase ends before fin time, clear tasks
             if (vars.numPhases > 1 && op.checkPhase() == vars.numPhases - 2) {
                 // should check the size of queue, otherwise its infinity value always trigger
-                if (op.getQueue().taskqueue.size() > 0 && op.getQueue().getFinTime() > vars.phaseBegin[vars.numPhases - 1]) {
+                if (op.getQueue().size() > 0 && op.getQueue().getFinTime() > vars.phaseBegin[vars.numPhases - 1]) {
                     op.getQueue().clearTask(vars, op);
                 }
             }
 
             // While finTime is under new task arrival time, complete the tasks
-            while (op.getQueue().taskqueue.size() > 0 &&
+            while (op.getQueue().size() > 0 &&
                     op.getQueue().getFinTime() < task.getArrTime()) {
                 op.getQueue().done(vars, op);
             }
         }
-
     }
 
 
@@ -191,8 +194,7 @@ public class Replication {
         // Turn Over tasks should be add to its corresponding operator
 
         if (task.getType() == vars.TURN_OVER_BEGIN_TASK || task.getType() == vars.TURN_OVER_END_TASK) {
-            // TODO - task.getTeamType for remoteOp index => mixed variable using => bug prone
-            remoteOps.getRemoteOp()[task.getTeamType()].getQueue().add(task, false);
+            remoteOps.getRemoteOp()[task.getOpNum()].getQueue().add(task, false);
             return;
         }
 
@@ -329,8 +331,8 @@ public class Replication {
 
         Operator optimal_op = working.get(0);
         for(Operator op: working){
-            if(op.getQueue().taskqueue.size() <= optimal_op.getQueue().taskqueue.size()){
-                if(op.getQueue().taskqueue.size() == optimal_op.getQueue().taskqueue.size()) {
+            if(op.getQueue().size() <= optimal_op.getQueue().size()){
+                if(op.getQueue().size() == optimal_op.getQueue().size()) {
                     if (Math.random() > 0.5)
                         optimal_op = op;
                 }
@@ -486,8 +488,7 @@ public class Replication {
         if (vars.hasTurnOver[0] == 1) {
             for (int i = 0; i < vars.numRemoteOp; i++) {
                 Task newTask = new Task(vars.TURN_OVER_BEGIN_TASK, 0, vars, true, 0);
-                //TODO: team member... not teamtype
-                newTask.setTeamType(i);
+                newTask.setOpNum(i);
                 globalTasks.add(newTask);
             }
         }
@@ -495,7 +496,7 @@ public class Replication {
         if (vars.hasTurnOver[1] == 1) {
             for (int i = 0; i < vars.numRemoteOp; i++) {
                 Task newTask = new Task(vars.TURN_OVER_END_TASK, 0, vars, true, 0);
-                newTask.setTeamType(i);
+                newTask.setOpNum(i);
                 globalTasks.add(newTask);
             }
         }

@@ -93,9 +93,9 @@ public class Operator {
 		double time = 0;
 
 		//check if there is currently doing task
-		if (!myQueue.taskqueue.isEmpty()){
+		if (!myQueue.isEmpty()){
 
-			Task t = myQueue.taskqueue.peek();
+			Task t = myQueue.peek();
 
 			for(double[] workingTime : t.workSchedule) {
 

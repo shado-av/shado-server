@@ -71,12 +71,12 @@ public class Queue implements Comparable<Queue>{
 
     @Override
     public int compareTo(Queue other) {
-        return this.taskqueue.size() - other.taskqueue.size();
+        return this.size() - other.size();
     }
 
     @Override
     public String toString() {
-        System.out.println("My queue has " + taskqueue.size() + " tasks and op is " + operator.name + " and dpID is " + operator.dpID);
+        System.out.println("My queue has " + size() + " tasks and op is " + operator.name + " and dpID is " + operator.dpID);
         System.out.println("The time is " + time + " , the finTime is " + finTime);
 
         Iterator<Task> it = taskqueue.iterator();
@@ -87,6 +87,23 @@ public class Queue implements Comparable<Queue>{
         System.out.println(" ");
 
         return "The time is " + time + " , the finTime is " + finTime;
+    }
+
+    // Priority Queue Interfaces here
+    public Task peek() {
+        return taskqueue.peek();
+    }
+
+    public Task poll() {
+        return taskqueue.poll();
+    }
+
+    public boolean isEmpty() {
+        return taskqueue.isEmpty();
+    }
+
+    public int size() {
+        return taskqueue.size();
     }
 
     /****************************************************************************
@@ -105,12 +122,12 @@ public class Queue implements Comparable<Queue>{
 
         setTime(Math.max(task.getArrTime(), time));
 
-        if(!taskqueue.isEmpty()){
-            if(task.compareTo(taskqueue.peek()) < 0){ //the new task will go in front of the current top task
+        if(!isEmpty()){
+            if(task.compareTo(peek()) < 0){ //the new task will go in front of the current top task
                 //System.out.println("Task is switched out at " + time + " finTime: "  + finTime);
 
                 if (!redoTask) {    // redoTask is already interrupted
-                    Task top = taskqueue.peek();
+                    Task top = peek();
                 //    top.printBasicInfo();
                     top.addInterruptTime(time);
                 //    top.printBasicInfo();
@@ -123,14 +140,14 @@ public class Queue implements Comparable<Queue>{
 
         // If the task is processed as first priority, i.e. began immediately, then:
 
-        if (taskqueue.peek() == null || switchOut) {
+        if (peek() == null || switchOut) {
             task.addBeginTime(time);
 
             //System.out.println(task.getName() + " new task is at " + time);
         }
 
         taskqueue.add(task);
-        //if (switchOut && taskqueue.peek() != task) {
+        //if (switchOut && peek() != task) {
             // debugging point!...
             // switchOut = false;
             //throw new Exception("Simulation Error: Task ordering doens't work correctly!");
@@ -154,7 +171,7 @@ public class Queue implements Comparable<Queue>{
     public void done(loadparam vars,Operator op) {
 
         // This if statement avoids error when calling done on an empty queue.
-        Task currentTask = taskqueue.poll();    // remove current task from queue
+        Task currentTask = poll();    // remove current task from queue
         double totalTime = vars.numHours * 60;
         if (currentTask != null) {
 
@@ -192,13 +209,13 @@ public class Queue implements Comparable<Queue>{
         // If there are ANOTHER task in the queue following the completion of this one:
 
         //Remove all the expired tasks
-        while (taskqueue.peek() != null) {
+        while (peek() != null) {
 
-            if (taskqueue.peek().getExpTime() > time) {
+            if (peek().getExpTime() > time) {
                 break;
             }
 
-            currentTask = taskqueue.poll();
+            currentTask = poll();
 
             int taskType = currentTask.getType();
             if (currentTask.getELSTime() > 0) { // incomplete
@@ -213,7 +230,7 @@ public class Queue implements Comparable<Queue>{
             recordtasks.add(currentTask);
         }
 
-        currentTask = taskqueue.peek();
+        currentTask = peek();
         if (currentTask != null) {
 
             // Begin working on this task.
@@ -238,7 +255,7 @@ public class Queue implements Comparable<Queue>{
     public void clearTask(loadparam vars, Operator op){
 
         blockLastSecondPhase = true;
-        Task onHandTask = taskqueue.peek();
+        Task onHandTask = peek();
         Task currentTask;
 
         //Last task in the queue has been started, if it is non-essential it will be stopped and recorded as unfinished task
@@ -249,7 +266,7 @@ public class Queue implements Comparable<Queue>{
                 done(vars, op);
             }
             else {
-                currentTask = taskqueue.poll();
+                currentTask = poll();
                 double phaseTime = vars.phaseBegin[currentTask.getPhase() + 1];
 
                 currentTask.setDone(phaseTime);
@@ -266,7 +283,7 @@ public class Queue implements Comparable<Queue>{
 
         //other task will be set to missed and clear
 
-        while ((currentTask = taskqueue.peek()) != null) {
+        while ((currentTask = peek()) != null) {
 
             if (vars.essential[currentTask.getType()] == 1) {
                 if (time < currentTask.getArrTime()) {
@@ -287,7 +304,7 @@ public class Queue implements Comparable<Queue>{
                     currentTask.setExpired();
                     vars.taskRecord.getNumFailedTask()[vars.replicationTracker][currentTask.getPhase()][operator.dpID / 100][currentTask.getType()][0]++;
                 }
-                recordtasks.add(taskqueue.poll());
+                recordtasks.add(poll());
             }
         }
 
@@ -305,16 +322,14 @@ public class Queue implements Comparable<Queue>{
 
     private void finTime() {
 
-        // If there is no current task, the finTime will be infinite.
+        Task onhand = peek();
 
-        if (taskqueue.peek() == null) {
+        // If there is no current task, the finTime will be infinite.
+        if (onhand == null) {
             finTime = Double.POSITIVE_INFINITY;
         }
-
         // Otherwise grab the current task and return a finish time.
-
         else {
-            Task onhand = taskqueue.peek();
             finTime = onhand.getBeginTime() + onhand.getSerTime() - onhand.getELSTime();
         }
     }
