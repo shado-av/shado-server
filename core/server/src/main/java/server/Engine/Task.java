@@ -231,27 +231,27 @@ public class Task implements Comparable<Task> {
 			} //shift transfer-of-duty period at the beginning of shift
 			else if(type == vars.TURN_OVER_BEGIN_TASK){
 				arrTime = PrevTime;
-				if(vars.phaseBegin[1] == 0) {
+				//if(vars.phaseBegin[1] == 0) {
 					serTime = GenTime(vars.turnOverDists[0], vars.turnOverPms[0]);
 					vars.phaseBegin[1] = serTime;
-				}
-				else{
-					serTime = vars.phaseBegin[1];
-				}
+				//}
+				// else{
+				// 	serTime = vars.phaseBegin[1];
+				// }
 				priority = 7;
 				phase = 0;
 			} //shift transfer-of-duty period at the ending of shift
 			else if(type == vars.TURN_OVER_END_TASK){
 
-				if(vars.phaseBegin[vars.numPhases - 1] == 0){
+				//if(vars.phaseBegin[vars.numPhases - 1] == 0){
 					serTime = GenTime(vars.turnOverDists[1], vars.turnOverPms[1]);
 					arrTime = vars.numHours * 60 - serTime;
 					vars.phaseBegin[vars.numPhases - 1] = arrTime;
-				}
-				else{
-					arrTime = vars.phaseBegin[vars.numPhases - 1];
-					serTime = vars.numHours * 60 - arrTime;
-				}
+				//}
+				// else{
+				// 	arrTime = vars.phaseBegin[vars.numPhases - 1];
+				// 	serTime = vars.numHours * 60 - arrTime;
+				// }
 
 				priority = 7;
 				phase = vars.numPhases - 1;
