@@ -2,7 +2,10 @@ package server.Engine;
 import com.google.gson.Gson;
 import server.Input.loadparam;
 
-import java.util.Arrays;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 
 /**
  * Created by siyuchen on 3/3/18.
@@ -11,9 +14,11 @@ import java.util.Arrays;
 public class Parser {
 
     String input;
+    MongoClient mongoClient;
 
-    public Parser(String input){
+    public Parser(String input, MongoClient mongoClient){
         this.input = input;
+        this.mongoClient = mongoClient;
     }
 
     /****************************************************************************
@@ -28,9 +33,34 @@ public class Parser {
         Gson g = new Gson();
         in = g.fromJson(this.input, loadparam.class);
         checkInput(in);
+
+        saveInput(in);
         return in;
     }
 
+    /****************************************************************************
+     *
+     *	Method:			saveInput
+     *
+     *	Purpose:		save the parsed data to the database
+     *
+     ****************************************************************************/
+    synchronized private void saveInput(loadparam in) {
+        //Save input data to the database
+        //MongoClientURI uri = new MongoClientURI(uri);
+        //MongoClient mongoClient = new MongoClient(uri);
+        try {
+            MongoDatabase database = mongoClient.getDatabase("shado");
+            MongoCollection<Document> collection = database.getCollection("userInput");
+
+            Document doc = Document.parse(input);
+            collection.insertOne(doc);
+        } catch(Exception e) {
+            System.out.println("Database has some problems...");
+        }
+
+        //mongoClient.close();
+    }
 
     /****************************************************************************
      *
@@ -127,7 +157,7 @@ public class Parser {
                     throw new Exception("Please check the auto level input");
         }
 
-        if (in.fleetHetero.length != in.fleetTypes || in.fleetHetero[0].length <= 0 || in.fleetHetero[0].length > in.numTaskTypes)
+        if (in.fleetHetero.length != in.fleetTypes || in.fleetHetero[0].length < 0 || in.fleetHetero[0].length > in.numTaskTypes)
             throw new Exception("Please check the fleet hetero input");
 
         if (in.traffic.length != in.fleetTypes || in.traffic[0].length != in.numHours)

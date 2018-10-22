@@ -8,6 +8,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.zip.ZipOutputStream;
 
+import com.mongodb.MongoClient;
+
 
 /***************************************************************************
  * 	FILE: 			Shado.java
@@ -31,10 +33,10 @@ public class Shado{
     }
 
     private static ZipOutputStream zos;
-	public void runShado(String inputJson) throws Exception{
+	public void runShado(String inputJson, MongoClient mongoClient) throws Exception{
 
 	    // Get input data
-        Parser parser = new Parser(inputJson);
+        Parser parser = new Parser(inputJson, mongoClient);
         loadparam data = new loadparam();
         data = parser.parseJSON(data);
         data.setGlobalData();

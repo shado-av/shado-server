@@ -17,30 +17,51 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import server.Engine.Shado;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletResponse;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 
 @CrossOrigin(maxAge = 3600)
 @RestController
-public class GreetingController {
+public class GreetingController implements DisposableBean {
+
+    @Value("${mongodb.uri}")
+    private String uri;
 
     private final AtomicLong counter = new AtomicLong();
     private Shado shado;
     DateFormat dateFormat = new SimpleDateFormat("yyMMddHHmmssZ");
     Date date = new Date();
+    MongoClientURI mUri = null;
+    MongoClient mongoClient = null;
 
     private String homeDirectory = System.getProperty("user.home") + "/out/";
     private String directory = homeDirectory;
 
+    @PostConstruct
+    public void createMongoClient() {
+        System.out.println(uri);
+        if (uri!=null) {
+            mUri = new MongoClientURI(uri);
+            mongoClient = new MongoClient(mUri);
+        }
+    }
+
     @RequestMapping(value= "/shado/runShado",method = RequestMethod.POST)
     public String index(@RequestBody String payload) throws Exception{
         String sessionNum = dateFormat.format(date)+"_"+counter.incrementAndGet();
+
         directory = homeDirectory + sessionNum + "/";
         shado = new Shado(sessionNum, directory);
-        shado.runShado(payload);
+        shado.runShado(payload, mongoClient);
 //        System.out.println(payload);
         return "Shado Successfully Run! SESSION #: "+ sessionNum + "\n";
     }
@@ -159,6 +180,13 @@ public class GreetingController {
             }
             inputStream.close();            
         };
+    }
+
+    public void destroy() {
+        if (mongoClient != null) {
+            mongoClient.close();
+            mongoClient = null;
+        }
     }
 
 }
