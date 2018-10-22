@@ -205,6 +205,7 @@ public class Replication {
 
         if (availableWorkers.size()==0) {
             task.setExpired();
+            //no operators assigned... taskRecord unrecordable
             return;
         }
 
@@ -264,7 +265,7 @@ public class Replication {
      *
      ****************************************************************************/
 
-    private void findAvaliableOperator(ArrayList<Operator> availableWorkers, Task task, ArrayList<Operator> flexPosition){
+    public void findAvaliableOperator(ArrayList<Operator> availableWorkers, Task task, ArrayList<Operator> flexPosition){
 
         if(task.getType() == vars.TC_SOME_TASK || task.getType() == vars.TC_FULL_TASK){  // team coordination task, which can only be handled within certain team
             int operatorType = task.getTeamType();
@@ -294,6 +295,7 @@ public class Replication {
                 if (eachOperator != null && vars.opExpertise[eachOperator.dpID / 100][task.getType()][task.getVehicleID() / 100] == 1) {
 
                     // if the task is not coming from other sources or operator is not AI
+                    // in other words, AI doesn't work on other sources
                     if (task.getVehicleID() != vars.OTHER_SOURCES || !eachOperator.isAI) {
                         //Put operator in the available list
                         availableWorkers.add(eachOperator);
@@ -305,6 +307,7 @@ public class Replication {
         }
 
         // If task is not comping from other sources and there is a flex team
+        // In other words, flex team doesn't work on other sources
         if (task.getVehicleID() != vars.OTHER_SOURCES && vars.hasFlexPosition == 1) {
             for (int i = vars.numRemoteOp; i < remoteOps.getRemoteOp().length; i++) {
                 flexPosition.add(remoteOps.getRemoteOp()[i]);
@@ -328,7 +331,7 @@ public class Replication {
         for(Operator op: availableWorkers){
             if(op.getQueue().size() <= optimal_op.getQueue().size()){
                 if(op.getQueue().size() == optimal_op.getQueue().size()) {
-                    if (Math.random() > 0.5)    // if same availableWorkers size, assign random
+                    if (Math.random() > 0.5)    // if same queue size, assign randomly
                         optimal_op = op;
                 }
                 else
@@ -353,22 +356,16 @@ public class Replication {
         int teamType = operator.dpID / 100;
 
         double humanErrorRate = vars.humanErrorRate[taskType];
-        double errorCatching;
-        int affByTeamCoord;
+        double errorCatching = 0.5; // default value for special tasks or flex team
+        int affByTeamCoord = 0;
 
-        if (taskType >= vars.numTaskTypes) {//settings for special tasks
-            errorCatching = 0.5;
-            affByTeamCoord = 0;
-        }
-        else {
-            if(operator.dpID / 100 == vars.FLEXTEAM) {
-                errorCatching = 0.5;
-            }
-            else{
+        if (taskType < vars.numTaskTypes) {//settings for normal tasks
+            if(operator.dpID / 100 != vars.FLEXTEAM) {
                 errorCatching = vars.ECC[teamType][taskType];
             }
             if (operator.isAI)  // Equal Operator ECC
                 errorCatching *= vars.ETFailThreshold[teamType];
+
             affByTeamCoord = vars.teamCoordAff[taskType];
         }
 
