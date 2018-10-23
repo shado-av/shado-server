@@ -1,8 +1,6 @@
 package server.Input;
-import server.Engine.Operator;
 import server.Engine.Replication;
 import server.Engine.Task;
-import javafx.util.Pair;
 import server.Output.TaskRecord;
 import server.Output.Utilization;
 import server.Output.WaitTime;

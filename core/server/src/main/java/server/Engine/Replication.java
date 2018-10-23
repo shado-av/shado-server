@@ -203,6 +203,7 @@ public class Replication {
 
         findAvaliableOperator(availableWorkers, task, flexPosition);
 
+        //TODO: If no available workers but flex positions? Is there a task created, but no availabe workers?
         if (availableWorkers.size()==0) {
             task.setExpired();
             //no operators assigned... taskRecord unrecordable
@@ -218,7 +219,7 @@ public class Replication {
 
         //AIs and team communication
         double errorChangeRate = 1;
-        if(task.getType() < vars.numTaskTypes) {
+        if(task.getType() < vars.numTaskTypes) {    // if normal tasks
 
             //AI feature: Equal Operator AI
             if (optimal_op.isAI) {
