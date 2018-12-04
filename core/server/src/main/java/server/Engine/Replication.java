@@ -203,39 +203,18 @@ public class Replication {
 
         findAvaliableOperator(availableWorkers, task, flexPosition);
 
-        //TODO: If no available workers but flex positions? Is there a task created, but no availabe workers?
         if (availableWorkers.size()==0) {
             task.setExpired();
-            //no operators assigned... taskRecord unrecordable
+            //no operators assigned... taskRecord unrecordable... but this kind of tasks should not be existed.
+            // maybe a great point to debug
             return;
         }
 
         Operator optimal_op = findOptimalOperator(availableWorkers);
 
-        //check if need flex position operator to help
-        if(vars.hasFlexPosition == 1 && optimal_op.getBusyIn10min(task.getArrTime()) > 7){
+        //check if need flex position operator to help - check flexPostion size
+        if(vars.hasFlexPosition == 1 && flexPosition.size() !=0 && optimal_op.getBusyIn10min(task.getArrTime()) > 7){
             optimal_op = findOptimalOperator(flexPosition);
-        }
-
-        //AIs and team communication
-        double errorChangeRate = 1;
-        if(task.getType() < vars.numTaskTypes) {    // if normal tasks
-
-            //AI feature: Equal Operator AI
-            if (optimal_op.isAI) {
-                task.changeServTime(vars.ETServiceTime[optimal_op.dpID / 100]);
-            }
-
-            //AI feature: Individual Assistant AIDA
-            errorChangeRate = applyIndividualAssistant(optimal_op, task);
-
-            //check team communication, change the serve time and error rate
-            task.changeServTime(getTeamComm(optimal_op.dpID, task.getType()));
-            errorChangeRate *= getTeamComm(optimal_op.dpID, task.getType());
-
-            // assign task priority according to team and task type
-            if (optimal_op.dpID / 100 < vars.numTeams)
-                task.setPriority(vars.taskPrty[optimal_op.dpID / 100][task.getType()]);
         }
 
         //If we have turn over task at the end, non-essential tasks will be removed to finish the turn over task
@@ -248,6 +227,9 @@ public class Replication {
             }
         }
 
+        //AIs and team communication
+        double errorChangeRate = applyAIandTeamComm(task, optimal_op);
+
         // check if the task is failed
         failTask(optimal_op, task, errorChangeRate);
 
@@ -256,6 +238,37 @@ public class Replication {
 
     }
 
+    /****************************************************************************
+     *
+     *	Method:		    applyAIandTeamComm
+     *
+     *	Purpose:	    Change service time affected by Equal AI, Individual Assistant
+     *                  and team communication
+     *                  Return errorChangeRate affected by IA and Team Communication
+     *
+     ****************************************************************************/
+    private double applyAIandTeamComm(Task task, Operator op) {
+        double errorChangeRate = 1.0;
+        if (task.getType() < vars.numTaskTypes) {
+            //AI feature: Equal Operator AI
+            if (op.isAI) {
+                task.changeServTime(vars.ETServiceTime[op.dpID / 100]);
+            }
+
+            //AI feature: Individual Assistant AIDA
+            errorChangeRate = applyIndividualAssistant(op, task);
+
+            //check team communication, change the serve time and error rate
+            task.changeServTime(getTeamComm(op.dpID, task.getType()));
+            errorChangeRate *= getTeamComm(op.dpID, task.getType());
+
+            // assign task priority according to team and task type
+            if (op.dpID / 100 < vars.numTeams)
+                task.setPriority(vars.taskPrty[op.dpID / 100][task.getType()]);
+        }
+
+        return errorChangeRate;
+    }
 
     /****************************************************************************
      *
@@ -307,7 +320,7 @@ public class Replication {
 
         }
 
-        // If task is not comping from other sources and there is a flex team
+        // If task is not coming from other sources and there is a flex team
         // In other words, flex team doesn't work on other sources
         if (task.getVehicleID() != vars.OTHER_SOURCES && vars.hasFlexPosition == 1) {
             for (int i = vars.numRemoteOp; i < remoteOps.getRemoteOp().length; i++) {
@@ -435,7 +448,7 @@ public class Replication {
 
         int team = dpID / 100;
 
-        if (team == vars.numTeams)
+        if (team == vars.numTeams)  // flex position
             return 1;
 
         double teamComm = 1;
@@ -540,7 +553,7 @@ public class Replication {
      ****************************************************************************/
 
     private void genExoTask() throws Exception{
-        int taskType = vars.numTaskTypes + 2;
+        int taskType = vars.EXOGENOUS_TASK;
         ArrayList<Task> indlist = new ArrayList<Task>();
         Task newTask = new Task(taskType, 0, vars, true,-1);
         if(newTask.getArrTime() < 0) return;
