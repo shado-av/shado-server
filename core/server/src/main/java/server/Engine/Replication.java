@@ -341,6 +341,7 @@ public class Replication {
     //SCHEN 2/7
     private Operator findOptimalOperator(ArrayList<Operator> availableWorkers){
 
+        Collections.shuffle(availableWorkers);
         Operator optimal_op = availableWorkers.get(0);
         for(Operator op: availableWorkers){
             if(op.getQueue().size() <= optimal_op.getQueue().size()){
