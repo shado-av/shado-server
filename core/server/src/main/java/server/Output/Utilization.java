@@ -40,6 +40,7 @@ public class Utilization {
     Double[][] stdBusyTimePerTask; //[team][task]
 
     public Double[][] getBusyTime() { return averageBusyTimePerFleet; }
+    public Double[][][][] getTaskUtilization() { return taskUtilization; }
 
     /****************************************************************************
      *

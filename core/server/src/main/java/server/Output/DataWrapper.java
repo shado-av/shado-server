@@ -58,7 +58,7 @@ public class DataWrapper {
         //Out put the report files
 
         printUtilization(u,1);
-//        printValidationReport(u.getTaskUtilization());
+        printValidationReport(u.getTaskUtilization());
         printSummaryReport();
         printTaskRecord();
         t.removeEmptyTask(vars);
@@ -440,31 +440,60 @@ public class DataWrapper {
 
     //Naixin 06/30/2018
     private void printValidationReport(Double[][][][] utilization) throws IOException{
+        // per each operator rep vs time
+        // int numColumn = (int) Math.ceil(vars.numHours * 6);
 
-        int numColumn = (int) Math.ceil(vars.numHours * 6);
+        // for (int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
 
-        for (int op = 0; op < vars.numRemoteOp + vars.flexTeamSize; op++) {
-
-            String fileName = outPutDirectory + "validation/rep_vs_time:operator" + op + ".csv";
-            PrintStream ps = new PrintStream(new BufferedOutputStream(
-                    new FileOutputStream(fileName, false)), true);
+        //     String fileName = outPutDirectory + "validation/rep_vs_time_per_operator" + op + ".csv";
+        //     PrintStream ps = new PrintStream(new BufferedOutputStream(
+        //             new FileOutputStream(fileName, false)), true);
 
 
-            for (int time = 0; time < numColumn; time++) {
-                for (int rep = 0; rep < vars.numReps; rep++) {
+        //     for (int time = 0; time < numColumn; time++) {
+        //         for (int rep = 0; rep < vars.numReps; rep++) {
 
-                    Double utilization10min = 0.0;
+        //             Double utilization10min = 0.0;
+        //             for (int taskType : vars.allTaskTypes) {
+        //                  utilization10min += utilization[op][rep][taskType][time];
+        //             }
+        //             ps.print(utilization10min + ",");
+        //         }
+        //         ps.println(" ");
+        //     }
+
+        //     ps.close();
+        // }
+
+        int numRows = (int) Math.ceil(vars.numHours * 6);
+
+        String fileName = outPutDirectory + "validation/rep_vs_time.csv";
+        PrintStream ps = new PrintStream(new BufferedOutputStream(
+                new FileOutputStream(fileName, false)), true);
+
+        ps.print("Time (min),");
+        for (int rep = 0; rep < vars.numReps; rep++) {
+            ps.print("Rep " + rep + ",");
+        }
+        ps.println("");
+
+        int numOps = vars.numRemoteOp + vars.flexTeamSize;
+        for (int time = 0; time < numRows; time++) {
+            ps.print(""+ (time*10) + ",");
+            for (int rep = 0; rep < vars.numReps; rep++) {
+
+                double utilization10min = 0.0;
+                for (int op = 0; op < numOps; op++) {
                     for (int taskType : vars.allTaskTypes) {
-                         utilization10min += utilization[op][rep][taskType][time];
+                            utilization10min += utilization[op][rep][taskType][time];
                     }
-                    ps.print(utilization10min + ",");
                 }
-                ps.println(" ");
+                ps.print(utilization10min / numOps + ",");
             }
-
-            ps.close();
+            ps.println(" ");
         }
 
+        ps.close();
     }
 
 
