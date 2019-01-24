@@ -42,7 +42,7 @@ If you want a more compact utilization report, please use this link to download 
 If you are more comfortable with command line:
 Try:
 ```
-curl -H POST http://localhost:8080/shado/testpost -d @shadovar.json \
+curl -H POST http://localhost:8080/shado/runShado -d @shadovar.json \
 --header "Content-Type: application/json"
 ```
 (Remember to substitue the **"localhost** to your server's URL) 
