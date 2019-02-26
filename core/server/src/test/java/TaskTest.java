@@ -139,14 +139,14 @@ public class TaskTest
         System.out.println();
 
         // Team coordination affects arrival time
-        System.out.println("Check Task Arrival Time with vehicle communication 'Full': ");
-        System.out.println("Arrival Time " + task5.getArrTime() + " should be actual * 0.3: " + task.getArrTime() * 0.3);
-        assertEquals(task5.getArrTime(), task.getArrTime() * 0.3, 0.001);
+        System.out.println("Check Task Arrival Time with vehicle communication 'Some': ");
+        System.out.println("Arrival Time " + task5.getArrTime() + " should be actual / 0.3: " + task.getArrTime() / 0.3);
+        assertEquals(task5.getArrTime(), task.getArrTime() / 0.3, 0.001);
         System.out.println();
 
         System.out.println("Check Task Arrival Time with vehicle communication 'Full': ");
-        System.out.println("Arrival Time " + task6.getArrTime() + " should be actual * 0.7: " + task.getArrTime() * 0.7);
-        assertEquals(task6.getArrTime(), task.getArrTime() * 0.7, 0.001);
+        System.out.println("Arrival Time " + task6.getArrTime() + " should be actual / 0.7: " + task.getArrTime() / 0.7);
+        assertEquals(task6.getArrTime(), task.getArrTime() / 0.7, 0.001);
         System.out.println();
     }
 
