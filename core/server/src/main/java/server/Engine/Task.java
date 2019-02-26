@@ -595,8 +595,8 @@ public class Task implements Comparable<Task> {
 		//SCHEN 12/10/17: Add Fleet autonomy -> adjust arrival rate
 		double autoLevel = lvl_None; //default
 
-		if(vars.autolvl[fleet] == 'S') autoLevel = lvl_SOME;
-		if(vars.autolvl[fleet] == 'F') autoLevel = lvl_FULL;
+		if(vars.autolvl[fleet] == 'S') autoLevel = 1/lvl_SOME;
+		if(vars.autolvl[fleet] == 'F') autoLevel = 1/lvl_FULL;
 
 		return  autoLevel;
 	}
