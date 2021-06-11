@@ -1,4 +1,7 @@
 # SHADO-server
+
+To read more about the research behind the Simulator for Humans & Automation in Dispatch Operations (SHADO) by Nneji, Victoria Chibuogu (2019). A Workload Model for Designing & Staffing Future Transportation Network Operations (Doctoral dissertation, Duke University), click [here](https://dukespace.lib.duke.edu/dspace/bitstream/handle/10161/18694/Nneji_duke_0066D_14997.pdf).
+
 ## Shado backend service
 SHADO-server web service is built on Java Spring Boot. 
 Spring Boot Tutorial: https://spring.io/guides/gs/spring-boot/
